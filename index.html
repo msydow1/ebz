@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="Zeiterfassung">
 <meta name="theme-color" content="#15171A">
 <title>Zeiterfassung</title>
-<!-- Zeiterfassung V1.4 -->
+<!-- Zeiterfassung V1.5 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -95,7 +95,8 @@ body{background:var(--bg);color:var(--text);font-family:"Inter",-apple-system,sy
 .field label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px;font-weight:500}
 .field .lblrow{display:flex;justify-content:space-between;align-items:baseline}
 .field .lblrow button{background:none;border:none;color:var(--accent);font-family:inherit;font-size:11.5px;font-weight:600;padding:0}
-.field input{width:100%;min-width:0;padding:12px 14px;border-radius:10px;border:1px solid var(--line-strong);background:var(--field);color:var(--text);font-family:inherit;font-size:16px;font-variant-numeric:tabular-nums}
+.field input{width:100%;min-width:0;max-width:100%;-webkit-appearance:none;appearance:none;padding:12px 14px;border-radius:10px;border:1px solid var(--line-strong);background:var(--field);color:var(--text);font-family:inherit;font-size:16px;font-variant-numeric:tabular-nums}
+.field input[type="time"],.field input[type="date"]{text-align:center}
 .field input.txt{font-variant-numeric:normal}
 .field input:focus{outline:none;border-color:var(--accent-line);background:var(--surface-2)}
 .two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
@@ -151,7 +152,7 @@ body{background:var(--bg);color:var(--text);font-family:"Inter",-apple-system,sy
   <div class="foot">
     <div class="foot-facts"><span>Soll 7,5 Std/Tag</span><span>+30 Min Pause = 8 Std</span><span>Tagegeld: eintägig · Inland · ab 8 Std</span></div>
     <div class="foot-note">Daten bleiben nur auf diesem Gerät · alle Angaben ohne Gewähr</div>
-    <div class="foot-v">Zeiterfassung <b>V1.4</b></div>
+    <div class="foot-v">Zeiterfassung <b>V1.5</b></div>
   </div>
 </div>
 <input type="file" id="pdfInput" accept="application/pdf" class="hidden">
