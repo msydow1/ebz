@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Zeiterfassung">
+<meta name="theme-color" content="#15171A">
+<title>Zeiterfassung</title>
+<!-- Zeiterfassung V1.4 -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root{--bg:#15171A;--surface:#1E2228;--surface-2:#262B31;--field:#34393F;--line:#2A2F35;--line-strong:#3A4048;--text:#E8E8E8;--text-strong:#FFFFFF;--muted:#999999;--silver:#C3C3C3;--faint:#6E747B;--accent:#FA7D19;--accent-soft:rgba(250,125,25,.14);--accent-line:rgba(250,125,25,.40);--pos:#54BE86;--pos-soft:rgba(84,190,134,.15);--pos-line:rgba(84,190,134,.45);--info:#6B87A2;--info-soft:rgba(107,135,162,.16);--info-line:rgba(107,135,162,.40);--danger:#E0705C}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;max-width:100%;overflow-x:hidden}
+body{background:var(--bg);color:var(--text);font-family:"Inter",-apple-system,system-ui,sans-serif;font-size:16px;line-height:1.45;padding-bottom:env(safe-area-inset-bottom);-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
+.mono{font-variant-numeric:tabular-nums}
+.app{max-width:560px;margin:0 auto;min-height:100vh}
+.bar{position:sticky;top:0;z-index:30;background:rgba(21,23,26,.82);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);padding:calc(env(safe-area-inset-top) + 16px) 18px 14px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px}
+.bar .logo{width:30px;height:30px;border-radius:9px;flex:none;background:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:800;color:#15171A;font-size:16px;letter-spacing:-.5px}
+.bar h1{font-weight:700;font-size:18px;margin:0;letter-spacing:-.2px;flex:1;color:var(--text-strong)}
+.bar h1 small{display:block;font-weight:500;font-size:10px;color:var(--muted);letter-spacing:1.6px;text-transform:uppercase;margin-top:3px}
+.iconbtn{width:40px;height:40px;border-radius:11px;border:1px solid var(--line);background:transparent;color:var(--text);display:flex;align-items:center;justify-content:center;font-size:18px;flex:none}
+.iconbtn:active{background:var(--surface)}
+.seg{display:flex;gap:22px;padding:14px 20px 0;border-bottom:1px solid var(--line)}
+.seg button{flex:none;padding:8px 0 11px;border:none;background:transparent;color:var(--muted);font-family:inherit;font-size:14px;font-weight:600;border-bottom:2px solid transparent;margin-bottom:-1px}
+.seg button.on{color:var(--text-strong);border-bottom-color:var(--accent)}
+.view{padding:14px 20px 120px;animation:fade .25s ease}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.empty{text-align:center;color:var(--muted);padding:70px 20px}
+.empty .big{font-size:42px;margin-bottom:10px;opacity:.4}
+.empty p{font-size:14px;line-height:1.6}
+.card{background:transparent;border:none;border-bottom:1px solid var(--line);border-radius:0;padding:16px 2px;margin-bottom:0;position:relative}
+.card:active{background:rgba(255,255,255,.02)}
+.card .titel{font-weight:700;font-size:17px;line-height:1.25;margin:0 76px 6px 0;letter-spacing:-.3px;color:var(--text-strong)}
+.card .meta{font-size:12.5px;color:var(--muted);display:flex;flex-wrap:wrap;gap:4px 12px}
+.card .meta b{color:var(--silver);font-weight:500}
+.badge{position:absolute;top:16px;right:2px;text-align:right}
+.badge .num{font-weight:700;font-size:18px;line-height:1;font-variant-numeric:tabular-nums}
+.badge .lbl{font-size:9px;color:var(--faint);text-transform:uppercase;letter-spacing:.6px;margin-top:3px}
+.ot-pos{color:var(--pos)} .ot-zero{color:var(--muted)} .ot-neg{color:var(--info)}
+.daystrip{display:flex;gap:6px;margin-top:12px;flex-wrap:wrap}
+.daychip{font-size:11px;padding:3px 8px;border-radius:7px;background:var(--field);color:var(--muted);border:1px solid var(--line);font-variant-numeric:tabular-nums}
+.daychip b{font-weight:600}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:14px;border-radius:12px;border:none;font-family:inherit;font-size:15px;font-weight:700;background:var(--accent);color:#15171A;margin-bottom:10px}
+.btn:active{filter:brightness(.92)}
+.btn.ghost{background:transparent;color:var(--text);border:1px solid var(--line);font-weight:600}
+.btn.ghost:active{background:var(--surface)}
+.btn.danger{background:transparent;color:var(--danger);border:1px solid rgba(224,112,92,.4);font-weight:600}
+.btnrow{display:flex;gap:10px}.btnrow .btn{margin-bottom:10px}
+.sub{font-size:11px;color:var(--faint);text-align:center;margin:8px 0 18px;line-height:1.5}
+.back{display:inline-flex;align-items:center;gap:6px;color:var(--accent);font-size:14px;font-weight:600;margin-bottom:16px;background:none;border:none;font-family:inherit;padding:0}
+.dhead{margin:4px 0 18px}
+.dhead h2{font-weight:800;font-size:26px;line-height:1.12;margin:0 0 14px;letter-spacing:-.6px;color:var(--text-strong)}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:7px 14px;font-size:13.5px}
+.kv dt{color:var(--muted)} .kv dd{margin:0;text-align:right;font-weight:500;font-variant-numeric:tabular-nums}
+.section-h{display:flex;align-items:baseline;justify-content:space-between;margin:22px 0 6px}
+.section-h h3{font-weight:700;font-size:13px;margin:0;letter-spacing:.4px;text-transform:uppercase;color:var(--silver)}
+.section-h .tot{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.day{background:transparent;border:none;border-bottom:1px solid var(--line);border-radius:0;padding:14px 2px;margin-bottom:0}
+.day:active{background:rgba(255,255,255,.02)}
+.day .top{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px}
+.day .date{font-weight:700;font-size:15px;color:var(--text-strong)}
+.day .ot{font-weight:700;font-size:15px;font-variant-numeric:tabular-nums}
+.dayDel{width:32px;height:32px;border-radius:8px;border:1px solid var(--line);background:transparent;color:var(--danger);font-size:14px;line-height:1;flex:none;display:flex;align-items:center;justify-content:center}
+.dayDel:active{background:rgba(224,112,92,.18)}
+.day .line{display:flex;gap:14px;font-size:12.5px;color:var(--muted);flex-wrap:wrap;align-items:center}
+.day .line .v{color:var(--silver);font-variant-numeric:tabular-nums}
+.day .line .warn{color:var(--accent)}
+.tgchip{font-size:10.5px;padding:2px 8px;border-radius:7px;background:var(--pos-soft);color:var(--pos);border:1px solid var(--pos-line);font-weight:600}
+.uechip{font-size:10.5px;padding:2px 8px;border-radius:7px;background:var(--field);color:var(--muted);border:1px solid var(--line)}
+.statbig{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:24px;text-align:center;margin-bottom:14px}
+.statbig .n{font-weight:800;font-size:46px;line-height:1;font-variant-numeric:tabular-nums;letter-spacing:-1px}
+.statbig .l{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;margin-top:8px}
+.statgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px}
+.statgrid .s{background:transparent;border:1px solid var(--line);border-radius:13px;padding:15px}
+.statgrid .s .n{font-weight:700;font-size:22px;font-variant-numeric:tabular-nums;color:var(--text-strong)}
+.statgrid .s .l{font-size:11px;color:var(--muted);margin-top:4px}
+.srow{display:flex;align-items:center;justify-content:space-between;padding:14px 2px;background:transparent;border:none;border-bottom:1px solid var(--line);border-radius:0;margin-bottom:0}
+.srow .nm{font-size:14px;font-weight:600;margin:0 10px 0 0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text-strong)}
+.srow .nm small{display:block;color:var(--faint);font-size:11px;font-weight:400}
+.srow .v{font-weight:700;font-size:15px;flex:none;font-variant-numeric:tabular-nums}
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:50;display:none;backdrop-filter:blur(3px)}
+.scrim.on{display:block}
+.sheet{position:absolute;left:0;right:0;bottom:0;margin:0 auto;background:var(--bg);width:auto;max-width:560px;border-radius:22px 22px 0 0;border-top:1px solid var(--line-strong);max-height:92vh;overflow-y:auto;overflow-x:hidden;padding:8px 20px calc(env(safe-area-inset-bottom) + 24px);animation:up .3s cubic-bezier(.2,.8,.2,1)}
+@keyframes up{from{transform:translateY(100%)}to{transform:none}}
+.grip{width:38px;height:5px;border-radius:3px;background:var(--line-strong);margin:8px auto 16px}
+.sheet h3{font-weight:800;font-size:21px;margin:0 0 18px;letter-spacing:-.4px;color:var(--text-strong)}
+.field{margin-bottom:16px}
+.field label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px;font-weight:500}
+.field .lblrow{display:flex;justify-content:space-between;align-items:baseline}
+.field .lblrow button{background:none;border:none;color:var(--accent);font-family:inherit;font-size:11.5px;font-weight:600;padding:0}
+.field input{width:100%;min-width:0;padding:12px 14px;border-radius:10px;border:1px solid var(--line-strong);background:var(--field);color:var(--text);font-family:inherit;font-size:16px;font-variant-numeric:tabular-nums}
+.field input.txt{font-variant-numeric:normal}
+.field input:focus{outline:none;border-color:var(--accent-line);background:var(--surface-2)}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
+.timebox .tl.trow{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.nrow{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px}
+.nrow label{margin:0}
+.nbtn{background:none;border:1px solid var(--line);color:var(--muted);font-family:inherit;font-size:10.5px;font-weight:600;text-transform:none;letter-spacing:0;padding:3px 9px;border-radius:7px}
+.nbtn.on{background:var(--accent-soft);color:var(--accent);border-color:var(--accent-line)}
+.field input:disabled{opacity:.4}
+.timebox{background:transparent;border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px}
+.timebox.acc{border-color:var(--accent-line)}
+.timebox .tl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px;font-weight:600}
+.timebox.acc .tl{color:var(--accent)}
+.dispoinfo{font-size:12px;color:var(--muted);background:var(--field);border-radius:10px;padding:9px 12px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;gap:10px;font-variant-numeric:tabular-nums}
+.dispoinfo button{background:none;border:none;color:var(--accent);font-family:inherit;font-size:12px;font-weight:600;padding:0;flex:none}
+.toggles{display:flex;gap:8px;flex-wrap:wrap}
+.toggles button{flex:1;min-width:52px;padding:11px 4px;border-radius:10px;border:1px solid var(--line-strong);background:var(--field);color:var(--muted);font-family:inherit;font-size:13.5px;font-weight:600}
+.toggles button.on{background:var(--accent);color:#15171A;border-color:var(--accent)}
+.toggles.mono button{font-variant-numeric:tabular-nums}
+.toggles.wrap{flex-wrap:wrap}
+.toggles.wrap button{flex:0 1 auto;min-width:0;padding:9px 12px}
+.calc{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;margin:4px 0 12px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px 8px}
+.calc .c .l{font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
+.calc .c .n{font-weight:700;font-size:18px;margin-top:3px;font-variant-numeric:tabular-nums}
+.tgbox{border-radius:12px;padding:13px 15px;margin:2px 0 4px;font-size:13px;line-height:1.5;display:flex;gap:9px;align-items:flex-start}
+.tgbox.ok{background:var(--pos-soft);border:1px solid var(--pos-line);color:var(--pos)}
+.tgbox.no{background:var(--field);border:1px solid var(--line);color:var(--muted)}
+.tgbox b{font-weight:700}
+.note{font-size:12px;color:var(--faint);line-height:1.5;margin:8px 0 0}
+.toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 24px);transform:translateX(-50%) translateY(20px);background:var(--field);border:1px solid var(--accent-line);color:var(--text);padding:12px 20px;border-radius:12px;font-size:14px;z-index:80;opacity:0;transition:.3s;box-shadow:0 10px 40px rgba(0,0,0,.5);pointer-events:none;max-width:90%;text-align:center}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+.divider{height:1px;background:var(--line);margin:18px 0}
+.hidden{display:none!important}
+.foot{text-align:center;padding:34px 20px 18px}
+.foot-facts{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin:0 0 11px}
+.foot-facts span{font-size:10.5px;color:var(--muted);background:var(--field);border:1px solid var(--line);border-radius:7px;padding:3px 9px;font-variant-numeric:tabular-nums}
+.foot-note{font-size:10.5px;color:var(--faint);line-height:1.5}
+.foot-v{font-size:11.5px;font-weight:600;color:var(--faint);letter-spacing:.2px;margin-top:14px}
+.foot-v b{color:var(--accent);font-weight:700}
+.cscrim{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:120;display:none;align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(3px)}
+.cscrim.on{display:flex}
+.cdlg{background:var(--surface);border:1px solid var(--line-strong);border-radius:16px;padding:22px;max-width:340px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+.cdlg .cmsg{margin:0 0 18px;font-size:15px;line-height:1.5;color:var(--text)}
+.crow{display:flex;gap:10px}.crow .btn{flex:1}
+.importlist{background:var(--field);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:13px;line-height:1.7;font-variant-numeric:tabular-nums}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="bar"><div class="logo">Z</div><h1>Zeiterfassung<small id="barsub">EB-Aufträge</small></h1><button class="iconbtn" id="navSettings" aria-label="Einstellungen">⚙</button></div>
+  <div class="seg" id="seg"><button data-tab="orders" class="on">Aufträge</button><button data-tab="stats">Statistik</button></div>
+  <div class="view" id="view"></div>
+  <div class="foot">
+    <div class="foot-facts"><span>Soll 7,5 Std/Tag</span><span>+30 Min Pause = 8 Std</span><span>Tagegeld: eintägig · Inland · ab 8 Std</span></div>
+    <div class="foot-note">Daten bleiben nur auf diesem Gerät · alle Angaben ohne Gewähr</div>
+    <div class="foot-v">Zeiterfassung <b>V1.4</b></div>
+  </div>
+</div>
+<input type="file" id="pdfInput" accept="application/pdf" class="hidden">
+<div class="scrim" id="scrim"><div class="sheet" id="sheet"></div></div>
+<div class="toast" id="toast"></div>
+<div class="cscrim" id="confirmBox"><div class="cdlg"><p class="cmsg"></p><div class="crow"><button id="cNo" class="btn ghost" style="margin:0">Abbrechen</button><button id="cYes" class="btn danger" style="margin:0">Löschen</button></div></div></div>
+
+<script>
+"use strict";
+/* ===== Persistenz (Fallback falls localStorage gesperrt) ===== */
+const KEY="zeiterfassung_v2";
+const Store={mem:{},load(){try{const r=localStorage.getItem(KEY);return r?JSON.parse(r):null}catch(e){return this.mem[KEY]||null}},save(o){try{localStorage.setItem(KEY,JSON.stringify(o))}catch(e){this.mem[KEY]=o}}};
+let DB=Store.load()||{orders:[],settings:{}};
+const S=DB.settings;
+S.sollMin??=450; if(S.sollMin===462)S.sollMin=450; S.standardPause??=30; S.abwesenheitMin??=480; S.email??=""; S.absender??="";
+DB.orders.forEach(o=>{o.notiz??=""; o.equipment??=[]; o.days.forEach(d=>{
+  if(d.einsatz===undefined){ d.einsatz=d.istStart||d.geplStart||""; d.ende=d.istEnde||d.geplEnde||""; d.anreise=""; d.rueck="";
+    d.dispo={einsatz:d.geplStart||d.istStart||"",ende:d.geplEnde||d.istEnde||""}; delete d.istStart;delete d.istEnde;delete d.geplStart;delete d.geplEnde; }
+  d.dispo??={einsatz:"",ende:""}; d.uebernachtung??=false; d.ausland??=false;
+  if(typeof d.pause==="number") d.pause=d.pause>0; d.pause??=true;
+  d.drehbeginn??=(d.einsatz?addMin(d.einsatz,60):""); d.drehende??=(d.ende?addMin(d.ende,-60):"");
+  d.anreiseEnde??=""; d.rueckBeginn??="";
+});});
+function persist(){Store.save(DB);}
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+
+/* ===== Helfer ===== */
+function hm2min(s){if(!s)return null;const m=String(s).match(/(\d{1,2}):(\d{2})/);return m?(+m[1])*60+(+m[2]):null;}
+function dur(a,b){if(a==null||b==null)return null;let d=b-a;if(d<0)d+=1440;return d;}
+function addMin(hm,mins){const m=hm2min(hm);if(m==null)return "";let x=(m+mins)%1440;if(x<0)x+=1440;return String(Math.floor(x/60)).padStart(2,"0")+":"+String(x%60).padStart(2,"0");}
+function fmtMin(m){if(m==null)return "–";const s=m<0?"-":"";m=Math.abs(m);return s+Math.floor(m/60)+":"+String(m%60).padStart(2,"0");}
+function fmtSigned(m){if(m==null)return "–";const s=m>0?"+":(m<0?"-":"±");const a=Math.abs(m);return s+Math.floor(a/60)+":"+String(a%60).padStart(2,"0");}
+function otClass(m){if(m==null||m===0)return "ot-zero";return m>0?"ot-pos":"ot-neg";}
+const WD=["So","Mo","Di","Mi","Do","Fr","Sa"];
+function fmtDate(iso){if(!iso)return "—";const d=new Date(iso+"T00:00");if(isNaN(d))return iso;return WD[d.getDay()]+". "+String(d.getDate()).padStart(2,"0")+"."+String(d.getMonth()+1).padStart(2,"0")+".";}
+function fmtDateLong(iso){if(!iso)return "";const d=new Date(iso+"T00:00");if(isNaN(d))return iso;return WD[d.getDay()]+", "+String(d.getDate()).padStart(2,"0")+"."+String(d.getMonth()+1).padStart(2,"0")+"."+d.getFullYear();}
+
+/* ===== Berechnung pro Tag ===== */
+function dayCalc(d){
+  const span=dur(hm2min(d.einsatz),hm2min(d.ende));
+  const az=dur(hm2min(d.drehbeginn),hm2min(d.drehende));
+  const pauseMin=d.pause?(S.standardPause||0):0;
+  const netto=span==null?null:Math.max(0,span-pauseMin);
+  const ot=netto==null?null:netto-S.sollMin;
+  let tg;
+  if(d.uebernachtung) tg={state:"ue"};
+  else if(d.ausland) tg={state:"ausland"};
+  else if(span==null) tg={state:"none"};
+  else if(span>S.abwesenheitMin) tg={state:"ok"};
+  else tg={state:"under"};
+  return {span,az,pause:pauseMin,pauseJa:!!d.pause,netto,ot,absence:span,tg};
+}
+const orderOT=o=>o.days.reduce((a,d)=>a+(dayCalc(d).ot||0),0);
+const orderNetto=o=>o.days.reduce((a,d)=>a+(dayCalc(d).netto||0),0);
+const orderTGdays=o=>o.days.reduce((a,d)=>a+(dayCalc(d).tg.state==="ok"?1:0),0);
+
+/* ===== Routing ===== */
+let state={tab:"orders",orderId:null};
+const view=document.getElementById("view"),seg=document.getElementById("seg");
+seg.addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;state.tab=b.dataset.tab;state.orderId=null;[...seg.children].forEach(c=>c.classList.toggle("on",c===b));render();});
+document.getElementById("navSettings").onclick=openSettings;
+function render(){document.getElementById("barsub").textContent=state.orderId?"Auftrag":(state.tab==="stats"?"Übersicht":"EB-Aufträge");seg.style.display=state.orderId?"none":"flex";if(state.orderId)return renderDetail();if(state.tab==="stats")return renderStats();return renderOrders();}
+
+/* ===== Liste ===== */
+function renderOrders(){
+  let h=`<button class="btn" id="addOrder">＋ Auftrag manuell anlegen</button>
+  <button class="btn ghost" id="importPdf">⤓ PDF von der Dispo importieren</button>
+  <p class="sub">Liest Titel, Auftrags-/Prod.-Nr., Kostenträger und deine Einsatzzeiten aus. Bitte nach dem Import prüfen.</p>`;
+  if(!DB.orders.length){h+=`<div class="empty"><div class="big">🎬</div><p>Noch keine Aufträge.<br>Importiere ein Dispo-PDF oder lege manuell an.</p></div>`;}
+  else DB.orders.slice().reverse().forEach(o=>{
+    const ot=orderOT(o),tgd=orderTGdays(o);
+    const days=o.days.slice().sort((a,b)=>(a.datum||"").localeCompare(b.datum||""));
+    const chips=days.slice(0,8).map(d=>`<span class="daychip">${fmtDate(d.datum).replace(/\.$/,"")} <b class="${otClass(dayCalc(d).ot)}">${fmtSigned(dayCalc(d).ot)}</b></span>`).join("");
+    h+=`<div class="card" data-open="${o.id}">
+      <div class="badge"><div class="num ${otClass(ot)}">${fmtSigned(ot)}</div><div class="lbl">Überstd.</div></div>
+      <p class="titel">${esc(o.titel||"Ohne Titel")}</p>
+      <div class="meta">${o.auftragsnr?`<span><b>${esc(o.auftragsnr)}</b></span>`:""}${o.prodNummer?`<span>Prod. ${esc(o.prodNummer)}</span>`:""}<span>${o.days.length} Tag${o.days.length===1?"":"e"}</span>${tgd>0?`<span style="color:var(--pos)">${tgd}× Tagegeld mögl.</span>`:""}</div>
+      ${chips?`<div class="daystrip">${chips}</div>`:""}</div>`;
+  });
+  view.innerHTML=h;
+  document.getElementById("addOrder").onclick=()=>editOrder(null);
+  document.getElementById("importPdf").onclick=()=>document.getElementById("pdfInput").click();
+  view.querySelectorAll("[data-open]").forEach(c=>c.onclick=()=>{state.orderId=c.dataset.open;render();});
+}
+
+/* ===== Detail ===== */
+function renderDetail(){
+  const o=DB.orders.find(x=>x.id===state.orderId);if(!o){state.orderId=null;return render();}
+  const days=o.days.slice().sort((a,b)=>((a.datum||"")+(a.einsatz||"")).localeCompare((b.datum||"")+(b.einsatz||"")));
+  const ot=orderOT(o),netto=orderNetto(o),tgd=orderTGdays(o);
+  let h=`<button class="back" id="back">‹ Aufträge</button>
+  <div class="dhead"><h2>${esc(o.titel||"Ohne Titel")}</h2>
+    <dl class="kv">
+      ${o.auftragsnr?`<dt>Auftrag</dt><dd>${esc(o.auftragsnr)}</dd>`:""}
+      ${o.prodNummer?`<dt>Prod.-Nr.</dt><dd>${esc(o.prodNummer)}</dd>`:""}
+      ${o.kostentraeger?`<dt>Kostenträger</dt><dd>${esc(o.kostentraeger)}</dd>`:""}
+      ${o.produktionsort?`<dt>Ort</dt><dd>${esc(o.produktionsort)}</dd>`:""}
+      ${o.mitarbeiter?`<dt>Mitarbeiter</dt><dd>${esc(o.mitarbeiter)}</dd>`:""}
+      <dt>Netto gesamt</dt><dd>${fmtMin(netto)} Std</dd>
+      <dt>Überstunden</dt><dd class="${otClass(ot)}">${fmtSigned(ot)} Std</dd>
+      ${tgd>0?`<dt>Tagegeld möglich</dt><dd style="color:var(--pos)">${tgd} Tag(e)</dd>`:""}
+      ${equipText(o)?`<dt>Equipment</dt><dd>${esc(equipText(o))}</dd>`:""}
+    </dl>
+    <div style="margin-top:14px"><button class="btn ghost" id="editOrder" style="margin-bottom:0">✎ Auftragsdaten / löschen</button></div></div>
+  <div class="section-h"><h3>Arbeitstage</h3><span class="tot">${days.length} · ${fmtSigned(ot)}</span></div>`;
+  if(!days.length)h+=`<div class="empty" style="padding:30px"><p>Noch keine Tage erfasst.</p></div>`;
+  else days.forEach(d=>{
+    const c=dayCalc(d);
+    let tgEl="";
+    if(c.tg.state==="ok")tgEl=`<span class="tgchip">Tagegeld möglich</span>`;
+    else if(c.tg.state==="ue")tgEl=`<span class="uechip">Übernachtung</span>`;
+    else if(c.tg.state==="ausland")tgEl=`<span class="uechip">Ausland</span>`;
+    h+=`<div class="day" data-day="${d.id}">
+      <div class="top"><div class="date">${fmtDate(d.datum)}</div><div style="display:flex;align-items:center;gap:14px"><div class="ot ${otClass(c.ot)}">${fmtSigned(c.ot)}</div><button class="dayDel" data-del="${d.id}" aria-label="Tag löschen">🗑</button></div></div>
+      <div class="line"><span>Einsatz <span class="v">${d.einsatz||"–"}–${d.ende||"–"}</span></span><span>Dreh <span class="v">${(d.drehbeginn||d.drehende)?((d.drehbeginn||"—")+"–"+(d.drehende||"—")):"—"}</span></span><span>Pause <span class="v ${c.pauseJa?'':'warn'}">${c.pauseJa?'ja':'nein'}</span></span></div>
+      <div class="line" style="margin-top:5px"><span>Netto <span class="v">${fmtMin(c.netto)}</span></span><span>Abwesend <span class="v">${fmtMin(c.absence)}</span></span>${tgEl}</div>
+      ${(d.anreise||d.anreiseEnde||d.rueckBeginn||d.rueck)?`<div class="line" style="margin-top:5px"><span style="color:var(--faint)">Anreise ${(d.anreise||d.anreiseEnde)?((d.anreise||"—")+"–"+(d.anreiseEnde||"—")):"–"} · Rückreise ${(d.rueckBeginn||d.rueck)?((d.rueckBeginn||"—")+"–"+(d.rueck||"—")):"–"}</span></div>`:""}
+    </div>`;
+  });
+  h+=`<button class="btn" id="addDay" style="margin-top:6px">＋ Tag hinzufügen</button>
+  <div class="divider"></div><div class="btnrow"><button class="btn ghost" id="mailOrder">✉ Als E-Mail</button><button class="btn ghost" id="pdfOrder">⤓ Als PDF</button></div>`;
+  view.innerHTML=h;
+  document.getElementById("back").onclick=()=>{state.orderId=null;render();};
+  document.getElementById("editOrder").onclick=()=>editOrder(o.id);
+  document.getElementById("addDay").onclick=()=>editDay(o.id,null);
+  document.getElementById("mailOrder").onclick=()=>mailOrder(o);
+  document.getElementById("pdfOrder").onclick=()=>pdfOrder(o);
+  view.querySelectorAll(".dayDel").forEach(b=>b.onclick=e=>{e.stopPropagation();const id=b.dataset.del;askConfirm("Diesen Arbeitstag wirklich löschen?",()=>{o.days=o.days.filter(x=>x.id!==id);persist();render();toast("Tag gelöscht");});});
+  view.querySelectorAll("[data-day]").forEach(el=>el.onclick=()=>editDay(o.id,el.dataset.day));
+}
+
+/* ===== Statistik ===== */
+function renderStats(){
+  const totOT=DB.orders.reduce((a,o)=>a+orderOT(o),0);
+  const totNetto=DB.orders.reduce((a,o)=>a+orderNetto(o),0);
+  const totDays=DB.orders.reduce((a,o)=>a+o.days.length,0);
+  const totTGd=DB.orders.reduce((a,o)=>a+orderTGdays(o),0);
+  let h=`<div class="statbig"><div class="n ${otClass(totOT)}">${fmtSigned(totOT)}</div><div class="l">Überstunden gesamt</div></div>
+  <div class="statgrid">
+    <div class="s"><div class="n">${fmtMin(totNetto)}</div><div class="l">Netto-Arbeitszeit</div></div>
+    <div class="s"><div class="n mono">${totDays}</div><div class="l">Arbeitstage</div></div>
+    <div class="s"><div class="n mono" style="color:var(--pos)">${totTGd}</div><div class="l">Tagegeld-Tage (mögl.)</div></div>
+    <div class="s"><div class="n mono">${fmtMin(S.sollMin)}</div><div class="l">Soll / Tag</div></div>
+  </div>`;
+  if(DB.orders.length){h+=`<div class="section-h"><h3>Pro Auftrag</h3></div>`;
+    DB.orders.slice().reverse().forEach(o=>{const ot=orderOT(o),tgd=orderTGdays(o);
+      h+=`<div class="srow" data-open="${o.id}"><div class="nm">${esc(o.titel||"Ohne Titel")}<small>${o.days.length} Tag(e)${tgd>0?` · ${tgd}× Tagegeld mögl.`:""}</small></div><div class="v ${otClass(ot)}">${fmtSigned(ot)}</div></div>`;});
+  }else h+=`<div class="empty"><div class="big">📊</div><p>Noch keine Daten.</p></div>`;
+  view.innerHTML=h;
+  view.querySelectorAll("[data-open]").forEach(c=>c.onclick=()=>{state.orderId=c.dataset.open;render();});
+}
+
+/* ===== Sheet ===== */
+const scrim=document.getElementById("scrim"),sheet=document.getElementById("sheet");
+function openSheet(html){sheet.innerHTML='<div class="grip"></div>'+html;scrim.classList.add("on");sheet.scrollTop=0;}
+function closeSheet(){scrim.classList.remove("on");}
+scrim.addEventListener("click",e=>{if(e.target===scrim)closeSheet();});
+
+/* ===== Auftrag ===== */
+function editOrder(id){
+  const o=id?DB.orders.find(x=>x.id===id):{titel:"",auftragsnr:"",prodNummer:"",kostentraeger:"",produktionsort:""};
+  openSheet(`<h3>${id?"Auftrag bearbeiten":"Neuer Auftrag"}</h3>
+    <div class="field"><label>Titel (wie auf der Dispo)</label><input type="text" class="txt" id="f_titel" value="${esc(o.titel||"")}" placeholder="z. B. Produktionstitel"></div>
+    <div class="two"><div class="field"><label>Auftrags-Nr.</label><input type="text" id="f_anr" value="${esc(o.auftragsnr||"")}" placeholder="A1234567"></div><div class="field"><label>Prod.-Nr.</label><input type="text" id="f_pnr" value="${esc(o.prodNummer||"")}" placeholder="123456789"></div></div>
+    <div class="two"><div class="field"><label>Kostenträger</label><input type="text" id="f_kt" value="${esc(o.kostentraeger||"")}" placeholder="123456789"></div><div class="field"><label>Produktionsort</label><input type="text" class="txt" id="f_ort" value="${esc(o.produktionsort||"")}" placeholder="z. B. München"></div></div>
+    <div class="field"><label>Mitarbeiter (für Nachweis)</label><input type="text" class="txt" id="f_mit" value="${esc(o.mitarbeiter||"")}" placeholder="Nachname, Vorname"></div>
+    <div class="field"><label>Sonder-Equipment (Mehrfachauswahl)</label><div class="toggles wrap" id="f_equip">${["Drohne","2. Kamera","Timecode-Sync","Slider","Gimbal","Funkstrecke","Licht","Stativ/Head","Ton"].map(e=>`<button type="button" data-e="${esc(e)}"${(o.equipment||[]).includes(e)?' class="on"':''}>${esc(e)}</button>`).join("")}</div></div>
+    <div class="field"><label>Sonstiges (optional)</label><input type="text" class="txt" id="f_notiz" value="${esc(o.notiz||"")}" placeholder="z. B. weitere Hinweise"></div>
+    <button class="btn" id="saveOrder">Speichern</button><button class="btn ghost" id="cancelOrder" style="margin-bottom:0">Abbrechen</button>
+    ${id?'<div class="divider"></div><button class="btn danger" id="delOrder" style="margin-bottom:0">Diesen Auftrag löschen</button>':''}`);
+  document.getElementById("cancelOrder").onclick=closeSheet;
+  document.querySelectorAll("#f_equip button").forEach(b=>b.onclick=()=>b.classList.toggle("on"));
+  document.getElementById("saveOrder").onclick=()=>{
+    const equipment=[...document.querySelectorAll("#f_equip button.on")].map(b=>b.dataset.e);
+    const data={titel:val("f_titel"),auftragsnr:val("f_anr"),prodNummer:val("f_pnr"),kostentraeger:val("f_kt"),produktionsort:val("f_ort"),mitarbeiter:val("f_mit"),notiz:val("f_notiz"),equipment};
+    if(id)Object.assign(o,data);else{const no={id:uid(),...data,days:[]};DB.orders.push(no);state.orderId=no.id;}
+    persist();closeSheet();render();toast(id?"Gespeichert":"Auftrag angelegt");};
+  if(id)document.getElementById("delOrder").onclick=()=>{askConfirm("Diesen Auftrag mit allen Tagen wirklich löschen?",()=>{DB.orders=DB.orders.filter(x=>x.id!==id);persist();state.orderId=null;closeSheet();render();toast("Auftrag gelöscht");});};
+}
+
+/* ===== Tag ===== */
+let tmpPause,tmpUE,tmpAL;
+function editDay(orderId,dayId){
+  const o=DB.orders.find(x=>x.id===orderId);
+  const d=dayId?o.days.find(x=>x.id===dayId):{datum:guessNextDate(o),einsatz:"09:00",anreise:"09:30",anreiseEnde:"10:00",drehbeginn:"10:00",drehende:"17:00",rueckBeginn:"17:00",rueck:"17:30",ende:"18:00",pause:true,uebernachtung:false,ausland:false,dispo:{einsatz:"09:00",ende:"18:00"}};
+  tmpPause=d.pause!==false; tmpUE=!!d.uebernachtung; tmpAL=!!d.ausland;
+  const dsp=d.dispo||{}; const hasDispo=dsp.einsatz||dsp.ende;
+  openSheet(`<h3>${dayId?"Tag bearbeiten":"Tag erfassen"}</h3>
+    <div class="field"><label>Datum</label><input type="date" id="d_datum" value="${d.datum||""}"></div>
+    ${hasDispo?`<div class="dispoinfo"><span>Laut Dispo: ${dsp.einsatz||"?"}–${dsp.ende||"?"}</span><button id="useDispo">übernehmen</button></div>`:""}
+    <div class="timebox acc"><div class="tl">EZ · Einsatzzeit</div>
+      <div class="two">
+        <div class="field" style="margin:0"><label>Einsatzbeginn</label><input type="time" id="d_einsatz" value="${d.einsatz||""}"></div>
+        <div class="field" style="margin:0"><label>Einsatzende</label><input type="time" id="d_ende" value="${d.ende||""}"></div>
+      </div>
+    </div>
+    <div class="timebox"><div class="tl trow">AZ · Arbeitszeit (Dreh)<button type="button" class="nbtn" id="azNone">kein Dreh</button></div>
+      <div class="two">
+        <div class="field" style="margin:0"><label>Drehbeginn</label><input type="time" id="d_drehbeginn" value="${d.drehbeginn||""}"></div>
+        <div class="field" style="margin:0"><label>Drehende</label><input type="time" id="d_drehende" value="${d.drehende||""}"></div>
+      </div>
+    </div>
+    <div class="timebox"><div class="tl">RZ · Reisezeit</div>
+      <div class="field" style="margin:0 0 12px"><div class="nrow"><label>Anreise (von – bis)</label><button type="button" class="nbtn" id="anNone">entfällt</button></div>
+        <div class="two"><input type="time" id="d_anreise" value="${d.anreise||""}"><input type="time" id="d_anreiseEnde" value="${d.anreiseEnde||""}"></div></div>
+      <div class="field" style="margin:0"><div class="nrow"><label>Rückreise (von – bis)</label><button type="button" class="nbtn" id="rkNone">entfällt</button></div>
+        <div class="two"><input type="time" id="d_rueckBeginn" value="${d.rueckBeginn||""}"><input type="time" id="d_rueck" value="${d.rueck||""}"></div></div>
+    </div>
+    <div class="field"><label>Pause</label><div class="toggles" id="pausebtns"><button data-p="0">Nein</button><button data-p="1">Ja</button></div></div>
+    <div class="calc" id="calc"></div>
+    <div class="timebox"><div class="tl">Dienstreise / Tagegeld</div>
+      <div class="two">
+        <div class="field" style="margin:0 0 12px"><label>Übernachtung?</label><div class="toggles" id="uebtns"><button data-u="0">Nein</button><button data-u="1">Ja</button></div></div>
+        <div class="field" style="margin:0 0 12px"><label>Ausland?</label><div class="toggles" id="albtns"><button data-a="0">Nein</button><button data-a="1">Ja</button></div></div>
+      </div>
+      <div id="tgbox"></div>
+    </div>
+    <p class="note">Einsatzbeginn ist der Anker · Einsatzende rechnet sich automatisch aus der letzten Tätigkeit + 30 Min (überschreibbar). „kein Dreh" für reine Anreisetage; „entfällt" für Fahrten, die an dem Tag nicht anfallen. EZ (Einsatzbeginn→Einsatzende) ist die Basis für die Überstunden. Tagegeld-Hinweis nur eintägig, Inland, über 8 Std.</p>
+    <button class="btn" id="saveDay">Speichern</button>
+    <div class="btnrow">${dayId?'<button class="btn danger" id="delDay" style="margin-bottom:0">Löschen</button>':''}<button class="btn ghost" id="cancelDay" style="margin-bottom:0">Abbrechen</button></div>`);
+  const g=id=>document.getElementById(id);
+  function paintPause(){document.querySelectorAll("#pausebtns button").forEach(b=>b.classList.toggle("on",(b.dataset.p==="1")===tmpPause));}
+  document.querySelectorAll("#pausebtns button").forEach(b=>b.onclick=()=>{tmpPause=b.dataset.p==="1";paintPause();recalc();});
+  function paintUE(){document.querySelectorAll("#uebtns button").forEach(b=>b.classList.toggle("on",(b.dataset.u==="1")===tmpUE));}
+  document.querySelectorAll("#uebtns button").forEach(b=>b.onclick=()=>{tmpUE=b.dataset.u==="1";paintUE();recalc();});
+  function paintAL(){document.querySelectorAll("#albtns button").forEach(b=>b.classList.toggle("on",(b.dataset.a==="1")===tmpAL));}
+  document.querySelectorAll("#albtns button").forEach(b=>b.onclick=()=>{tmpAL=b.dataset.a==="1";paintAL();recalc();});
+  let anEd=!!(d.anreise&&d.anreise!==addMin(d.einsatz,30));
+  let aeEd=!!(d.anreiseEnde&&d.anreiseEnde!==addMin(d.einsatz,60));
+  let dbEd=!!(d.drehbeginn&&d.drehbeginn!==addMin(d.einsatz,60));
+  function calcAutoEnde(dd){const le=dd.rueck||dd.drehende||dd.anreiseEnde||"";return le?addMin(le,30):"";}
+  let endeEd=!!(d.ende&&d.ende!==calcAutoEnde(d));
+  function deriveFromEinsatz(){const e=val("d_einsatz");if(!anEd)g("d_anreise").value=e?addMin(e,30):"";if(!aeEd)g("d_anreiseEnde").value=e?addMin(e,60):"";if(!dbEd)g("d_drehbeginn").value=e?addMin(e,60):"";}
+  function lastEnd(){return val("d_rueck")||val("d_drehende")||val("d_anreiseEnde")||"";}
+  function computeEnde(){if(endeEd)return;const le=lastEnd();g("d_ende").value=le?addMin(le,30):"";}
+  g("d_anreise").oninput=()=>{anEd=true;};
+  g("d_anreiseEnde").oninput=()=>{aeEd=true;computeEnde();recalc();};
+  g("d_drehbeginn").oninput=()=>{dbEd=true;recalc();};
+  g("d_drehende").oninput=()=>{computeEnde();recalc();};
+  g("d_rueckBeginn").oninput=()=>{};
+  g("d_rueck").oninput=()=>{computeEnde();recalc();};
+  g("d_einsatz").oninput=()=>{deriveFromEinsatz();computeEnde();recalc();};
+  g("d_ende").oninput=()=>{endeEd=true;recalc();};
+  if(hasDispo)g("useDispo").onclick=()=>{g("d_einsatz").value=dsp.einsatz||"";g("d_ende").value=dsp.ende||"";endeEd=true;anEd=aeEd=dbEd=false;applyAZ(false);applyAN(false);applyRK(false);deriveFromEinsatz();recalc();};
+  function recalc(){
+    const c=dayCalc({einsatz:val("d_einsatz"),ende:val("d_ende"),drehbeginn:val("d_drehbeginn"),drehende:val("d_drehende"),pause:tmpPause,uebernachtung:tmpUE,ausland:tmpAL});
+    g("calc").innerHTML=`
+      <div class="c"><div class="l">Einsatz (EZ)</div><div class="n">${fmtMin(c.span)}</div></div>
+      <div class="c"><div class="l">Dreh (AZ)</div><div class="n">${fmtMin(c.az)}</div></div>
+      <div class="c"><div class="l">− Pause</div><div class="n">${c.pause}′</div></div>
+      <div class="c"><div class="l">Netto</div><div class="n">${fmtMin(c.netto)}</div></div>
+      <div class="c"><div class="l">Soll</div><div class="n">${fmtMin(S.sollMin)}</div></div>
+      <div class="c"><div class="l">Überstunden</div><div class="n ${otClass(c.ot)}">${fmtSigned(c.ot)}</div></div>`;
+    const box=g("tgbox");const t=c.tg;
+    if(t.state==="ok"){box.className="tgbox ok";box.innerHTML=`<span>🟢</span><span><b>Tagegeld kann theoretisch beantragt werden.</b> Über 8 Std abwesend (${fmtMin(c.absence)}), eintägig, Inland. Bitte selbst prüfen.</span>`;}
+    else{box.className="tgbox no";box.innerHTML=t.state==="ue"?"<span>•</span><span>Mit Übernachtung – kein automatischer Tagegeld-Hinweis.</span>"
+      :t.state==="ausland"?"<span>•</span><span>Auslandsreise – kein automatischer Hinweis, bitte mit der Reisekostenstelle klären.</span>"
+      :t.state==="under"?`<span>•</span><span>Unter 8 Std abwesend (${fmtMin(c.absence)}) – kein Tagegeld-Hinweis.</span>`
+      :"<span>•</span><span>Zeiten eintragen.</span>";}
+  }
+  const azNoneBtn=g("azNone"),anNoneBtn=g("anNone"),rkNoneBtn=g("rkNone");
+  function applyAZ(none){azNoneBtn.classList.toggle("on",none);g("d_drehbeginn").disabled=none;g("d_drehende").disabled=none;
+    if(none){g("d_drehbeginn").value="";g("d_drehende").value="";dbEd=true;}
+    else{const e=val("d_einsatz");dbEd=false;g("d_drehbeginn").value=e?addMin(e,60):"";g("d_drehende").value=e?addMin(e,480):"";}}
+  function applyAN(none){anNoneBtn.classList.toggle("on",none);g("d_anreise").disabled=none;g("d_anreiseEnde").disabled=none;
+    if(none){g("d_anreise").value="";g("d_anreiseEnde").value="";anEd=true;aeEd=true;}
+    else{const e=val("d_einsatz");anEd=false;aeEd=false;g("d_anreise").value=e?addMin(e,30):"";g("d_anreiseEnde").value=e?addMin(e,60):"";}}
+  function applyRK(none){rkNoneBtn.classList.toggle("on",none);g("d_rueckBeginn").disabled=none;g("d_rueck").disabled=none;
+    if(none){g("d_rueckBeginn").value="";g("d_rueck").value="";}
+    else{const rb=val("d_drehende")||addMin(val("d_einsatz"),480);g("d_rueckBeginn").value=rb;g("d_rueck").value=rb?addMin(rb,30):"";}}
+  azNoneBtn.onclick=()=>{const none=!azNoneBtn.classList.contains("on");applyAZ(none);computeEnde();recalc();};
+  anNoneBtn.onclick=()=>{const none=!anNoneBtn.classList.contains("on");applyAN(none);computeEnde();recalc();};
+  rkNoneBtn.onclick=()=>{const none=!rkNoneBtn.classList.contains("on");applyRK(none);computeEnde();recalc();};
+  function initNone(){
+    const azN=!!dayId&&!d.drehbeginn&&!d.drehende, anN=!!dayId&&!d.anreise&&!d.anreiseEnde, rkN=!!dayId&&!d.rueckBeginn&&!d.rueck;
+    azNoneBtn.classList.toggle("on",azN);g("d_drehbeginn").disabled=azN;g("d_drehende").disabled=azN;if(azN)dbEd=true;
+    anNoneBtn.classList.toggle("on",anN);g("d_anreise").disabled=anN;g("d_anreiseEnde").disabled=anN;if(anN){anEd=true;aeEd=true;}
+    rkNoneBtn.classList.toggle("on",rkN);g("d_rueckBeginn").disabled=rkN;g("d_rueck").disabled=rkN;
+  }
+  paintPause();paintUE();paintAL();initNone();recalc();
+  g("cancelDay").onclick=closeSheet;
+  if(dayId)g("delDay").onclick=()=>{askConfirm("Diesen Arbeitstag wirklich löschen?",()=>{o.days=o.days.filter(x=>x.id!==dayId);persist();closeSheet();render();toast("Tag gelöscht");});};
+  g("saveDay").onclick=()=>{
+    const data={datum:val("d_datum"),einsatz:val("d_einsatz"),anreise:val("d_anreise"),anreiseEnde:val("d_anreiseEnde"),drehbeginn:val("d_drehbeginn"),drehende:val("d_drehende"),rueckBeginn:val("d_rueckBeginn"),rueck:val("d_rueck"),ende:val("d_ende"),pause:tmpPause,uebernachtung:tmpUE,ausland:tmpAL};
+    if(!data.datum){toast("Bitte Datum angeben");return;}
+    if(dayId)Object.assign(d,data);else o.days.push({id:uid(),...data,dispo:d.dispo});
+    persist();const c=dayCalc(data);closeSheet();render();
+    toast(c.tg.state==="ok"?"Gespeichert · Tagegeld möglich":(dayId?"Gespeichert":"Tag hinzugefügt"));
+  };
+}
+function guessNextDate(o){if(o.days.length){const last=o.days.map(d=>d.datum).filter(Boolean).sort().pop();if(last){const dt=new Date(last+"T00:00");dt.setDate(dt.getDate()+1);return dt.toISOString().slice(0,10);}}return new Date().toISOString().slice(0,10);}
+
+/* ===== Einstellungen ===== */
+function openSettings(){
+  openSheet(`<h3>Einstellungen</h3>
+    <div class="field"><label>Soll-Arbeitszeit pro Tag (Std / Min)</label><div class="two"><input type="number" id="s_h" min="0" max="14" value="${Math.floor(S.sollMin/60)}"><input type="number" id="s_m" min="0" max="59" value="${S.sollMin%60}"></div><p class="note">Laut Vertrag: 7 Std 30 Min (= 7,5 Std), zzgl. 30 Min Pause.</p></div>
+    <div class="field"><label>Pausenlänge bei „Pause: ja" (Minuten)</label><input type="number" id="s_p" min="0" max="240" step="5" value="${S.standardPause}"></div>
+    <div class="field"><label>Tagegeld-Hinweis ab Abwesenheit (Minuten)</label><input type="number" id="s_ab" min="0" max="1440" step="15" value="${S.abwesenheitMin}"><p class="note">Standard 480 = 8 Std.</p></div>
+    <div class="field"><label>Empfänger-E-Mail (Dispo / Reisekosten)</label><input type="email" class="txt" id="s_mail" value="${esc(S.email||"")}" placeholder="reisekosten@…"></div>
+    <div class="field"><label>Dein Name (für Nachweise)</label><input type="text" class="txt" id="s_name" value="${esc(S.absender||"")}" placeholder="Vorname Nachname"></div>
+    <button class="btn" id="saveSet">Speichern</button><button class="btn ghost" id="closeSet">Schließen</button>
+    <div class="divider"></div><button class="btn danger" id="wipe" style="margin-bottom:0">Alle Daten löschen</button>`);
+  document.getElementById("closeSet").onclick=closeSheet;
+  document.getElementById("saveSet").onclick=()=>{S.sollMin=(parseInt(val("s_h"))||0)*60+(parseInt(val("s_m"))||0);S.standardPause=parseInt(val("s_p"))||0;S.abwesenheitMin=parseInt(val("s_ab"))||480;S.email=val("s_mail");S.absender=val("s_name");persist();closeSheet();render();toast("Einstellungen gespeichert");};
+  document.getElementById("wipe").onclick=()=>{askConfirm("Wirklich ALLE Aufträge löschen?",()=>{DB.orders=[];persist();closeSheet();state.orderId=null;render();toast("Alle Daten gelöscht");});};
+}
+
+/* ===== Export ===== */
+function orderReportText(o){
+  const L=["ZEITNACHWEIS",o.titel||"Ohne Titel"];
+  if(o.auftragsnr)L.push("Auftrag: "+o.auftragsnr);if(o.prodNummer)L.push("Prod.-Nr.: "+o.prodNummer);if(o.kostentraeger)L.push("Kostenträger: "+o.kostentraeger);if(o.produktionsort)L.push("Ort: "+o.produktionsort);const _mit=o.mitarbeiter||S.absender;if(_mit)L.push("Mitarbeiter: "+_mit);L.push("");
+  o.days.slice().sort((a,b)=>(a.datum||"").localeCompare(b.datum||"")).forEach(d=>{const c=dayCalc(d);
+    L.push(fmtDateLong(d.datum));
+    L.push("  Einsatz: "+(d.einsatz||"–")+"–"+(d.ende||"–")+"   Pause: "+(c.pause===0?"keine":c.pause+" Min")+"   Netto: "+fmtMin(c.netto)+" Std   Überstd.: "+fmtSigned(c.ot));
+    if(d.anreise||d.rueck)L.push("  Anreise: "+(d.anreise||"–")+"   Rückreise: "+(d.rueck||"–"));
+    if(c.tg.state==="ok")L.push("  Abwesend: "+fmtMin(c.absence)+" Std → Tagegeld möglich (bitte prüfen)");
+    L.push("");});
+  L.push("─────────────");L.push("Summe Netto: "+fmtMin(orderNetto(o))+" Std");L.push("Summe Überstunden: "+fmtSigned(orderOT(o))+" Std");
+  const tgd=orderTGdays(o);if(tgd>0)L.push("Tagegeld-fähige Tage: "+tgd+" (bitte selbst prüfen, Antrag binnen 6 Monaten)");
+  L.push("(Soll "+fmtMin(S.sollMin)+" Std/Tag · ohne Gewähr)");return L.join("\n");
+}
+function flipName(n){const p=String(n||"").split(",");return p.length===2?clean(p[1])+" "+clean(p[0]):clean(n);}
+function initials(n){const p=clean(flipName(n)).split(/\s+/).filter(Boolean);if(!p.length)return "";const a=p[0][0].toUpperCase();const b=p.length>1?p[p.length-1][0].toUpperCase():"";return a+"."+(b?b+".":"");}
+function fmtDE(dt){const d=dt||new Date();return String(d.getDate()).padStart(2,"0")+"."+String(d.getMonth()+1).padStart(2,"0")+"."+d.getFullYear();}
+function equipText(o){return [...(o.equipment||[]),o.notiz].filter(Boolean).join(", ");}
+function mailOrder(o){
+  const subj="Zeitnachweis"+(o.prodNummer?" – Produktion "+o.prodNummer:(o.titel?" – "+o.titel:(o.auftragsnr?" – "+o.auftragsnr:"")));
+  const prodTxt=o.titel?(o.titel+(o.prodNummer?" ("+o.prodNummer+")":"")):(o.prodNummer?"mit der Prod.-Nr. "+o.prodNummer:(o.auftragsnr||""));
+  const sender=flipName(o.mitarbeiter||S.absender)||"[Dein Name]";
+  const L=["Hallo [Name],","","anbei mein/unser Stundennachweis für die Produktion "+prodTxt+".",""];
+  o.days.slice().sort((a,b)=>(a.datum||"").localeCompare(b.datum||"")).forEach(d=>{const c=dayCalc(d);
+    const dreh=(d.drehbeginn||d.drehende)?((d.drehbeginn||"—")+"–"+(d.drehende||"—")):"—";
+    L.push(fmtDateLong(d.datum));
+    L.push("Einsatz: "+(d.einsatz||"—")+"–"+(d.ende||"—"));
+    L.push("Dreh: "+dreh);
+    L.push("Anreise: "+((d.anreise||d.anreiseEnde)?((d.anreise||"—")+"–"+(d.anreiseEnde||"—")):"—"));
+    L.push("Rückreise: "+((d.rueckBeginn||d.rueck)?((d.rueckBeginn||"—")+"–"+(d.rueck||"—")):"—"));
+    L.push("Pause: "+(c.pauseJa?"ja":"nein"));
+    L.push("");});
+  const eq=equipText(o);if(eq){L.push("Sonder-Equipment: "+eq);L.push("");}
+  L.push("Viele liebe Grüße");L.push(sender);
+  window.location.href="mailto:"+encodeURIComponent(S.email||"")+"?subject="+encodeURIComponent(subj)+"&body="+encodeURIComponent(L.join("\n"));
+}
+function pdfOrder(o){
+  try{const {jsPDF}=window.jspdf;const doc=new jsPDF({unit:"mm",format:"a4"});const M=14;let y=M;const ac=[250,125,25];
+    doc.setFillColor(...ac);doc.rect(0,0,210,3,"F");
+    doc.setFont("helvetica","bold");doc.setFontSize(9);doc.setTextColor(150,140,125);doc.text("ZEITNACHWEIS",M,y);y+=8;
+    doc.setFontSize(17);doc.setTextColor(30,25,20);doc.text(o.titel||"Ohne Titel",M,y);y+=9;
+    doc.setFont("helvetica","normal");doc.setFontSize(10);doc.setTextColor(90,82,72);
+    [o.auftragsnr&&"Auftrag: "+o.auftragsnr,o.prodNummer&&"Prod.-Nr.: "+o.prodNummer,o.kostentraeger&&"Kostenträger: "+o.kostentraeger,o.produktionsort&&"Ort: "+o.produktionsort,(o.mitarbeiter||S.absender)&&"Mitarbeiter: "+(o.mitarbeiter||S.absender),"Erstellt am: "+fmtDE()].filter(Boolean).forEach(t=>{doc.text(t,M,y);y+=5.2;});
+    y+=2;doc.setDrawColor(225,218,205);doc.line(M,y,196,y);y+=2;
+    const C={da:14,eb:38,an:62,dr:90,rk:118,ee:146,pa:174};
+    doc.setFont("helvetica","bold");doc.setFontSize(8);doc.setTextColor(120,110,95);y+=6;
+    doc.text("Datum",C.da,y);doc.text("Einsatzbeginn",C.eb,y);doc.text("Anreise",C.an,y);doc.text("Dreh",C.dr,y);doc.text("Rückreise",C.rk,y);doc.text("Einsatzende",C.ee,y);doc.text("Pause",C.pa,y);
+    y+=2;doc.line(M,y,196,y);y+=5;doc.setFont("helvetica","normal");doc.setFontSize(8);
+    o.days.slice().sort((a,b)=>(a.datum||"").localeCompare(b.datum||"")).forEach(d=>{const c=dayCalc(d);if(y>270){doc.addPage();y=M;}
+      doc.setTextColor(40,35,28);
+      doc.text(fmtDate(d.datum),C.da,y);
+      doc.text(d.einsatz||"—",C.eb,y);
+      doc.text((d.anreise||d.anreiseEnde)?((d.anreise||"—")+"–"+(d.anreiseEnde||"—")):"—",C.an,y);
+      doc.text((d.drehbeginn||d.drehende)?((d.drehbeginn||"—")+"–"+(d.drehende||"—")):"—",C.dr,y);
+      doc.text((d.rueckBeginn||d.rueck)?((d.rueckBeginn||"—")+"–"+(d.rueck||"—")):"—",C.rk,y);
+      doc.text(d.ende||"—",C.ee,y);
+      doc.text(c.pauseJa?"ja":"nein",C.pa,y);
+      y+=6.6;});
+    y+=2;doc.line(M,y,196,y);y+=10;
+    if(y>250){doc.addPage();y=M;}
+    const created=fmtDE();const sig=initials(o.mitarbeiter||S.absender);const eq=equipText(o);
+    doc.setFont("helvetica","bold");doc.setFontSize(8.5);doc.setTextColor(90,82,72);doc.text("Notiz / Sonder-Equipment",M,y);y+=5;
+    doc.setFont("helvetica","normal");doc.setFontSize(9);doc.setTextColor(40,35,28);if(eq)doc.text(eq,M,y);
+    doc.setDrawColor(210,203,190);doc.line(M,y+1.5,196,y+1.5);y+=20;
+    doc.setFontSize(9);doc.setTextColor(40,35,28);doc.text(created,M,y);if(sig)doc.text(sig,M+50,y);
+    doc.setDrawColor(120,110,95);doc.line(M,y+2,M+80,y+2);
+    doc.setFontSize(7.5);doc.setTextColor(150,140,125);doc.text("Datum, Unterschrift",M,y+6.5);
+    doc.save(("Zeitnachweis_"+(o.auftragsnr||o.titel||"Auftrag")).replace(/[^a-z0-9_\-]/gi,"_")+".pdf");toast("PDF erstellt");
+  }catch(e){console.error(e);toast("PDF-Fehler – ggf. online sein");}
+}
+
+/* ===== PDF Import ===== */
+document.getElementById("pdfInput").addEventListener("change",async e=>{
+  const file=e.target.files[0];e.target.value="";if(!file)return;
+  if(typeof pdfjsLib==="undefined"){toast("PDF-Bibliothek nicht geladen (online sein)");return;}
+  toast("PDF wird gelesen…");
+  try{pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+    const buf=await file.arrayBuffer();const pdf=await pdfjsLib.getDocument({data:buf}).promise;let text="";
+    for(let p=1;p<=pdf.numPages;p++){const pg=await pdf.getPage(p);const tc=await pg.getTextContent();
+      const lines=[];tc.items.forEach(it=>{if(typeof it.str!=="string"||!it.transform)return;const x=it.transform[4],y=it.transform[5];let ln=lines.find(l=>Math.abs(l.y-y)<=4);if(!ln){ln={y,parts:[]};lines.push(ln);}ln.parts.push({x,s:it.str});});
+      lines.sort((a,b)=>b.y-a.y);
+      const pageText=lines.map(l=>l.parts.sort((a,b)=>a.x-b.x).map(t=>t.s).join(" ")).join(" ");
+      text+=(pageText||tc.items.map(i=>i.str).join(" "))+" ";}
+    confirmImport(parseZDF(text));
+  }catch(err){console.error(err);toast("PDF konnte nicht gelesen werden");}
+});
+function clean(s){return String(s||"").replace(/\s+/g," ").trim();}
+function cleanName(n){return clean(n).replace(/\s*\.{2,3}\s*$/,"").replace(/\s+,/,",").trim();}
+function parseMeta(t){
+  const o={titel:"",auftragsnr:"",prodNummer:"",kostentraeger:"",produktionsort:""};let m;
+  if(m=t.match(/Auftrag\s+(A\d{6,8})/i))o.auftragsnr=m[1];
+  o.kostentraeger=(t.match(/KTDL:?\s*(\d{6,9})/i)||[])[1]||(t.match(/\b(80\d{6})\b/)||[])[1]||"";
+  const nums=[...t.matchAll(/\b(\d{8})\b/g)].map(x=>x[1]);
+  o.prodNummer=nums.find(n=>n!==o.kostentraeger)||"";
+  if(m=t.match(/(?:Kostenträger DL|Telefon|\/Tel\.|\bDL)\s+([A-ZÄÖÜ][\wäöüßÄÖÜ0-9 .,\/\-]{2,50}?)\s+\d{8}\b/))o.titel=clean(m[1]);
+  if(!o.titel&&o.prodNummer){const mm=t.match(new RegExp("([A-ZÄÖÜ][\\wäöüßÄÖÜ0-9 .,/&'\\-]{2,48}?)\\s+"+o.prodNummer+"\\b"));if(mm){let c=clean(mm[1]).replace(/.*\b(?:DL|Telefon|Tel\.|Nummer|Produktion)\s+/,"");o.titel=c;}}
+  if(m=t.match(/Redakteur(?:\/Tel\.|\s+Telefon)\s+([A-ZÄÖÜ][\wäöüßÄÖÜ0-9 .\-]{2,40}?)\s+(?:Hauptredaktion|Redaktion|SendeRedaktion|Personalleistung|Ereignis)/))o.produktionsort=clean(m[1]);
+  return o;
+}
+function parsePersons(t){
+  const year=(t.match(/\d{2}\.\d{2}\.(20\d{2})/)||[])[1]||(t.match(/\b(20\d{2})\b/)||[])[1]||(new Date().getFullYear()+"");
+  const sec=t.search(/Personal-Disposition|Personalleistung/);const body=sec>=0?t.slice(sec):t;
+  const nameRe=/[A-ZÄÖÜ][A-Za-zäöüßÄÖÜ-]+,\s+[A-ZÄÖÜ][A-Za-zäöüßÄÖÜ]*\.{0,3}/g;
+  const stops=/(Kamera\/Geräte|Kamera-|Dienstbeginn|Bemerkungen|KFZ|Seite \d|Personal-Disposition|Aktualisierungszeitpunkt)/;
+  const anchors=[];let m;
+  while(m=nameRe.exec(body))anchors.push({name:m[0],end:m.index+m[0].length,start:m.index});
+  const persons={};const order=[];
+  anchors.forEach((a,i)=>{
+    let end=i+1<anchors.length?anchors[i+1].start:body.length;
+    const rest=body.slice(a.end,end),st=rest.search(stops);
+    if(st>=0)end=a.end+st;
+    const slice=body.slice(a.end,end);
+    const dm=slice.match(/(\d{2})\.(\d{2})\./);
+    const times=[...slice.matchAll(/(\d{1,2}:\d{2})/g)].map(x=>x[1]);
+    if(!dm||!times.length)return;
+    const iso=year+"-"+dm[2]+"-"+dm[1];
+    const einsatz=times[0].padStart(5,"0"),ende=times[times.length-1].padStart(5,"0");
+    let anreise="",rueck="";if(times.length>=4){anreise=times[1].padStart(5,"0");rueck=times[2].padStart(5,"0");}
+    const nm=cleanName(a.name);
+    if(!persons[nm]){persons[nm]={name:nm,days:[],seen:new Set()};order.push(nm);}
+    const key=iso+einsatz;
+    if(!persons[nm].seen.has(key)){persons[nm].seen.add(key);persons[nm].days.push({datum:iso,einsatz,ende,anreise,rueck});}
+  });
+  return order.map(n=>({name:persons[n].name,days:persons[n].days.sort((x,y)=>(x.datum+x.einsatz).localeCompare(y.datum+y.einsatz))}));
+}
+function parseZDF(raw){const t=clean(raw);const meta=parseMeta(t);meta.persons=parsePersons(t);return meta;}
+
+let impData,impSel;
+function confirmImport(p){
+  impData=p;const persons=p.persons||[];
+  impSel=persons.findIndex(x=>/sydow/i.test(x.name));if(impSel<0)impSel=persons.length?0:-1;
+  let impTrip=null,tripTouched=false;
+  const defTrip=()=>"ein";
+  openSheet(`<h3>PDF importieren</h3><p class="note" style="margin-top:0">Automatisch erkannt – bitte prüfen &amp; ergänzen:</p>
+    <div class="field"><label>Titel</label><input type="text" class="txt" id="i_titel" value="${esc(p.titel||"")}" placeholder="Titel eintragen"></div>
+    <div class="two"><div class="field"><label>Auftrags-Nr.</label><input type="text" id="i_anr" value="${esc(p.auftragsnr||"")}"></div><div class="field"><label>Prod.-Nr.</label><input type="text" id="i_pnr" value="${esc(p.prodNummer||"")}"></div></div>
+    <div class="two"><div class="field"><label>Kostenträger</label><input type="text" id="i_kt" value="${esc(p.kostentraeger||"")}"></div><div class="field"><label>Produktionsort</label><input type="text" class="txt" id="i_ort" value="${esc(p.produktionsort||"")}"></div></div>
+    ${persons.length?`<div class="field"><label>Person auswählen</label><div class="toggles" id="i_persons" style="flex-direction:column">${persons.map((x,i)=>`<button data-i="${i}">${esc(x.name)} · ${x.days.length} Tag(e)</button>`).join("")}</div></div>
+    <div class="field"><label>Name (für Nachweis)</label><input type="text" class="txt" id="i_name" value=""></div>`:`<p class="note">Keine Personen erkannt – du kannst den Auftrag trotzdem anlegen und Tage manuell erfassen.</p>`}
+    <div class="field"><label>Erkannte Einsätze</label><div class="importlist" id="i_days"></div></div>
+    <div class="field"><label>Reiseart</label><div class="toggles" id="i_trip"><button data-t="ein">Einzeltage (hin &amp; zurück)</button><button data-t="mehr">Mehrtägig (Übernachtung)</button></div></div>
+    <p class="note">Einzeltage: jeder Tag eigene An- &amp; Rückreise, Tagegeld-Hinweis je Tag möglich (z. B. zwei Drehtage am selben Ort ohne Übernachtung). Mehrtägig mit Übernachtung: Anreise nur am ersten, Rückreise nur am letzten Tag – kein Tagegeld-Hinweis (läuft über die Dienstreise-Abrechnung). Dreh-/Reisezeiten passt du je Tag an.</p>
+    <button class="btn" id="doImport">Importieren</button><button class="btn ghost" id="cancelImport" style="margin-bottom:0">Abbrechen</button>`);
+  function paint(){document.querySelectorAll("#i_persons button").forEach(b=>b.classList.toggle("on",+b.dataset.i===impSel));const sel=persons[impSel];const days=sel?sel.days:[];const dl=document.getElementById("i_days");dl.innerHTML=days.length?days.map(d=>fmtDate(d.datum)+"  "+(d.einsatz||"?")+"–"+(d.ende||"?")).join("<br>"):'<span style="color:var(--faint)">keine Tage erkannt</span>';const nm=document.getElementById("i_name");if(nm&&sel)nm.value=sel.name;if(!tripTouched)impTrip=defTrip();document.querySelectorAll("#i_trip button").forEach(b=>b.classList.toggle("on",b.dataset.t===impTrip));}
+  if(persons.length){document.querySelectorAll("#i_persons button").forEach(b=>b.onclick=()=>{impSel=+b.dataset.i;paint();});}
+  document.querySelectorAll("#i_trip button").forEach(b=>b.onclick=()=>{impTrip=b.dataset.t;tripTouched=true;document.querySelectorAll("#i_trip button").forEach(x=>x.classList.toggle("on",x.dataset.t===impTrip));});
+  paint();
+  document.getElementById("cancelImport").onclick=closeSheet;
+  document.getElementById("doImport").onclick=()=>{
+    const sel=persons[impSel];
+    const src=(sel?sel.days:[]).slice().sort((a,b)=>((a.datum||"")+(a.einsatz||"")).localeCompare((b.datum||"")+(b.einsatz||"")));
+    const mehr=impTrip==="mehr";const last=src.length-1;
+    const days=src.map((d,i)=>({id:uid(),datum:d.datum,einsatz:d.einsatz,
+      anreise:d.anreise||(((!mehr||i===0)&&d.einsatz)?addMin(d.einsatz,30):""),
+      anreiseEnde:"",
+      drehbeginn:d.einsatz?addMin(d.einsatz,60):"",
+      drehende:d.ende?addMin(d.ende,-60):"",
+      rueckBeginn:"",
+      rueck:d.rueck||(((!mehr||i===last)&&d.ende)?addMin(d.ende,-30):""),
+      ende:d.ende,pause:true,uebernachtung:mehr,ausland:false,dispo:{einsatz:d.einsatz,ende:d.ende}}));
+    const no={id:uid(),titel:val("i_titel"),auftragsnr:val("i_anr"),prodNummer:val("i_pnr"),kostentraeger:val("i_kt"),produktionsort:val("i_ort"),mitarbeiter:val("i_name"),days};
+    DB.orders.push(no);persist();state.orderId=no.id;state.tab="orders";closeSheet();render();toast(days.length?days.length+" Tag(e) importiert – bitte prüfen!":"Auftrag angelegt");
+  };
+}
+
+/* ===== Utils ===== */
+function val(id){return (document.getElementById(id)||{}).value||"";}
+function esc(s){return String(s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
+let toastT;function toast(m){const el=document.getElementById("toast");el.textContent=m;el.classList.add("on");clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove("on"),2600);}
+function askConfirm(msg,onYes){const el=document.getElementById("confirmBox");el.querySelector(".cmsg").textContent=msg;el.classList.add("on");const yes=document.getElementById("cYes"),no=document.getElementById("cNo");const close=()=>{el.classList.remove("on");yes.onclick=null;no.onclick=null;};yes.onclick=()=>{close();onYes();};no.onclick=close;}
+render();
+</script>
+</body>
+</html>
