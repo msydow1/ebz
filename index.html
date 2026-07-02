@@ -8,12 +8,12 @@
 <meta name="apple-mobile-web-app-title" content="Zeiterfassung">
 <meta name="theme-color" content="#15171A">
 <title>Zeiterfassung</title>
-<!-- Zeiterfassung V1.6 -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<!-- Zeiterfassung V1.7 -->
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link href="vendor/inter.css" rel="stylesheet">
+<script src="vendor/pdf.min.js"></script>
+<script src="vendor/jspdf.umd.min.js"></script>
 <style>
 :root{--bg:#15171A;--surface:#1E2228;--surface-2:#262B31;--field:#34393F;--line:#2A2F35;--line-strong:#3A4048;--text:#E8E8E8;--text-strong:#FFFFFF;--muted:#999999;--silver:#C3C3C3;--faint:#6E747B;--accent:#FA7D19;--accent-soft:rgba(250,125,25,.14);--accent-line:rgba(250,125,25,.40);--pos:#54BE86;--pos-soft:rgba(84,190,134,.15);--pos-line:rgba(84,190,134,.45);--info:#6B87A2;--info-soft:rgba(107,135,162,.16);--info-line:rgba(107,135,162,.40);--danger:#E0705C}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -152,10 +152,11 @@ body{background:var(--bg);color:var(--text);font-family:"Inter",-apple-system,sy
   <div class="foot">
     <div class="foot-facts"><span>Soll 7,5 Std/Tag</span><span>+30 Min Pause = 8 Std</span><span>Tagegeld: eintägig · Inland · ab 8 Std</span></div>
     <div class="foot-note">Daten bleiben nur auf diesem Gerät · alle Angaben ohne Gewähr</div>
-    <div class="foot-v">Zeiterfassung <b>V1.6</b></div>
+    <div class="foot-v">Zeiterfassung <b>V1.7</b></div>
   </div>
 </div>
 <input type="file" id="pdfInput" accept="application/pdf" class="hidden">
+<input type="file" id="backupInput" accept="application/json,.json" class="hidden">
 <div class="scrim" id="scrim"><div class="sheet" id="sheet"></div></div>
 <div class="toast" id="toast"></div>
 <div class="cscrim" id="confirmBox"><div class="cdlg"><p class="cmsg"></p><div class="crow"><button id="cNo" class="btn ghost" style="margin:0">Abbrechen</button><button id="cYes" class="btn danger" style="margin:0">Löschen</button></div></div></div>
@@ -167,7 +168,7 @@ const KEY="zeiterfassung_v2";
 const Store={mem:{},load(){try{const r=localStorage.getItem(KEY);return r?JSON.parse(r):null}catch(e){return this.mem[KEY]||null}},save(o){try{localStorage.setItem(KEY,JSON.stringify(o))}catch(e){this.mem[KEY]=o}}};
 let DB=Store.load()||{orders:[],settings:{}};
 const S=DB.settings;
-S.sollMin??=450; if(S.sollMin===462)S.sollMin=450; S.standardPause??=30; S.abwesenheitMin??=480; S.email??=""; S.absender??="";
+S.sollMin??=450; if(S.sollMin===462)S.sollMin=450; S.standardPause??=30; S.abwesenheitMin??=480; S.email??=""; S.absender??=""; S.empfaenger??="";
 DB.orders.forEach(o=>{o.notiz??=""; o.equipment??=[]; o.days.forEach(d=>{
   if(d.einsatz===undefined){ d.einsatz=d.istStart||d.geplStart||""; d.ende=d.istEnde||d.geplEnde||""; d.anreise=""; d.rueck="";
     d.dispo={einsatz:d.geplStart||d.istStart||"",ende:d.geplEnde||d.istEnde||""}; delete d.istStart;delete d.istEnde;delete d.geplStart;delete d.geplEnde; }
@@ -452,13 +453,44 @@ function openSettings(){
     <div class="field"><label>Pausenlänge bei „Pause: ja" (Minuten)</label><input type="number" id="s_p" min="0" max="240" step="5" value="${S.standardPause}"></div>
     <div class="field"><label>Tagegeld-Hinweis ab Abwesenheit (Minuten)</label><input type="number" id="s_ab" min="0" max="1440" step="15" value="${S.abwesenheitMin}"><p class="note">Standard 480 = 8 Std.</p></div>
     <div class="field"><label>Empfänger-E-Mail (Dispo / Reisekosten)</label><input type="email" class="txt" id="s_mail" value="${esc(S.email||"")}" placeholder="reisekosten@…"></div>
+    <div class="field"><label>Empfänger-Name (Anrede in der Mail)</label><input type="text" class="txt" id="s_empf" value="${esc(S.empfaenger||"")}" placeholder="z. B. Petra"></div>
     <div class="field"><label>Dein Name (für Nachweise)</label><input type="text" class="txt" id="s_name" value="${esc(S.absender||"")}" placeholder="Vorname Nachname"></div>
     <button class="btn" id="saveSet">Speichern</button><button class="btn ghost" id="closeSet">Schließen</button>
+    <div class="divider"></div>
+    <div class="field"><label>Datensicherung</label>
+      <div class="btnrow"><button class="btn ghost" id="bakOut" style="margin-bottom:0">⤴ Backup teilen</button><button class="btn ghost" id="bakIn" style="margin-bottom:0">⤵ Backup einlesen</button></div>
+      <p class="note">Sichert alle Aufträge + Einstellungen als JSON-Datei (z. B. in „Dateien" oder per Mail an dich selbst). Einlesen ersetzt den aktuellen Stand.</p></div>
     <div class="divider"></div><button class="btn danger" id="wipe" style="margin-bottom:0">Alle Daten löschen</button>`);
   document.getElementById("closeSet").onclick=closeSheet;
-  document.getElementById("saveSet").onclick=()=>{S.sollMin=(parseInt(val("s_h"))||0)*60+(parseInt(val("s_m"))||0);S.standardPause=parseInt(val("s_p"))||0;S.abwesenheitMin=parseInt(val("s_ab"))||480;S.email=val("s_mail");S.absender=val("s_name");persist();closeSheet();render();toast("Einstellungen gespeichert");};
+  document.getElementById("saveSet").onclick=()=>{S.sollMin=(parseInt(val("s_h"))||0)*60+(parseInt(val("s_m"))||0);S.standardPause=parseInt(val("s_p"))||0;S.abwesenheitMin=parseInt(val("s_ab"))||480;S.email=val("s_mail");S.empfaenger=val("s_empf");S.absender=val("s_name");persist();closeSheet();render();toast("Einstellungen gespeichert");};
+  document.getElementById("bakOut").onclick=exportBackup;
+  document.getElementById("bakIn").onclick=()=>document.getElementById("backupInput").click();
   document.getElementById("wipe").onclick=()=>{askConfirm("Wirklich ALLE Aufträge löschen?",()=>{DB.orders=[];persist();closeSheet();state.orderId=null;render();toast("Alle Daten gelöscht");});};
 }
+
+/* ===== Datensicherung ===== */
+function exportBackup(){
+  const fname="Zeiterfassung-Backup_"+new Date().toISOString().slice(0,10)+".json";
+  const blob=new Blob([JSON.stringify({app:"zeiterfassung",exportedAt:new Date().toISOString(),data:DB},null,1)],{type:"application/json"});
+  const file=new File([blob],fname,{type:"application/json"});
+  if(navigator.canShare&&navigator.canShare({files:[file]})){
+    navigator.share({files:[file]}).then(()=>toast("Backup geteilt")).catch(err=>{if(err&&err.name!=="AbortError")dlBlob(blob,fname);});
+  }else dlBlob(blob,fname);
+}
+function dlBlob(blob,fname){const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=fname;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),3000);toast("Backup gespeichert");}
+document.getElementById("backupInput").addEventListener("change",e=>{
+  const f=e.target.files[0];e.target.value="";if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{try{
+    const j=JSON.parse(r.result);
+    const db=j&&j.app==="zeiterfassung"&&j.data&&Array.isArray(j.data.orders)?j.data:(j&&Array.isArray(j.orders)?j:null);
+    if(!db){toast("Keine gültige Backup-Datei");return;}
+    askConfirm("Backup mit "+db.orders.length+" Auftrag/Aufträgen einlesen? Ersetzt den aktuellen Stand ("+DB.orders.length+" Aufträge).",()=>{
+      DB=db;DB.settings??={};persist();location.reload();
+    },"Einlesen");
+  }catch(err){console.error(err);toast("Backup konnte nicht gelesen werden");}};
+  r.readAsText(f);
+});
 
 /* ===== Export ===== */
 function orderReportText(o){
@@ -482,7 +514,7 @@ function mailOrder(o){
   const subj="Zeitnachweis"+(o.prodNummer?" – Produktion "+o.prodNummer:(o.titel?" – "+o.titel:(o.auftragsnr?" – "+o.auftragsnr:"")));
   const prodTxt=o.titel?(o.titel+(o.prodNummer?" ("+o.prodNummer+")":"")):(o.prodNummer?"mit der Prod.-Nr. "+o.prodNummer:(o.auftragsnr||""));
   const sender=flipName(o.mitarbeiter||S.absender)||"[Dein Name]";
-  const L=["Hallo [Name],","","anbei mein/unser Stundennachweis für die Produktion "+prodTxt+".",""];
+  const L=["Hallo "+(S.empfaenger||"[Name]")+",","","anbei mein/unser Stundennachweis für die Produktion "+prodTxt+".",""];
   o.days.slice().sort((a,b)=>(a.datum||"").localeCompare(b.datum||"")).forEach(d=>{const c=dayCalc(d);
     const dreh=(d.drehbeginn||d.drehende)?((d.drehbeginn||"—")+"–"+(d.drehende||"—")):"—";
     L.push(fmtDateLong(d.datum));
@@ -542,7 +574,7 @@ document.getElementById("pdfInput").addEventListener("change",async e=>{
   const file=e.target.files[0];e.target.value="";if(!file)return;
   if(typeof pdfjsLib==="undefined"){toast("PDF-Bibliothek nicht geladen (online sein)");return;}
   toast("PDF wird gelesen…");
-  try{pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+  try{pdfjsLib.GlobalWorkerOptions.workerSrc="vendor/pdf.worker.min.js";
     const buf=await file.arrayBuffer();const pdf=await pdfjsLib.getDocument({data:buf}).promise;let text="";
     for(let p=1;p<=pdf.numPages;p++){const pg=await pdf.getPage(p);const tc=await pg.getTextContent();
       const lines=[];tc.items.forEach(it=>{if(typeof it.str!=="string"||!it.transform)return;const x=it.transform[4],y=it.transform[5];let ln=lines.find(l=>Math.abs(l.y-y)<=4);if(!ln){ln={y,parts:[]};lines.push(ln);}ln.parts.push({x,s:it.str});});
@@ -635,7 +667,8 @@ function confirmImport(p){
 function val(id){return (document.getElementById(id)||{}).value||"";}
 function esc(s){return String(s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
 let toastT;function toast(m){const el=document.getElementById("toast");el.textContent=m;el.classList.add("on");clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove("on"),2600);}
-function askConfirm(msg,onYes){const el=document.getElementById("confirmBox");el.querySelector(".cmsg").textContent=msg;el.classList.add("on");const yes=document.getElementById("cYes"),no=document.getElementById("cNo");const close=()=>{el.classList.remove("on");yes.onclick=null;no.onclick=null;};yes.onclick=()=>{close();onYes();};no.onclick=close;}
+function askConfirm(msg,onYes,yesLabel){const el=document.getElementById("confirmBox");el.querySelector(".cmsg").textContent=msg;el.classList.add("on");const yes=document.getElementById("cYes"),no=document.getElementById("cNo");yes.textContent=yesLabel||"Löschen";const close=()=>{el.classList.remove("on");yes.onclick=null;no.onclick=null;};yes.onclick=()=>{close();onYes();};no.onclick=close;}
+if("serviceWorker" in navigator&&(location.protocol==="https:"||location.hostname==="localhost"))navigator.serviceWorker.register("sw.js").catch(()=>{});
 render();
 </script>
 </body>

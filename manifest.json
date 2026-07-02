@@ -1,0 +1,14 @@
+{
+  "name": "Zeiterfassung",
+  "short_name": "Zeiterfassung",
+  "description": "Zeiterfassung für freie EB-Einsätze (ZDF). Daten bleiben lokal auf dem Gerät.",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "background_color": "#15171A",
+  "theme_color": "#15171A",
+  "icons": [
+    { "src": "icon-180.png", "sizes": "180x180", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
