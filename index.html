@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="Zeiterfassung">
 <meta name="theme-color" content="#15171A">
 <title>Zeiterfassung</title>
-<!-- Zeiterfassung V1.8 -->
+<!-- Zeiterfassung V1.9 -->
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link href="vendor/inter.css" rel="stylesheet">
@@ -147,10 +147,15 @@ body.light{--bg:#F5F4F1;--surface:#FFFFFF;--surface-2:#EFEDE8;--field:#E9E7E1;--
 body.light .bar{background:rgba(245,244,241,.85)}
 body.light .card:active,body.light .day:active{background:rgba(0,0,0,.03)}
 /* Anleitung */
-.help p{font-size:13.5px;line-height:1.65;color:var(--text);margin:0}
-.help p+p{margin-top:8px}
-.help b{color:var(--text-strong)}
-.help .timebox{margin-bottom:12px}
+.help .hsec{border:1px solid var(--line);border-radius:14px;padding:18px 16px;margin-bottom:14px;background:var(--surface)}
+.help h4{margin:0 0 12px;font-size:15.5px;font-weight:700;color:var(--text-strong);letter-spacing:-.2px}
+.help p{font-size:14px;line-height:1.75;color:var(--text);margin:0 0 12px}
+.help p:last-child{margin-bottom:0}
+.help b{color:var(--text-strong);font-weight:600}
+.help ol{margin:0 0 12px;padding-left:22px;font-size:14px;line-height:1.9;color:var(--text)}
+.help ol:last-child{margin-bottom:0}
+.help li{margin-bottom:4px}
+.help .tip{background:var(--field);border-radius:10px;padding:11px 13px;font-size:13px;color:var(--muted);line-height:1.65}
 </style>
 </head>
 <body>
@@ -161,7 +166,7 @@ body.light .card:active,body.light .day:active{background:rgba(0,0,0,.03)}
   <div class="foot">
     <div class="foot-facts"><span>Soll 7,5 Std/Tag</span><span>+30 Min Pause = 8 Std</span><span>Tagegeld: eintägig · Inland · ab 8 Std</span></div>
     <div class="foot-note">Daten bleiben nur auf diesem Gerät · alle Angaben ohne Gewähr</div>
-    <div class="foot-v">Zeiterfassung <b>V1.8</b></div>
+    <div class="foot-v">Zeiterfassung <b>V1.9</b></div>
   </div>
 </div>
 <input type="file" id="pdfInput" accept="application/pdf" class="hidden">
@@ -339,8 +344,23 @@ function renderStats(){
 /* ===== Sheet ===== */
 const scrim=document.getElementById("scrim"),sheet=document.getElementById("sheet");
 function openSheet(html){sheet.innerHTML='<div class="grip"></div>'+html;scrim.classList.add("on");sheet.scrollTop=0;}
-function closeSheet(){scrim.classList.remove("on");}
+function closeSheet(){scrim.classList.remove("on");sheet.style.transform="";sheet.style.transition="";}
 scrim.addEventListener("click",e=>{if(e.target===scrim)closeSheet();});
+/* Wisch nach unten schließt das Sheet (nur wenn der Inhalt oben steht) */
+let swY=null,swActive=false;
+sheet.addEventListener("touchstart",e=>{swY=e.touches[0].clientY;swActive=sheet.scrollTop<=0;},{passive:true});
+sheet.addEventListener("touchmove",e=>{
+  if(swY==null||!swActive)return;
+  const dy=e.touches[0].clientY-swY;
+  if(dy>0&&sheet.scrollTop<=0){sheet.style.transition="none";sheet.style.transform="translateY("+dy+"px)";e.preventDefault();}
+},{passive:false});
+sheet.addEventListener("touchend",e=>{
+  if(swY==null)return;
+  const dy=e.changedTouches[0].clientY-swY;swY=null;
+  if(swActive&&dy>110){sheet.style.transition="transform .22s ease";sheet.style.transform="translateY(100%)";setTimeout(closeSheet,210);}
+  else{sheet.style.transition="transform .22s ease";sheet.style.transform="";setTimeout(()=>{sheet.style.transition="";},240);}
+  swActive=false;
+});
 
 /* ===== Auftrag ===== */
 function editOrder(id){
@@ -479,25 +499,35 @@ function guessNextDate(o){if(o.days.length){const last=o.days.map(d=>d.datum).fi
 /* ===== Einstellungen ===== */
 function openSettings(){
   openSheet(`<h3>Einstellungen</h3>
-    <div class="field"><label>Soll-Arbeitszeit pro Tag (Std / Min)</label><div class="two"><input type="number" id="s_h" min="0" max="14" value="${Math.floor(S.sollMin/60)}"><input type="number" id="s_m" min="0" max="59" value="${S.sollMin%60}"></div><p class="note">Laut Vertrag: 7 Std 30 Min (= 7,5 Std), zzgl. 30 Min Pause.</p></div>
-    <div class="field"><label>Pausenlänge bei „Pause: ja" (Minuten)</label><input type="number" id="s_p" min="0" max="240" step="5" value="${S.standardPause}"></div>
-    <div class="field"><label>Tagegeld-Hinweis ab Abwesenheit (Minuten)</label><input type="number" id="s_ab" min="0" max="1440" step="15" value="${S.abwesenheitMin}"><p class="note">Standard 480 = 8 Std.</p></div>
     <div class="field"><label>Empfänger-E-Mail (Dispo / Reisekosten)</label><input type="email" class="txt" id="s_mail" value="${esc(S.email||"")}" placeholder="reisekosten@…"></div>
     <div class="field"><label>Empfänger-Name (Anrede in der Mail)</label><input type="text" class="txt" id="s_empf" value="${esc(S.empfaenger||"")}" placeholder="z. B. Petra"></div>
     <div class="field"><label>Dein Name (für Nachweise)</label><input type="text" class="txt" id="s_name" value="${esc(S.absender||"")}" placeholder="Vorname Nachname"></div>
-    <button class="btn" id="saveSet">Speichern</button><button class="btn ghost" id="closeSet">Schließen</button>
+    <button class="btn" id="saveSet">Speichern</button><button class="btn ghost" id="closeSet" style="margin-bottom:0">Schließen</button>
     <div class="divider"></div>
+    <button class="btn ghost" id="rulesBtn">⏱ Arbeitszeit-Regeln · Soll, Pause, Tagegeld</button>
     <button class="btn ghost" id="helpBtn">📖 Anleitung – so funktioniert die App</button>
+    <div class="divider"></div>
     <div class="field"><label>Datensicherung</label>
       <div class="btnrow"><button class="btn ghost" id="bakOut" style="margin-bottom:0">⤴ Backup teilen</button><button class="btn ghost" id="bakIn" style="margin-bottom:0">⤵ Backup einlesen</button></div>
       <p class="note">Sichert alle Aufträge + Einstellungen als JSON-Datei (z. B. in „Dateien" oder per Mail an dich selbst). Einlesen ersetzt den aktuellen Stand.</p></div>
     <div class="divider"></div><button class="btn danger" id="wipe" style="margin-bottom:0">Alle Daten löschen</button>`);
   document.getElementById("closeSet").onclick=closeSheet;
-  document.getElementById("saveSet").onclick=()=>{S.sollMin=(parseInt(val("s_h"))||0)*60+(parseInt(val("s_m"))||0);S.standardPause=parseInt(val("s_p"))||0;S.abwesenheitMin=parseInt(val("s_ab"))||480;S.email=val("s_mail");S.empfaenger=val("s_empf");S.absender=val("s_name");persist();closeSheet();render();toast("Einstellungen gespeichert");};
+  document.getElementById("saveSet").onclick=()=>{S.email=val("s_mail");S.empfaenger=val("s_empf");S.absender=val("s_name");persist();closeSheet();render();toast("Einstellungen gespeichert");};
+  document.getElementById("rulesBtn").onclick=openRules;
   document.getElementById("helpBtn").onclick=openHelp;
   document.getElementById("bakOut").onclick=exportBackup;
   document.getElementById("bakIn").onclick=()=>document.getElementById("backupInput").click();
   document.getElementById("wipe").onclick=()=>{askConfirm("Wirklich ALLE Aufträge löschen?",()=>{DB.orders=[];persist();closeSheet();state.orderId=null;render();toast("Alle Daten gelöscht");});};
+}
+function openRules(){
+  openSheet(`<h3>Arbeitszeit-Regeln</h3>
+    <div class="field"><label>Soll-Arbeitszeit pro Tag (Std / Min)</label><div class="two"><input type="number" id="s_h" min="0" max="14" value="${Math.floor(S.sollMin/60)}"><input type="number" id="s_m" min="0" max="59" value="${S.sollMin%60}"></div><p class="note">Laut Vertrag: 7 Std 30 Min (= 7,5 Std), zzgl. 30 Min Pause. Basis für die Überstunden.</p></div>
+    <div class="field"><label>Pausenlänge bei „Pause: ja" (Minuten)</label><input type="number" id="s_p" min="0" max="240" step="5" value="${S.standardPause}"></div>
+    <div class="field"><label>Tagegeld-Hinweis ab Abwesenheit (Minuten)</label><input type="number" id="s_ab" min="0" max="1440" step="15" value="${S.abwesenheitMin}"><p class="note">Standard 480 = 8 Std.</p></div>
+    <button class="btn" id="saveRules">Speichern</button>
+    <button class="btn ghost" id="rulesBack" style="margin-bottom:0">‹ Zurück zu den Einstellungen</button>`);
+  document.getElementById("saveRules").onclick=()=>{S.sollMin=(parseInt(val("s_h"))||0)*60+(parseInt(val("s_m"))||0);S.standardPause=parseInt(val("s_p"))||0;S.abwesenheitMin=parseInt(val("s_ab"))||480;persist();render();openSettings();toast("Regeln gespeichert");};
+  document.getElementById("rulesBack").onclick=openSettings;
 }
 
 /* ===== Datensicherung ===== */
@@ -527,26 +557,37 @@ document.getElementById("backupInput").addEventListener("change",e=>{
 /* ===== Anleitung ===== */
 function openHelp(){
   openSheet(`<h3>Anleitung</h3><div class="help">
-    <div class="timebox"><div class="tl">Grundprinzip</div>
-      <p>Die App verwaltet <b>Aufträge</b> (Dreh/Produktion) mit ihren <b>Arbeitstagen</b>. Pro Tag werden Einsatz-, Dreh- und Reisezeiten erfasst; Überstunden rechnen sich aus der Einsatzzeit minus Pause gegen das Soll (7,5 Std). Alle Daten bleiben <b>nur auf diesem Gerät</b> – nichts wird an einen Server geschickt.</p></div>
-    <div class="timebox"><div class="tl">Dispo-PDF importieren (iPhone)</div>
-      <p>1. In der Mail das Dispo-PDF antippen.<br>2. Teilen-Symbol → <b>„In Dateien sichern"</b> (dein Cloud-Ordner geht auch).<br>3. In der App: <b>„PDF von der Dispo importieren"</b> → die Datei liegt im Dialog direkt unter „Zuletzt benutzt".</p>
-      <p>Erkannt werden Titel, Auftrags-/Prod.-Nr., Kostenträger, Personen und Einsatzzeiten – danach bitte prüfen. Wichtig ist die <b>Reiseart</b>: „Einzeltage" = jeder Tag mit eigener Hin- und Rückfahrt (Tagegeld je Tag möglich) · „Mehrtägig" = Übernachtung, Anreise nur am ersten, Rückreise nur am letzten Tag.</p>
-      <p><b>Hinweis:</b> Direkt aus der Mail „in die App teilen" lässt iOS bei Web-Apps nicht zu – der Weg über „Dateien" ist der kürzeste.</p></div>
-    <div class="timebox"><div class="tl">Tag erfassen</div>
-      <p><b>Einsatzbeginn ist der Anker.</b> Das Einsatzende rechnet sich automatisch aus der letzten Tätigkeit +30 Min (Rückreiseende → Drehende → Anreise-Ende) und bleibt stehen, sobald du es selbst tippst. Für reine Anreisetage: <b>„kein Dreh"</b>. Für Fahrten, die entfallen: <b>„entfällt"</b> bei An-/Rückreise. Alle Zeiten sind editierbar – die Vorschläge sind nur Startwerte.</p></div>
-    <div class="timebox"><div class="tl">Tagegeld</div>
-      <p>Der grüne Hinweis erscheint nur bei: eintägig · Inland · über 8 Std abwesend. Er ist <b>rein intern</b> (nie in Mail oder PDF) und erinnert dich ans Beantragen – Frist real 6 Monate.</p></div>
-    <div class="timebox"><div class="tl">Nachweis exportieren</div>
-      <p><b>Als PDF:</b> öffnet das Teilen-Menü mit der fertigen PDF-Datei (Mail, Dateien, AirDrop …). <b>Als E-Mail:</b> öffnet deine Mail-App mit dem Text-Nachweis; Empfänger-Adresse und Anrede-Name stellst du in den Einstellungen ein.</p></div>
-    <div class="timebox"><div class="tl">Datensicherung (wichtig!)</div>
-      <p>Die Daten liegen nur im Browser dieses Geräts. <b>„Backup teilen"</b> erzeugt eine JSON-Datei mit allen Aufträgen + Einstellungen – am besten regelmäßig in „Dateien"/Cloud sichern oder dir selbst mailen. <b>„Backup einlesen"</b> stellt einen Stand wieder her (ersetzt den aktuellen).</p></div>
-    <div class="timebox"><div class="tl">Offline & Installation</div>
-      <p>Nach dem ersten Laden funktioniert die App auch <b>ohne Internet</b> (inkl. PDF-Export). Installation: URL in Safari öffnen → Teilen → <b>„Zum Home-Bildschirm"</b>. Immer über dieses Icon öffnen, damit die Daten erhalten bleiben.</p></div>
-    <div class="timebox"><div class="tl">Hell / Dunkel</div>
-      <p>Über das ☀/☾-Symbol oben wechselst du zwischen Dunkel- und Hell-Modus. Die Wahl wird gespeichert.</p></div>
+    <div class="hsec"><h4>📋 So ist die App aufgebaut</h4>
+      <p>Du legst <b>Aufträge</b> an – ein Dreh oder eine Produktion. Jeder Auftrag hat <b>Arbeitstage</b> mit deinen Zeiten.</p>
+      <p>Aus der Einsatzzeit minus Pause rechnet die App deine <b>Überstunden</b> gegen das Soll (7,5 Std).</p>
+      <p>Menüs wie dieses schiebst du zum Schließen einfach <b>nach unten</b> – oder du tippst „Schließen".</p>
+      <p class="tip">Alle Daten bleiben nur auf diesem Gerät. Kein Server, kein Konto.</p></div>
+    <div class="hsec"><h4>📄 Dispo-PDF importieren</h4>
+      <ol><li>In der Mail das <b>PDF antippen</b></li><li><b>Teilen</b> → „In Dateien sichern" (dein Cloud-Ordner geht auch)</li><li>In der App: <b>„PDF von der Dispo importieren"</b></li><li>Die Datei liegt gleich oben unter „Zuletzt benutzt"</li></ol>
+      <p>Die App erkennt Titel, Nummern, Personen und Einsatzzeiten. Danach kurz prüfen und die <b>Reiseart</b> wählen:</p>
+      <p><b>Einzeltage</b> · jeden Tag hin und zurück → Tagegeld je Tag möglich.<br><b>Mehrtägig</b> · mit Übernachtung → Anreise nur am ersten, Rückreise nur am letzten Tag.</p>
+      <p class="tip">Direkt „aus der Mail in die App teilen" erlaubt iOS bei Web-Apps nicht – der Weg über „Dateien" ist der kürzeste.</p></div>
+    <div class="hsec"><h4>⏱ Tag erfassen</h4>
+      <p><b>Der Einsatzbeginn ist der Anker.</b> Alle anderen Zeiten schlägt die App nur vor – du passt sie einfach an.</p>
+      <p>Das <b>Einsatzende</b> rechnet sich automatisch: letzte Tätigkeit + 30 Min. Tippst du es selbst ein, bleibt es stehen.</p>
+      <p>Nur angereist, nicht gedreht? → <b>„kein Dreh"</b><br>Keine Fahrt an dem Tag? → <b>„entfällt"</b> bei An- oder Rückreise</p></div>
+    <div class="hsec"><h4>💶 Tagegeld</h4>
+      <p>Der grüne Hinweis erscheint bei: <b>eintägig · Inland · über 8 Std abwesend</b>.</p>
+      <p class="tip">Nur zur eigenen Erinnerung – er taucht nie in Mail oder PDF auf. Antragsfrist: 6 Monate.</p></div>
+    <div class="hsec"><h4>✉️ Nachweis verschicken</h4>
+      <p><b>Als PDF</b> · öffnet das Teilen-Menü mit der fertigen Datei (Mail, Dateien, AirDrop …).</p>
+      <p><b>Als E-Mail</b> · öffnet deine Mail-App mit dem Nachweis als Text. Empfänger-Adresse und Anrede stellst du in den Einstellungen ein.</p></div>
+    <div class="hsec"><h4>💾 Backup – wichtig!</h4>
+      <p>Deine Daten liegen nur im Browser dieses Geräts. Mach deshalb regelmäßig ein Backup:</p>
+      <ol><li>Einstellungen → <b>„Backup teilen"</b></li><li>In „Dateien"/Cloud sichern oder dir selbst mailen</li><li>Wiederherstellen mit <b>„Backup einlesen"</b></li></ol>
+      <p class="tip">Einlesen ersetzt den aktuellen Stand komplett.</p></div>
+    <div class="hsec"><h4>📡 Offline & Installation</h4>
+      <p>Nach dem ersten Laden funktioniert die App auch <b>ohne Internet</b> – inklusive PDF-Export.</p>
+      <p>Installieren: Seite in Safari öffnen → Teilen → <b>„Zum Home-Bildschirm"</b>. Danach immer über dieses Icon öffnen.</p></div>
+    <div class="hsec"><h4>☀️ Hell / Dunkel</h4>
+      <p>Mit dem Sonne/Mond-Symbol oben wechselst du das Design. Die Wahl wird gespeichert.</p></div>
   </div>
-  <button class="btn" id="helpBack">Zurück zu den Einstellungen</button>
+  <button class="btn" id="helpBack">‹ Zurück zu den Einstellungen</button>
   <button class="btn ghost" id="helpClose" style="margin-bottom:0">Schließen</button>`);
   document.getElementById("helpBack").onclick=openSettings;
   document.getElementById("helpClose").onclick=closeSheet;
