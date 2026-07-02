@@ -131,6 +131,11 @@ body{background:var(--bg);color:var(--text);font-family:"Inter",-apple-system,sy
 .rnote b{color:var(--text);font-weight:600}
 .card.done{opacity:.55}
 .remind{border:1px solid var(--info-line);background:var(--info-soft);border-radius:12px;padding:12px 14px;font-size:13px;color:var(--text);line-height:1.5;margin:0 0 14px}
+details.exp{margin-top:10px}
+details.exp summary{list-style:none;cursor:pointer;font-size:12px;color:var(--muted);font-weight:600;display:flex;align-items:center;gap:8px;-webkit-tap-highlight-color:transparent}
+details.exp summary::-webkit-details-marker{display:none}
+details.exp summary::before{content:"+";display:inline-flex;width:20px;height:20px;border:1px solid var(--line-strong);border-radius:6px;align-items:center;justify-content:center;color:var(--accent);font-weight:700;flex:none}
+details.exp[open] summary::before{content:"–"}
 .toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 24px);transform:translateX(-50%) translateY(20px);background:var(--field);border:1px solid var(--accent-line);color:var(--text);padding:12px 20px;border-radius:12px;font-size:14px;z-index:80;opacity:0;transition:.3s;box-shadow:0 10px 40px rgba(0,0,0,.5);pointer-events:none;max-width:90%;text-align:center}
 .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
 .divider{height:1px;background:var(--line);margin:18px 0}
@@ -515,19 +520,23 @@ function guessNextDate(o){if(o.days.length){const last=o.days.map(d=>d.datum).fi
 
 /* ===== Einstellungen ===== */
 function openSettings(){
+  const lastBak=S.lastBackup?fmtDE(new Date(S.lastBackup)):"noch keins";
   openSheet(`<h3>Einstellungen</h3>
-    <div class="field"><label>Empfänger-E-Mail (Dispo / Reisekosten)</label><input type="email" class="txt" id="s_mail" value="${esc(S.email||"")}" placeholder="reisekosten@…"></div>
-    <div class="field"><label>Empfänger-Name (Anrede in der Mail)</label><input type="text" class="txt" id="s_empf" value="${esc(S.empfaenger||"")}" placeholder="z. B. Petra"></div>
-    <div class="field"><label>Dein Name (für Nachweise)</label><input type="text" class="txt" id="s_name" value="${esc(S.absender||"")}" placeholder="Vorname Nachname"></div>
-    <button class="btn" id="saveSet">Speichern</button><button class="btn ghost" id="closeSet" style="margin-bottom:0">Schließen</button>
-    <div class="divider"></div>
     <button class="btn ghost" id="helpBtn">📖 Anleitung – so funktioniert die App</button>
     <div class="divider"></div>
     <div class="field"><label>Datensicherung</label>
       <div class="btnrow"><button class="btn ghost" id="bakOut" style="margin-bottom:0">⤴ Backup teilen</button><button class="btn ghost" id="bakIn" style="margin-bottom:0">⤵ Backup einlesen</button></div>
-      <p class="note"><b>„Backup teilen"</b> legt eine Sicherungsdatei mit allen Aufträgen und Einstellungen an – am besten in „Dateien" ablegen oder dir selbst mailen.<br><b>„Backup einlesen"</b> stellt eine Sicherung wieder her und ersetzt dabei den aktuellen Stand.</p></div>
+      <p class="note" style="margin-top:9px">Letztes Backup: <b id="lastBak">${lastBak}</b></p>
+      <details class="exp"><summary>Was macht das Backup?</summary>
+        <p class="note"><b>„Backup teilen"</b> legt eine Sicherungsdatei mit allen Aufträgen und Einstellungen an – am besten in „Dateien" ablegen oder dir selbst mailen.<br><b>„Backup einlesen"</b> stellt eine Sicherung wieder her und ersetzt dabei den aktuellen Stand.</p>
+      </details></div>
     <div class="divider"></div>
     <button class="btn ghost" id="rulesBtn">⏱ Arbeitszeit-Regeln · Soll, Pause, Tagegeld</button>
+    <div class="divider"></div>
+    <div class="field"><label>Empfänger-E-Mail (Dispo)</label><input type="email" class="txt" id="s_mail" value="${esc(S.email||"")}" placeholder="dispo@…"></div>
+    <div class="field"><label>Empfänger-Name (Anrede in der Mail)</label><input type="text" class="txt" id="s_empf" value="${esc(S.empfaenger||"")}" placeholder="z. B. Petra"></div>
+    <div class="field"><label>Dein Name (für Nachweise)</label><input type="text" class="txt" id="s_name" value="${esc(S.absender||"")}" placeholder="Vorname Nachname"></div>
+    <button class="btn" id="saveSet">Speichern</button><button class="btn ghost" id="closeSet" style="margin-bottom:0">Schließen</button>
     <div class="divider"></div><button class="btn danger" id="wipe" style="margin-bottom:0">Alle Daten löschen</button>`);
   document.getElementById("closeSet").onclick=closeSheet;
   document.getElementById("saveSet").onclick=()=>{S.email=val("s_mail");S.empfaenger=val("s_empf");S.absender=val("s_name");persist();closeSheet();render();toast("Einstellungen gespeichert");};
@@ -553,7 +562,7 @@ function exportBackup(){
   const fname="Zeiterfassung-Backup_"+new Date().toISOString().slice(0,10)+".json";
   const blob=new Blob([JSON.stringify({app:"zeiterfassung",exportedAt:new Date().toISOString(),data:DB},null,1)],{type:"application/json"});
   const file=new File([blob],fname,{type:"application/json"});
-  const mark=()=>{S.lastBackup=Date.now();persist();};
+  const mark=()=>{S.lastBackup=Date.now();persist();const lb=document.getElementById("lastBak");if(lb)lb.textContent=fmtDE(new Date(S.lastBackup));};
   if(navigator.canShare&&navigator.canShare({files:[file]})){
     navigator.share({files:[file]}).then(()=>{mark();toast("Backup geteilt");render();}).catch(err=>{if(err&&err.name!=="AbortError"){dlBlob(blob,fname);mark();render();}});
   }else{dlBlob(blob,fname);mark();render();}
