@@ -533,8 +533,8 @@ function openSettings(){
     <div class="divider"></div>
     <button class="btn ghost" id="rulesBtn">⏱ Arbeitszeit-Regeln · Soll, Pause, Tagegeld</button>
     <div class="divider"></div>
-    <div class="field"><label>Empfänger-E-Mail (Dispo)</label><input type="email" class="txt" id="s_mail" value="${esc(S.email||"")}" placeholder="dispo@…"></div>
-    <div class="field"><label>Empfänger-Name (Anrede in der Mail)</label><input type="text" class="txt" id="s_empf" value="${esc(S.empfaenger||"")}" placeholder="z. B. Petra"></div>
+    <div class="field"><label>Empfänger-E-Mail (Dispo)</label><input type="email" class="txt" id="s_mail" value="${esc(S.email||"")}" placeholder="empfangsadresse@…"></div>
+    <div class="field"><label>Empfänger-Name (Anrede in der Mail)</label><input type="text" class="txt" id="s_empf" value="${esc(S.empfaenger||"")}" placeholder="Name"></div>
     <div class="field"><label>Dein Name (für Nachweise)</label><input type="text" class="txt" id="s_name" value="${esc(S.absender||"")}" placeholder="Vorname Nachname"></div>
     <button class="btn" id="saveSet">Speichern</button><button class="btn ghost" id="closeSet" style="margin-bottom:0">Schließen</button>
     <div class="divider"></div><button class="btn danger" id="wipe" style="margin-bottom:0">Alle Daten löschen</button>`);
