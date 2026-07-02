@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="Zeiterfassung">
 <meta name="theme-color" content="#15171A">
 <title>Zeiterfassung</title>
-<!-- Zeiterfassung V1.5 -->
+<!-- Zeiterfassung V1.6 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -152,7 +152,7 @@ body{background:var(--bg);color:var(--text);font-family:"Inter",-apple-system,sy
   <div class="foot">
     <div class="foot-facts"><span>Soll 7,5 Std/Tag</span><span>+30 Min Pause = 8 Std</span><span>Tagegeld: eintägig · Inland · ab 8 Std</span></div>
     <div class="foot-note">Daten bleiben nur auf diesem Gerät · alle Angaben ohne Gewähr</div>
-    <div class="foot-v">Zeiterfassung <b>V1.5</b></div>
+    <div class="foot-v">Zeiterfassung <b>V1.6</b></div>
   </div>
 </div>
 <input type="file" id="pdfInput" accept="application/pdf" class="hidden">
@@ -527,7 +527,13 @@ function pdfOrder(o){
     doc.setFontSize(9);doc.setTextColor(40,35,28);doc.text(created,M,y);if(sig)doc.text(sig,M+50,y);
     doc.setDrawColor(120,110,95);doc.line(M,y+2,M+80,y+2);
     doc.setFontSize(7.5);doc.setTextColor(150,140,125);doc.text("Datum, Unterschrift",M,y+6.5);
-    doc.save(("Zeitnachweis_"+(o.auftragsnr||o.titel||"Auftrag")).replace(/[^a-z0-9_\-]/gi,"_")+".pdf");toast("PDF erstellt");
+    const fname=("Zeitnachweis_"+(o.auftragsnr||o.titel||"Auftrag")).replace(/[^a-z0-9_\-]/gi,"_")+".pdf";
+    const blob=doc.output("blob");const file=new File([blob],fname,{type:"application/pdf"});
+    if(navigator.canShare&&navigator.canShare({files:[file]})){
+      // iOS/Android: PDF als Datei ins native Teilen-Menü – ohne Seiten-URL in der Mail
+      navigator.share({files:[file]}).then(()=>toast("PDF geteilt")).catch(err=>{
+        if(err&&err.name!=="AbortError"){doc.save(fname);toast("PDF erstellt");}});
+    }else{doc.save(fname);toast("PDF erstellt");}
   }catch(e){console.error(e);toast("PDF-Fehler – ggf. online sein");}
 }
 
