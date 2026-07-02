@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="Zeiterfassung">
 <meta name="theme-color" content="#15171A">
 <title>Zeiterfassung</title>
-<!-- Zeiterfassung V1.10 -->
+<!-- Zeiterfassung V2.0 -->
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link href="vendor/inter.css" rel="stylesheet">
@@ -129,6 +129,8 @@ body{background:var(--bg);color:var(--text);font-family:"Inter",-apple-system,sy
 .note b{color:var(--muted);font-weight:600}
 .rnote{border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:12.5px;line-height:1.65;color:var(--muted);margin-top:8px}
 .rnote b{color:var(--text);font-weight:600}
+.card.done{opacity:.55}
+.remind{border:1px solid var(--info-line);background:var(--info-soft);border-radius:12px;padding:12px 14px;font-size:13px;color:var(--text);line-height:1.5;margin:0 0 14px}
 .toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 24px);transform:translateX(-50%) translateY(20px);background:var(--field);border:1px solid var(--accent-line);color:var(--text);padding:12px 20px;border-radius:12px;font-size:14px;z-index:80;opacity:0;transition:.3s;box-shadow:0 10px 40px rgba(0,0,0,.5);pointer-events:none;max-width:90%;text-align:center}
 .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
 .divider{height:1px;background:var(--line);margin:18px 0}
@@ -169,7 +171,7 @@ body.light .card:active,body.light .day:active{background:rgba(0,0,0,.03)}
   <div class="foot">
     <div class="foot-facts"><span>Soll 7,5 Std/Tag</span><span>+30 Min Pause = 8 Std</span><span>Tagegeld: eintägig · Inland · ab 8 Std</span></div>
     <div class="foot-note">Daten bleiben nur auf diesem Gerät · alle Angaben ohne Gewähr</div>
-    <div class="foot-v">Zeiterfassung <b>V1.10</b></div>
+    <div class="foot-v">Zeiterfassung <b>V2.0</b></div>
   </div>
 </div>
 <input type="file" id="pdfInput" accept="application/pdf" class="hidden">
@@ -186,7 +188,7 @@ const Store={mem:{},load(){try{const r=localStorage.getItem(KEY);return r?JSON.p
 let DB=Store.load()||{orders:[],settings:{}};
 const S=DB.settings;
 S.sollMin??=450; if(S.sollMin===462)S.sollMin=450; S.standardPause??=30; S.abwesenheitMin??=480; S.email??=""; S.absender??=""; S.empfaenger??=""; S.theme??="dark";
-DB.orders.forEach(o=>{o.notiz??=""; o.equipment??=[]; o.days.forEach(d=>{
+DB.orders.forEach(o=>{o.notiz??=""; o.equipment??=[]; o.abgerechnet??=false; o.days.forEach(d=>{
   if(d.einsatz===undefined){ d.einsatz=d.istStart||d.geplStart||""; d.ende=d.istEnde||d.geplEnde||""; d.anreise=""; d.rueck="";
     d.dispo={einsatz:d.geplStart||d.istStart||"",ende:d.geplEnde||d.istEnde||""}; delete d.istStart;delete d.istEnde;delete d.geplStart;delete d.geplEnde; }
   d.dispo??={einsatz:"",ende:""}; d.uebernachtung??=false; d.ausland??=false;
@@ -243,21 +245,29 @@ function renderOrders(){
   let h=`<button class="btn" id="addOrder">＋ Auftrag manuell anlegen</button>
   <button class="btn ghost" id="importPdf">⤓ PDF von der Dispo importieren</button>
   <p class="sub">Liest Titel, Auftrags-/Prod.-Nr., Kostenträger und deine Einsatzzeiten aus. Bitte nach dem Import prüfen.</p>`;
+  const needBak=DB.orders.length>0&&(!S.lastBackup||Date.now()-S.lastBackup>30*864e5)&&(!S.bakSnooze||Date.now()-S.bakSnooze>7*864e5);
+  if(needBak)h+=`<div class="remind">💾 ${S.lastBackup?"Dein letztes Backup ist über einen Monat her.":"Du hast noch kein Backup deiner Daten."}<div class="btnrow" style="margin-top:10px"><button class="btn ghost" id="remBak" style="margin-bottom:0;padding:9px">Backup teilen</button><button class="btn ghost" id="remLater" style="margin-bottom:0;padding:9px">Später</button></div></div>`;
   if(!DB.orders.length){h+=`<div class="empty"><div class="big">🎬</div><p>Noch keine Aufträge.<br>Importiere ein Dispo-PDF oder lege manuell an.</p></div>`;}
-  else DB.orders.slice().reverse().forEach(o=>{
-    const ot=orderOT(o),tgd=orderTGdays(o);
-    const days=o.days.slice().sort((a,b)=>(a.datum||"").localeCompare(b.datum||""));
-    const chips=days.slice(0,8).map(d=>`<span class="daychip">${fmtDate(d.datum).replace(/\.$/,"")} <b class="${otClass(dayCalc(d).ot)}">${fmtSigned(dayCalc(d).ot)}</b></span>`).join("");
-    h+=`<div class="card" data-open="${o.id}">
+  else{
+    const cardHtml=o=>{
+      const ot=orderOT(o),tgd=orderTGdays(o);
+      const days=o.days.slice().sort((a,b)=>(a.datum||"").localeCompare(b.datum||""));
+      const chips=days.slice(0,8).map(d=>`<span class="daychip">${fmtDate(d.datum).replace(/\.$/,"")} <b class="${otClass(dayCalc(d).ot)}">${fmtSigned(dayCalc(d).ot)}</b></span>`).join("");
+      return `<div class="card${o.abgerechnet?" done":""}" data-open="${o.id}">
       <div class="badge"><div class="num ${otClass(ot)}">${fmtSigned(ot)}</div><div class="lbl">Überstd.</div></div>
       <p class="titel">${esc(o.titel||"Ohne Titel")}</p>
       <div class="meta">${o.auftragsnr?`<span><b>${esc(o.auftragsnr)}</b></span>`:""}${o.prodNummer?`<span>Prod. ${esc(o.prodNummer)}</span>`:""}<span>${o.days.length} Tag${o.days.length===1?"":"e"}</span></div>
-      ${tgd>0?`<div style="margin-top:8px"><span class="tgchip">${tgd}× Tagegeld möglich</span></div>`:""}
-      ${chips?`<div class="daystrip">${chips}</div>`:""}</div>`;
-  });
+      ${o.abgerechnet?`<div style="margin-top:8px"><span class="uechip">✓ abgerechnet</span></div>`:(tgd>0?`<div style="margin-top:8px"><span class="tgchip">${tgd}× Tagegeld möglich</span></div>`:"")}
+      ${chips?`<div class="daystrip">${chips}</div>`:""}</div>`;};
+    DB.orders.filter(o=>!o.abgerechnet).slice().reverse().forEach(o=>h+=cardHtml(o));
+    const done=DB.orders.filter(o=>o.abgerechnet).slice().reverse();
+    if(done.length){h+=`<div class="section-h" style="margin-top:26px"><h3>Abgerechnet</h3><span class="tot">${done.length}</span></div>`;done.forEach(o=>h+=cardHtml(o));}
+  }
   view.innerHTML=h;
   document.getElementById("addOrder").onclick=()=>editOrder(null);
   document.getElementById("importPdf").onclick=()=>document.getElementById("pdfInput").click();
+  const rb=document.getElementById("remBak");if(rb)rb.onclick=exportBackup;
+  const rl=document.getElementById("remLater");if(rl)rl.onclick=()=>{S.bakSnooze=Date.now();persist();render();};
   view.querySelectorAll("[data-open]").forEach(c=>c.onclick=()=>{state.orderId=c.dataset.open;render();});
 }
 
@@ -278,8 +288,9 @@ function renderDetail(){
       <dt>Überstunden</dt><dd class="${otClass(ot)}">${fmtSigned(ot)} Std</dd>
       ${tgd>0?`<dt>Tagegeld möglich</dt><dd style="color:var(--pos)">${tgd} Tag(e)</dd>`:""}
       ${equipText(o)?`<dt>Equipment</dt><dd>${esc(equipText(o))}</dd>`:""}
+      ${o.abgerechnet?`<dt>Status</dt><dd style="color:var(--pos)">✓ abgerechnet</dd>`:""}
     </dl>
-    <div style="margin-top:14px"><button class="btn ghost" id="editOrder" style="margin-bottom:0">✎ Auftragsdaten / löschen</button></div></div>
+    <div class="btnrow" style="margin-top:14px"><button class="btn ghost" id="editOrder" style="margin-bottom:0">✎ Bearbeiten</button><button class="btn ghost" id="abrToggle" style="margin-bottom:0">${o.abgerechnet?"↩ Nicht abgerechnet":"✓ Abgerechnet"}</button></div></div>
   <div class="section-h"><h3>Arbeitstage</h3><span class="tot">${days.length} · ${fmtSigned(ot)}</span></div>`;
   if(!days.length)h+=`<div class="empty" style="padding:30px"><p>Noch keine Tage erfasst.</p></div>`;
   else days.forEach(d=>{
@@ -296,13 +307,15 @@ function renderDetail(){
     </div>`;
   });
   h+=`<button class="btn" id="addDay" style="margin-top:6px">＋ Tag hinzufügen</button>
-  <div class="divider"></div><div class="btnrow"><button class="btn ghost" id="mailOrder">✉ Als E-Mail</button><button class="btn ghost" id="pdfOrder">⤓ Als PDF</button></div>`;
+  <div class="divider"></div><div class="btnrow"><button class="btn ghost" id="mailOrder">✉ E-Mail</button><button class="btn ghost" id="pdfOrder">⤓ PDF</button><button class="btn ghost" id="calOrder">📅 Termine</button></div>`;
   view.innerHTML=h;
   document.getElementById("back").onclick=()=>{state.orderId=null;render();};
   document.getElementById("editOrder").onclick=()=>editOrder(o.id);
+  document.getElementById("abrToggle").onclick=()=>{o.abgerechnet=!o.abgerechnet;persist();render();toast(o.abgerechnet?"Als abgerechnet markiert":"Abrechnung zurückgenommen");};
   document.getElementById("addDay").onclick=()=>editDay(o.id,null);
   document.getElementById("mailOrder").onclick=()=>mailOrder(o);
   document.getElementById("pdfOrder").onclick=()=>pdfOrder(o);
+  document.getElementById("calOrder").onclick=()=>icsOrder(o);
   view.querySelectorAll(".dayDel").forEach(b=>b.onclick=e=>{e.stopPropagation();const id=b.dataset.del;askConfirm("Diesen Arbeitstag wirklich löschen?",()=>{o.days=o.days.filter(x=>x.id!==id);persist();render();toast("Tag gelöscht");});});
   view.querySelectorAll("[data-day]").forEach(el=>el.onclick=()=>editDay(o.id,el.dataset.day));
 }
@@ -540,11 +553,37 @@ function exportBackup(){
   const fname="Zeiterfassung-Backup_"+new Date().toISOString().slice(0,10)+".json";
   const blob=new Blob([JSON.stringify({app:"zeiterfassung",exportedAt:new Date().toISOString(),data:DB},null,1)],{type:"application/json"});
   const file=new File([blob],fname,{type:"application/json"});
+  const mark=()=>{S.lastBackup=Date.now();persist();};
   if(navigator.canShare&&navigator.canShare({files:[file]})){
-    navigator.share({files:[file]}).then(()=>toast("Backup geteilt")).catch(err=>{if(err&&err.name!=="AbortError")dlBlob(blob,fname);});
+    navigator.share({files:[file]}).then(()=>{mark();toast("Backup geteilt");render();}).catch(err=>{if(err&&err.name!=="AbortError"){dlBlob(blob,fname);mark();render();}});
+  }else{dlBlob(blob,fname);mark();render();}
+}
+function dlBlob(blob,fname){const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=fname;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),3000);toast("Datei gespeichert");}
+
+/* ===== Kalender-Export (.ics) ===== */
+function icsEsc(s){return String(s||"").replace(/\\/g,"\\\\").replace(/;/g,"\\;").replace(/,/g,"\\,").replace(/\n/g,"\\n");}
+function icsOrder(o){
+  const days=o.days.filter(d=>d.datum&&d.einsatz&&d.ende).slice().sort((a,b)=>(a.datum||"").localeCompare(b.datum||""));
+  if(!days.length){toast("Keine Tage mit Zeiten vorhanden");return;}
+  const stamp=new Date().toISOString().replace(/[-:.]/g,"").slice(0,15)+"Z";
+  const L=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Zeiterfassung//DE","CALSCALE:GREGORIAN","METHOD:PUBLISH"];
+  days.forEach(d=>{
+    const dt=d.datum.replace(/-/g,""),t=hm=>hm.replace(":","")+"00";
+    const dreh=(d.drehbeginn||d.drehende)?((d.drehbeginn||"?")+"-"+(d.drehende||"?")):"kein Dreh";
+    L.push("BEGIN:VEVENT","UID:"+o.id+"-"+d.id+"@zeiterfassung","DTSTAMP:"+stamp,
+      "DTSTART:"+dt+"T"+t(d.einsatz),"DTEND:"+dt+"T"+t(d.ende),
+      "SUMMARY:"+icsEsc("Dreh: "+(o.titel||"Auftrag")));
+    if(o.produktionsort)L.push("LOCATION:"+icsEsc(o.produktionsort));
+    L.push("DESCRIPTION:"+icsEsc((o.auftragsnr?"Auftrag "+o.auftragsnr+" · ":"")+"Einsatz "+d.einsatz+"-"+d.ende+" · Dreh "+dreh),"END:VEVENT");
+  });
+  L.push("END:VCALENDAR");
+  const fname=("Termine_"+(o.auftragsnr||o.titel||"Auftrag")).replace(/[^a-z0-9_\-]/gi,"_")+".ics";
+  const blob=new Blob([L.join("\r\n")],{type:"text/calendar"});
+  const file=new File([blob],fname,{type:"text/calendar"});
+  if(navigator.canShare&&navigator.canShare({files:[file]})){
+    navigator.share({files:[file]}).then(()=>toast("Termine geteilt")).catch(err=>{if(err&&err.name!=="AbortError")dlBlob(blob,fname);});
   }else dlBlob(blob,fname);
 }
-function dlBlob(blob,fname){const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=fname;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),3000);toast("Backup gespeichert");}
 document.getElementById("backupInput").addEventListener("change",e=>{
   const f=e.target.files[0];e.target.value="";if(!f)return;
   const r=new FileReader();
@@ -581,7 +620,9 @@ function openHelp(){
       <p class="tip">Nur zur eigenen Erinnerung – er taucht nie in Mail oder PDF auf. Antragsfrist: 6 Monate.</p></div>
     <div class="hsec"><h4>✉️ Nachweis verschicken</h4>
       <p><b>Als PDF</b> · öffnet das Teilen-Menü mit der fertigen Datei (Mail, Dateien, AirDrop …).</p>
-      <p><b>Als E-Mail</b> · öffnet deine Mail-App mit dem Nachweis als Text. Empfänger-Adresse und Anrede stellst du in den Einstellungen ein.</p></div>
+      <p><b>Als E-Mail</b> · öffnet deine Mail-App mit dem Nachweis als Text. Empfänger-Adresse und Anrede stellst du in den Einstellungen ein.</p>
+      <p><b>Termine</b> · legt die Einsatztage als Termine in deinen Kalender (Teilen → „Kalender" → „Alle hinzufügen").</p>
+      <p class="tip">Fertig abgerechnete Aufträge kannst du in der Auftrags-Ansicht mit <b>„✓ Abgerechnet"</b> markieren – sie wandern dann ausgegraut ans Ende der Liste.</p></div>
     <div class="hsec"><h4>💾 Backup – wichtig!</h4>
       <p>Deine Daten liegen nur im Browser dieses Geräts. Mach deshalb regelmäßig ein Backup:</p>
       <ol><li>Einstellungen → <b>„Backup teilen"</b></li><li>In „Dateien"/Cloud sichern oder dir selbst mailen</li><li>Wiederherstellen mit <b>„Backup einlesen"</b></li></ol>
