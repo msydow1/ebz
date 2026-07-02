@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="Zeiterfassung">
 <meta name="theme-color" content="#15171A">
 <title>Zeiterfassung</title>
-<!-- Zeiterfassung V1.9 -->
+<!-- Zeiterfassung V1.10 -->
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link href="vendor/inter.css" rel="stylesheet">
@@ -126,6 +126,9 @@ body{background:var(--bg);color:var(--text);font-family:"Inter",-apple-system,sy
 .tgbox.no{background:var(--field);border:1px solid var(--line);color:var(--muted)}
 .tgbox b{font-weight:700}
 .note{font-size:12px;color:var(--faint);line-height:1.5;margin:8px 0 0}
+.note b{color:var(--muted);font-weight:600}
+.rnote{border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:12.5px;line-height:1.65;color:var(--muted);margin-top:8px}
+.rnote b{color:var(--text);font-weight:600}
 .toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 24px);transform:translateX(-50%) translateY(20px);background:var(--field);border:1px solid var(--accent-line);color:var(--text);padding:12px 20px;border-radius:12px;font-size:14px;z-index:80;opacity:0;transition:.3s;box-shadow:0 10px 40px rgba(0,0,0,.5);pointer-events:none;max-width:90%;text-align:center}
 .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
 .divider{height:1px;background:var(--line);margin:18px 0}
@@ -166,7 +169,7 @@ body.light .card:active,body.light .day:active{background:rgba(0,0,0,.03)}
   <div class="foot">
     <div class="foot-facts"><span>Soll 7,5 Std/Tag</span><span>+30 Min Pause = 8 Std</span><span>Tagegeld: eintägig · Inland · ab 8 Std</span></div>
     <div class="foot-note">Daten bleiben nur auf diesem Gerät · alle Angaben ohne Gewähr</div>
-    <div class="foot-v">Zeiterfassung <b>V1.9</b></div>
+    <div class="foot-v">Zeiterfassung <b>V1.10</b></div>
   </div>
 </div>
 <input type="file" id="pdfInput" accept="application/pdf" class="hidden">
@@ -248,7 +251,8 @@ function renderOrders(){
     h+=`<div class="card" data-open="${o.id}">
       <div class="badge"><div class="num ${otClass(ot)}">${fmtSigned(ot)}</div><div class="lbl">Überstd.</div></div>
       <p class="titel">${esc(o.titel||"Ohne Titel")}</p>
-      <div class="meta">${o.auftragsnr?`<span><b>${esc(o.auftragsnr)}</b></span>`:""}${o.prodNummer?`<span>Prod. ${esc(o.prodNummer)}</span>`:""}<span>${o.days.length} Tag${o.days.length===1?"":"e"}</span>${tgd>0?`<span style="color:var(--pos)">${tgd}× Tagegeld mögl.</span>`:""}</div>
+      <div class="meta">${o.auftragsnr?`<span><b>${esc(o.auftragsnr)}</b></span>`:""}${o.prodNummer?`<span>Prod. ${esc(o.prodNummer)}</span>`:""}<span>${o.days.length} Tag${o.days.length===1?"":"e"}</span></div>
+      ${tgd>0?`<div style="margin-top:8px"><span class="tgchip">${tgd}× Tagegeld möglich</span></div>`:""}
       ${chips?`<div class="daystrip">${chips}</div>`:""}</div>`;
   });
   view.innerHTML=h;
@@ -504,12 +508,13 @@ function openSettings(){
     <div class="field"><label>Dein Name (für Nachweise)</label><input type="text" class="txt" id="s_name" value="${esc(S.absender||"")}" placeholder="Vorname Nachname"></div>
     <button class="btn" id="saveSet">Speichern</button><button class="btn ghost" id="closeSet" style="margin-bottom:0">Schließen</button>
     <div class="divider"></div>
-    <button class="btn ghost" id="rulesBtn">⏱ Arbeitszeit-Regeln · Soll, Pause, Tagegeld</button>
     <button class="btn ghost" id="helpBtn">📖 Anleitung – so funktioniert die App</button>
     <div class="divider"></div>
     <div class="field"><label>Datensicherung</label>
       <div class="btnrow"><button class="btn ghost" id="bakOut" style="margin-bottom:0">⤴ Backup teilen</button><button class="btn ghost" id="bakIn" style="margin-bottom:0">⤵ Backup einlesen</button></div>
-      <p class="note">Sichert alle Aufträge + Einstellungen als JSON-Datei (z. B. in „Dateien" oder per Mail an dich selbst). Einlesen ersetzt den aktuellen Stand.</p></div>
+      <p class="note"><b>„Backup teilen"</b> legt eine Sicherungsdatei mit allen Aufträgen und Einstellungen an – am besten in „Dateien" ablegen oder dir selbst mailen.<br><b>„Backup einlesen"</b> stellt eine Sicherung wieder her und ersetzt dabei den aktuellen Stand.</p></div>
+    <div class="divider"></div>
+    <button class="btn ghost" id="rulesBtn">⏱ Arbeitszeit-Regeln · Soll, Pause, Tagegeld</button>
     <div class="divider"></div><button class="btn danger" id="wipe" style="margin-bottom:0">Alle Daten löschen</button>`);
   document.getElementById("closeSet").onclick=closeSheet;
   document.getElementById("saveSet").onclick=()=>{S.email=val("s_mail");S.empfaenger=val("s_empf");S.absender=val("s_name");persist();closeSheet();render();toast("Einstellungen gespeichert");};
@@ -739,8 +744,10 @@ function confirmImport(p){
     ${persons.length?`<div class="field"><label>Person auswählen</label><div class="toggles" id="i_persons" style="flex-direction:column">${persons.map((x,i)=>`<button data-i="${i}">${esc(x.name)} · ${x.days.length} Tag(e)</button>`).join("")}</div></div>
     <div class="field"><label>Name (für Nachweis)</label><input type="text" class="txt" id="i_name" value=""></div>`:`<p class="note">Keine Personen erkannt – du kannst den Auftrag trotzdem anlegen und Tage manuell erfassen.</p>`}
     <div class="field"><label>Erkannte Einsätze</label><div class="importlist" id="i_days"></div></div>
-    <div class="field"><label>Reiseart</label><div class="toggles" id="i_trip"><button data-t="ein">Einzeltage (hin &amp; zurück)</button><button data-t="mehr">Mehrtägig (Übernachtung)</button></div></div>
-    <p class="note">Einzeltage: jeder Tag eigene An- &amp; Rückreise, Tagegeld-Hinweis je Tag möglich (z. B. zwei Drehtage am selben Ort ohne Übernachtung). Mehrtägig mit Übernachtung: Anreise nur am ersten, Rückreise nur am letzten Tag – kein Tagegeld-Hinweis (läuft über die Dienstreise-Abrechnung). Dreh-/Reisezeiten passt du je Tag an.</p>
+    <div class="field"><label>Reiseart</label><div class="toggles" id="i_trip"><button data-t="ein">Einzeltage (hin &amp; zurück)</button><button data-t="mehr">Mehrtägig (Übernachtung)</button></div>
+      <div class="rnote"><b>Einzeltage</b> · jeden Tag hin &amp; zurück<br>Tagegeld je Tag möglich – z. B. zwei Drehtage am selben Ort ohne Übernachtung.</div>
+      <div class="rnote"><b>Mehrtägig</b> · mit Übernachtung<br>Anreise nur am ersten, Rückreise nur am letzten Tag. Kein Tagegeld-Hinweis (läuft über die Dienstreise-Abrechnung).</div>
+      <p class="note">Dreh- und Reisezeiten passt du danach je Tag an.</p></div>
     <button class="btn" id="doImport">Importieren</button><button class="btn ghost" id="cancelImport" style="margin-bottom:0">Abbrechen</button>`);
   function paint(){document.querySelectorAll("#i_persons button").forEach(b=>b.classList.toggle("on",+b.dataset.i===impSel));const sel=persons[impSel];const days=sel?sel.days:[];const dl=document.getElementById("i_days");dl.innerHTML=days.length?days.map(d=>fmtDate(d.datum)+"  "+(d.einsatz||"?")+"–"+(d.ende||"?")).join("<br>"):'<span style="color:var(--faint)">keine Tage erkannt</span>';const nm=document.getElementById("i_name");if(nm&&sel)nm.value=sel.name;if(!tripTouched)impTrip=defTrip();document.querySelectorAll("#i_trip button").forEach(b=>b.classList.toggle("on",b.dataset.t===impTrip));}
   if(persons.length){document.querySelectorAll("#i_persons button").forEach(b=>b.onclick=()=>{impSel=+b.dataset.i;paint();});}
