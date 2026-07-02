@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="Zeiterfassung">
 <meta name="theme-color" content="#15171A">
 <title>Zeiterfassung</title>
-<!-- Zeiterfassung V1.7 -->
+<!-- Zeiterfassung V1.8 -->
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link href="vendor/inter.css" rel="stylesheet">
@@ -142,17 +142,26 @@ body{background:var(--bg);color:var(--text);font-family:"Inter",-apple-system,sy
 .cdlg .cmsg{margin:0 0 18px;font-size:15px;line-height:1.5;color:var(--text)}
 .crow{display:flex;gap:10px}.crow .btn{flex:1}
 .importlist{background:var(--field);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:13px;line-height:1.7;font-variant-numeric:tabular-nums}
+/* Hell-Modus */
+body.light{--bg:#F5F4F1;--surface:#FFFFFF;--surface-2:#EFEDE8;--field:#E9E7E1;--line:#DEDBD3;--line-strong:#C9C5BC;--text:#28251F;--text-strong:#141210;--muted:#7A756C;--silver:#545048;--faint:#9B968C;--accent:#E86F0C;--accent-soft:rgba(232,111,12,.12);--accent-line:rgba(232,111,12,.5);--pos:#1E9E60;--pos-soft:rgba(30,158,96,.12);--pos-line:rgba(30,158,96,.5);--info:#49688C;--info-soft:rgba(73,104,140,.12);--info-line:rgba(73,104,140,.45);--danger:#C24E3B}
+body.light .bar{background:rgba(245,244,241,.85)}
+body.light .card:active,body.light .day:active{background:rgba(0,0,0,.03)}
+/* Anleitung */
+.help p{font-size:13.5px;line-height:1.65;color:var(--text);margin:0}
+.help p+p{margin-top:8px}
+.help b{color:var(--text-strong)}
+.help .timebox{margin-bottom:12px}
 </style>
 </head>
 <body>
 <div class="app">
-  <div class="bar"><div class="logo">Z</div><h1>Zeiterfassung<small id="barsub">EB-Aufträge</small></h1><button class="iconbtn" id="navSettings" aria-label="Einstellungen">⚙</button></div>
+  <div class="bar"><div class="logo">Z</div><h1>Zeiterfassung<small id="barsub">EB-Aufträge</small></h1><button class="iconbtn" id="themeBtn" aria-label="Hell/Dunkel">☀</button><button class="iconbtn" id="navSettings" aria-label="Einstellungen">⚙</button></div>
   <div class="seg" id="seg"><button data-tab="orders" class="on">Aufträge</button><button data-tab="stats">Statistik</button></div>
   <div class="view" id="view"></div>
   <div class="foot">
     <div class="foot-facts"><span>Soll 7,5 Std/Tag</span><span>+30 Min Pause = 8 Std</span><span>Tagegeld: eintägig · Inland · ab 8 Std</span></div>
     <div class="foot-note">Daten bleiben nur auf diesem Gerät · alle Angaben ohne Gewähr</div>
-    <div class="foot-v">Zeiterfassung <b>V1.7</b></div>
+    <div class="foot-v">Zeiterfassung <b>V1.8</b></div>
   </div>
 </div>
 <input type="file" id="pdfInput" accept="application/pdf" class="hidden">
@@ -168,7 +177,7 @@ const KEY="zeiterfassung_v2";
 const Store={mem:{},load(){try{const r=localStorage.getItem(KEY);return r?JSON.parse(r):null}catch(e){return this.mem[KEY]||null}},save(o){try{localStorage.setItem(KEY,JSON.stringify(o))}catch(e){this.mem[KEY]=o}}};
 let DB=Store.load()||{orders:[],settings:{}};
 const S=DB.settings;
-S.sollMin??=450; if(S.sollMin===462)S.sollMin=450; S.standardPause??=30; S.abwesenheitMin??=480; S.email??=""; S.absender??=""; S.empfaenger??="";
+S.sollMin??=450; if(S.sollMin===462)S.sollMin=450; S.standardPause??=30; S.abwesenheitMin??=480; S.email??=""; S.absender??=""; S.empfaenger??=""; S.theme??="dark";
 DB.orders.forEach(o=>{o.notiz??=""; o.equipment??=[]; o.days.forEach(d=>{
   if(d.einsatz===undefined){ d.einsatz=d.istStart||d.geplStart||""; d.ende=d.istEnde||d.geplEnde||""; d.anreise=""; d.rueck="";
     d.dispo={einsatz:d.geplStart||d.istStart||"",ende:d.geplEnde||d.istEnde||""}; delete d.istStart;delete d.istEnde;delete d.geplStart;delete d.geplEnde; }
@@ -188,6 +197,8 @@ function fmtMin(m){if(m==null)return "–";const s=m<0?"-":"";m=Math.abs(m);retu
 function fmtSigned(m){if(m==null)return "–";const s=m>0?"+":(m<0?"-":"±");const a=Math.abs(m);return s+Math.floor(a/60)+":"+String(a%60).padStart(2,"0");}
 function otClass(m){if(m==null||m===0)return "ot-zero";return m>0?"ot-pos":"ot-neg";}
 const WD=["So","Mo","Di","Mi","Do","Fr","Sa"];
+const MN=["Januar","Februar","März","April","Mai","Juni","Juli","August","September","Oktober","November","Dezember"];
+function fmtMonth(mk){return MN[+mk.slice(5,7)-1]+" "+mk.slice(0,4);}
 function fmtDate(iso){if(!iso)return "—";const d=new Date(iso+"T00:00");if(isNaN(d))return iso;return WD[d.getDay()]+". "+String(d.getDate()).padStart(2,"0")+"."+String(d.getMonth()+1).padStart(2,"0")+".";}
 function fmtDateLong(iso){if(!iso)return "";const d=new Date(iso+"T00:00");if(isNaN(d))return iso;return WD[d.getDay()]+", "+String(d.getDate()).padStart(2,"0")+"."+String(d.getMonth()+1).padStart(2,"0")+"."+d.getFullYear();}
 
@@ -215,6 +226,8 @@ let state={tab:"orders",orderId:null};
 const view=document.getElementById("view"),seg=document.getElementById("seg");
 seg.addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;state.tab=b.dataset.tab;state.orderId=null;[...seg.children].forEach(c=>c.classList.toggle("on",c===b));render();});
 document.getElementById("navSettings").onclick=openSettings;
+function applyTheme(){const l=S.theme==="light";document.body.classList.toggle("light",l);document.getElementById("themeBtn").textContent=l?"☾":"☀";const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=l?"#F5F4F1":"#15171A";}
+document.getElementById("themeBtn").onclick=()=>{S.theme=(S.theme==="light"?"dark":"light");persist();applyTheme();};
 function render(){document.getElementById("barsub").textContent=state.orderId?"Auftrag":(state.tab==="stats"?"Übersicht":"EB-Aufträge");seg.style.display=state.orderId?"none":"flex";if(state.orderId)return renderDetail();if(state.tab==="stats")return renderStats();return renderOrders();}
 
 /* ===== Liste ===== */
@@ -298,9 +311,26 @@ function renderStats(){
     <div class="s"><div class="n mono" style="color:var(--pos)">${totTGd}</div><div class="l">Tagegeld-Tage (mögl.)</div></div>
     <div class="s"><div class="n mono">${fmtMin(S.sollMin)}</div><div class="l">Soll / Tag</div></div>
   </div>`;
+  // Gruppierung nach Monat und Jahr (aus den Tagesdaten)
+  const perMonth={},perYear={};
+  DB.orders.forEach(o=>o.days.forEach(d=>{
+    if(!d.datum)return;const c=dayCalc(d);if(c.netto==null)return;
+    const mk=d.datum.slice(0,7),yk=d.datum.slice(0,4);
+    (perMonth[mk]??={ot:0,netto:0,days:0});perMonth[mk].ot+=c.ot||0;perMonth[mk].netto+=c.netto;perMonth[mk].days++;
+    (perYear[yk]??={ot:0,netto:0,days:0});perYear[yk].ot+=c.ot||0;perYear[yk].netto+=c.netto;perYear[yk].days++;
+  }));
+  const months=Object.keys(perMonth).sort().reverse(),years=Object.keys(perYear).sort().reverse();
+  if(months.length){h+=`<div class="section-h"><h3>Pro Monat</h3></div>`;
+    months.forEach(mk=>{const m=perMonth[mk];
+      h+=`<div class="srow"><div class="nm">${fmtMonth(mk)}<small>${m.days} Tag(e) · ${fmtMin(m.netto)} Std</small></div><div class="v ${otClass(m.ot)}">${fmtSigned(m.ot)}</div></div>`;});
+  }
+  if(years.length>1){h+=`<div class="section-h"><h3>Pro Jahr</h3></div>`;
+    years.forEach(yk=>{const yy=perYear[yk];
+      h+=`<div class="srow"><div class="nm">${yk}<small>${yy.days} Tag(e) · ${fmtMin(yy.netto)} Std</small></div><div class="v ${otClass(yy.ot)}">${fmtSigned(yy.ot)}</div></div>`;});
+  }
   if(DB.orders.length){h+=`<div class="section-h"><h3>Pro Auftrag</h3></div>`;
     DB.orders.slice().reverse().forEach(o=>{const ot=orderOT(o),tgd=orderTGdays(o);
-      h+=`<div class="srow" data-open="${o.id}"><div class="nm">${esc(o.titel||"Ohne Titel")}<small>${o.days.length} Tag(e)${tgd>0?` · ${tgd}× Tagegeld mögl.`:""}</small></div><div class="v ${otClass(ot)}">${fmtSigned(ot)}</div></div>`;});
+      h+=`<div class="srow" data-open="${o.id}"><div class="nm">${esc(o.titel||"Ohne Titel")}<small>${o.days.length} Tag(e) · ${fmtMin(orderNetto(o))} Std${tgd>0?` · ${tgd}× Tagegeld mögl.`:""}</small></div><div class="v ${otClass(ot)}">${fmtSigned(ot)}</div></div>`;});
   }else h+=`<div class="empty"><div class="big">📊</div><p>Noch keine Daten.</p></div>`;
   view.innerHTML=h;
   view.querySelectorAll("[data-open]").forEach(c=>c.onclick=()=>{state.orderId=c.dataset.open;render();});
@@ -457,12 +487,14 @@ function openSettings(){
     <div class="field"><label>Dein Name (für Nachweise)</label><input type="text" class="txt" id="s_name" value="${esc(S.absender||"")}" placeholder="Vorname Nachname"></div>
     <button class="btn" id="saveSet">Speichern</button><button class="btn ghost" id="closeSet">Schließen</button>
     <div class="divider"></div>
+    <button class="btn ghost" id="helpBtn">📖 Anleitung – so funktioniert die App</button>
     <div class="field"><label>Datensicherung</label>
       <div class="btnrow"><button class="btn ghost" id="bakOut" style="margin-bottom:0">⤴ Backup teilen</button><button class="btn ghost" id="bakIn" style="margin-bottom:0">⤵ Backup einlesen</button></div>
       <p class="note">Sichert alle Aufträge + Einstellungen als JSON-Datei (z. B. in „Dateien" oder per Mail an dich selbst). Einlesen ersetzt den aktuellen Stand.</p></div>
     <div class="divider"></div><button class="btn danger" id="wipe" style="margin-bottom:0">Alle Daten löschen</button>`);
   document.getElementById("closeSet").onclick=closeSheet;
   document.getElementById("saveSet").onclick=()=>{S.sollMin=(parseInt(val("s_h"))||0)*60+(parseInt(val("s_m"))||0);S.standardPause=parseInt(val("s_p"))||0;S.abwesenheitMin=parseInt(val("s_ab"))||480;S.email=val("s_mail");S.empfaenger=val("s_empf");S.absender=val("s_name");persist();closeSheet();render();toast("Einstellungen gespeichert");};
+  document.getElementById("helpBtn").onclick=openHelp;
   document.getElementById("bakOut").onclick=exportBackup;
   document.getElementById("bakIn").onclick=()=>document.getElementById("backupInput").click();
   document.getElementById("wipe").onclick=()=>{askConfirm("Wirklich ALLE Aufträge löschen?",()=>{DB.orders=[];persist();closeSheet();state.orderId=null;render();toast("Alle Daten gelöscht");});};
@@ -491,6 +523,34 @@ document.getElementById("backupInput").addEventListener("change",e=>{
   }catch(err){console.error(err);toast("Backup konnte nicht gelesen werden");}};
   r.readAsText(f);
 });
+
+/* ===== Anleitung ===== */
+function openHelp(){
+  openSheet(`<h3>Anleitung</h3><div class="help">
+    <div class="timebox"><div class="tl">Grundprinzip</div>
+      <p>Die App verwaltet <b>Aufträge</b> (Dreh/Produktion) mit ihren <b>Arbeitstagen</b>. Pro Tag werden Einsatz-, Dreh- und Reisezeiten erfasst; Überstunden rechnen sich aus der Einsatzzeit minus Pause gegen das Soll (7,5 Std). Alle Daten bleiben <b>nur auf diesem Gerät</b> – nichts wird an einen Server geschickt.</p></div>
+    <div class="timebox"><div class="tl">Dispo-PDF importieren (iPhone)</div>
+      <p>1. In der Mail das Dispo-PDF antippen.<br>2. Teilen-Symbol → <b>„In Dateien sichern"</b> (dein Cloud-Ordner geht auch).<br>3. In der App: <b>„PDF von der Dispo importieren"</b> → die Datei liegt im Dialog direkt unter „Zuletzt benutzt".</p>
+      <p>Erkannt werden Titel, Auftrags-/Prod.-Nr., Kostenträger, Personen und Einsatzzeiten – danach bitte prüfen. Wichtig ist die <b>Reiseart</b>: „Einzeltage" = jeder Tag mit eigener Hin- und Rückfahrt (Tagegeld je Tag möglich) · „Mehrtägig" = Übernachtung, Anreise nur am ersten, Rückreise nur am letzten Tag.</p>
+      <p><b>Hinweis:</b> Direkt aus der Mail „in die App teilen" lässt iOS bei Web-Apps nicht zu – der Weg über „Dateien" ist der kürzeste.</p></div>
+    <div class="timebox"><div class="tl">Tag erfassen</div>
+      <p><b>Einsatzbeginn ist der Anker.</b> Das Einsatzende rechnet sich automatisch aus der letzten Tätigkeit +30 Min (Rückreiseende → Drehende → Anreise-Ende) und bleibt stehen, sobald du es selbst tippst. Für reine Anreisetage: <b>„kein Dreh"</b>. Für Fahrten, die entfallen: <b>„entfällt"</b> bei An-/Rückreise. Alle Zeiten sind editierbar – die Vorschläge sind nur Startwerte.</p></div>
+    <div class="timebox"><div class="tl">Tagegeld</div>
+      <p>Der grüne Hinweis erscheint nur bei: eintägig · Inland · über 8 Std abwesend. Er ist <b>rein intern</b> (nie in Mail oder PDF) und erinnert dich ans Beantragen – Frist real 6 Monate.</p></div>
+    <div class="timebox"><div class="tl">Nachweis exportieren</div>
+      <p><b>Als PDF:</b> öffnet das Teilen-Menü mit der fertigen PDF-Datei (Mail, Dateien, AirDrop …). <b>Als E-Mail:</b> öffnet deine Mail-App mit dem Text-Nachweis; Empfänger-Adresse und Anrede-Name stellst du in den Einstellungen ein.</p></div>
+    <div class="timebox"><div class="tl">Datensicherung (wichtig!)</div>
+      <p>Die Daten liegen nur im Browser dieses Geräts. <b>„Backup teilen"</b> erzeugt eine JSON-Datei mit allen Aufträgen + Einstellungen – am besten regelmäßig in „Dateien"/Cloud sichern oder dir selbst mailen. <b>„Backup einlesen"</b> stellt einen Stand wieder her (ersetzt den aktuellen).</p></div>
+    <div class="timebox"><div class="tl">Offline & Installation</div>
+      <p>Nach dem ersten Laden funktioniert die App auch <b>ohne Internet</b> (inkl. PDF-Export). Installation: URL in Safari öffnen → Teilen → <b>„Zum Home-Bildschirm"</b>. Immer über dieses Icon öffnen, damit die Daten erhalten bleiben.</p></div>
+    <div class="timebox"><div class="tl">Hell / Dunkel</div>
+      <p>Über das ☀/☾-Symbol oben wechselst du zwischen Dunkel- und Hell-Modus. Die Wahl wird gespeichert.</p></div>
+  </div>
+  <button class="btn" id="helpBack">Zurück zu den Einstellungen</button>
+  <button class="btn ghost" id="helpClose" style="margin-bottom:0">Schließen</button>`);
+  document.getElementById("helpBack").onclick=openSettings;
+  document.getElementById("helpClose").onclick=closeSheet;
+}
 
 /* ===== Export ===== */
 function orderReportText(o){
@@ -669,6 +729,7 @@ function esc(s){return String(s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt
 let toastT;function toast(m){const el=document.getElementById("toast");el.textContent=m;el.classList.add("on");clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove("on"),2600);}
 function askConfirm(msg,onYes,yesLabel){const el=document.getElementById("confirmBox");el.querySelector(".cmsg").textContent=msg;el.classList.add("on");const yes=document.getElementById("cYes"),no=document.getElementById("cNo");yes.textContent=yesLabel||"Löschen";const close=()=>{el.classList.remove("on");yes.onclick=null;no.onclick=null;};yes.onclick=()=>{close();onYes();};no.onclick=close;}
 if("serviceWorker" in navigator&&(location.protocol==="https:"||location.hostname==="localhost"))navigator.serviceWorker.register("sw.js").catch(()=>{});
+applyTheme();
 render();
 </script>
 </body>
