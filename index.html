@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="Zeiterfassung">
 <meta name="theme-color" content="#15171A">
 <title>Zeiterfassung</title>
-<!-- Zeiterfassung V2.2 -->
+<!-- Zeiterfassung V2.3 -->
 <!-- impeccable-disable single-font -- Nutzer wählte beim V1.2-Redesign bewusst "Inter durchgängig" (eine Familie, tabular-nums für Zeiten) -->
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -187,7 +187,7 @@ body.light .card:active,body.light .day:active{background:rgba(0,0,0,.03)}
   <div class="foot">
     <div class="foot-facts"><span>Soll 7,5 Std/Tag</span><span>+30 Min Pause = 8 Std</span><span>Tagegeld: eintägig · Inland · ab 8 Std</span></div>
     <div class="foot-note">Daten bleiben nur auf diesem Gerät · alle Angaben ohne Gewähr</div>
-    <div class="foot-v">Zeiterfassung <b>V2.2</b></div>
+    <div class="foot-v">Zeiterfassung <b>V2.3</b></div>
   </div>
 </div>
 <input type="file" id="pdfInput" accept="application/pdf" class="hidden">
@@ -750,19 +750,39 @@ document.getElementById("pdfInput").addEventListener("change",async e=>{
   if(typeof pdfjsLib==="undefined"){toast("PDF-Bibliothek nicht geladen (online sein)");return;}
   toast("PDF wird gelesen…");
   try{pdfjsLib.GlobalWorkerOptions.workerSrc="vendor/pdf.worker.min.js";
-    const buf=await file.arrayBuffer();const pdf=await pdfjsLib.getDocument({data:buf}).promise;let text="";
+    const buf=await file.arrayBuffer();const pdf=await pdfjsLib.getDocument({data:buf}).promise;let text="",hints=null;
     for(let p=1;p<=pdf.numPages;p++){const pg=await pdf.getPage(p);const tc=await pg.getTextContent();
       const lines=[];tc.items.forEach(it=>{if(typeof it.str!=="string"||it.str===""||!it.transform)return;const x=it.transform[4],y=it.transform[5];let ln=lines.find(l=>Math.abs(l.y-y)<=4);if(!ln){ln={y,parts:[]};lines.push(ln);}ln.parts.push({x,w:it.width||0,s:it.str});});
       lines.sort((a,b)=>b.y-a.y);
       /* Teile nur bei echter Lücke (>1pt) mit Leerzeichen verbinden – PDFs zerlegen
          Wörter/Nummern oft in berührende Stücke ("A"+"2748455", "455"+"11333") */
       const pageText=lines.map(l=>{const ps=l.parts.sort((a,b)=>a.x-b.x);let s="",end=null;ps.forEach(p=>{if(end!==null&&p.x-end>1)s+=" ";s+=p.s;end=p.x+p.w;});return s;}).join(" ");
-      text+=(pageText||tc.items.map(i=>i.str).join(" "))+" ";}
-    confirmImport(parseZDF(text));
+      text+=(pageText||tc.items.map(i=>i.str).join(" "))+" ";
+      if(p===1)hints=labelHints(tc.items);}
+    const meta=parseZDF(text);
+    if(hints){if(hints.titel)meta.titel=hints.titel;if(hints.ort)meta.produktionsort=hints.ort;}
+    confirmImport(meta);
   }catch(err){console.error(err);toast("PDF konnte nicht gelesen werden");}
 });
 function clean(s){return String(s||"").replace(/\s+/g," ").trim();}
 function cleanName(n){return clean(n).replace(/\s*\.{2,3}\s*$/,"").replace(/\s+,/,",").trim();}
+/* Spaltenwerte direkt unter den Formular-Labels lesen (Seite 1).
+   Titel/Produktionsort stehen im ZDF-Formular exakt unter ihrer Beschriftung –
+   zuverlässiger als jede Fließtext-Heuristik (17/25 Ort-Fehlschläge im Real-Korpus). */
+function labelHints(items){
+  const its=[];items.forEach(it=>{if(typeof it.str!=="string"||!it.str.trim()||!it.transform)return;its.push({s:it.str,x:it.transform[4],y:it.transform[5],w:it.width||0});});
+  const find=re=>its.find(i=>re.test(i.s.trim()));
+  const grab=(lab,xEnd)=>{
+    if(!lab)return "";
+    const cand=its.filter(i=>i.y<lab.y-3&&i.y>lab.y-30&&i.x>=lab.x-2&&i.x<xEnd-2&&!/^(Personalleistung|Personal-Disposition|Auftragsbemerkung)/.test(i.s.trim()));
+    cand.sort((a,b)=>b.y-a.y||a.x-b.x);
+    let s="",end=null,lastY=null;
+    cand.forEach(c=>{if(lastY!==null&&Math.abs(c.y-lastY)>3){s+=" ";end=null;}if(end!==null&&c.x-end>1)s+=" ";s+=c.s;end=c.x+c.w;lastY=c.y;});
+    return clean(s);
+  };
+  const tit=find(/^Titel$/),pn=find(/^Prod\.?\s*Nummer$/),ort=find(/^Produktionsort$/),send=find(/^SendeRedaktion$/);
+  return { titel:grab(tit,pn?pn.x:Infinity), ort:grab(ort,send?send.x:Infinity) };
+}
 function parseMeta(t){
   const o={titel:"",auftragsnr:"",prodNummer:"",kostentraeger:"",produktionsort:""};let m;
   if(m=t.match(/Auftrag\s+(A\d{6,8})/i))o.auftragsnr=m[1];
