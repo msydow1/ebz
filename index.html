@@ -8,7 +8,8 @@
 <meta name="apple-mobile-web-app-title" content="Zeiterfassung">
 <meta name="theme-color" content="#15171A">
 <title>Zeiterfassung</title>
-<!-- Zeiterfassung V2.0 -->
+<!-- Zeiterfassung V2.1 -->
+<!-- impeccable-disable single-font -- Nutzer wählte beim V1.2-Redesign bewusst "Inter durchgängig" (eine Familie, tabular-nums für Zeiten) -->
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link href="vendor/inter.css" rel="stylesheet">
@@ -86,9 +87,14 @@ body{background:var(--bg);color:var(--text);font-family:"Inter",-apple-system,sy
 .srow .nm small{display:block;color:var(--faint);font-size:11px;font-weight:400}
 .srow .v{font-weight:700;font-size:15px;flex:none;font-variant-numeric:tabular-nums}
 .scrim{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:50;display:none;backdrop-filter:blur(3px)}
-.scrim.on{display:block}
+.scrim.on{display:block;animation:fadein .25s ease}
+.scrim.out{animation:fadeout .2s ease forwards}
 .sheet{position:absolute;left:0;right:0;bottom:0;margin:0 auto;background:var(--bg);width:auto;max-width:560px;border-radius:22px 22px 0 0;border-top:1px solid var(--line-strong);max-height:92vh;overflow-y:auto;overflow-x:hidden;padding:8px 20px calc(env(safe-area-inset-bottom) + 24px);animation:up .3s cubic-bezier(.2,.8,.2,1)}
+.sheet.out{animation:down .2s ease forwards}
 @keyframes up{from{transform:translateY(100%)}to{transform:none}}
+@keyframes down{to{transform:translateY(100%)}}
+@keyframes fadein{from{opacity:0}to{opacity:1}}
+@keyframes fadeout{to{opacity:0}}
 .grip{width:38px;height:5px;border-radius:3px;background:var(--line-strong);margin:8px auto 16px}
 .sheet h3{font-weight:800;font-size:21px;margin:0 0 18px;letter-spacing:-.4px;color:var(--text-strong)}
 .field{margin-bottom:16px}
@@ -147,8 +153,13 @@ details.exp[open] summary::before{content:"–"}
 .foot-v{font-size:11.5px;font-weight:600;color:var(--faint);letter-spacing:.2px;margin-top:14px}
 .foot-v b{color:var(--accent);font-weight:700}
 .cscrim{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:120;display:none;align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(3px)}
-.cscrim.on{display:flex}
-.cdlg{background:var(--surface);border:1px solid var(--line-strong);border-radius:16px;padding:22px;max-width:340px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+.cscrim.on{display:flex;animation:fadein .25s ease}
+.cscrim.out{animation:fadeout .15s ease forwards}
+.cdlg{background:var(--surface);border:1px solid var(--line-strong);border-radius:16px;padding:22px;max-width:340px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.6);animation:pop .25s cubic-bezier(.2,.8,.2,1)}
+.cscrim.out .cdlg{animation:popout .15s ease forwards}
+@keyframes pop{from{opacity:0;transform:scale(.95) translateY(8px)}}
+@keyframes popout{to{opacity:0;transform:scale(.97)}}
+@media (prefers-reduced-motion:reduce){.scrim,.scrim.on,.scrim.out,.sheet,.sheet.out,.cscrim.on,.cscrim.out,.cdlg,.cscrim.out .cdlg,.toast{animation-duration:0s!important;transition-duration:0s!important}}
 .cdlg .cmsg{margin:0 0 18px;font-size:15px;line-height:1.5;color:var(--text)}
 .crow{display:flex;gap:10px}.crow .btn{flex:1}
 .importlist{background:var(--field);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:13px;line-height:1.7;font-variant-numeric:tabular-nums}
@@ -176,7 +187,7 @@ body.light .card:active,body.light .day:active{background:rgba(0,0,0,.03)}
   <div class="foot">
     <div class="foot-facts"><span>Soll 7,5 Std/Tag</span><span>+30 Min Pause = 8 Std</span><span>Tagegeld: eintägig · Inland · ab 8 Std</span></div>
     <div class="foot-note">Daten bleiben nur auf diesem Gerät · alle Angaben ohne Gewähr</div>
-    <div class="foot-v">Zeiterfassung <b>V2.0</b></div>
+    <div class="foot-v">Zeiterfassung <b>V2.1</b></div>
   </div>
 </div>
 <input type="file" id="pdfInput" accept="application/pdf" class="hidden">
@@ -235,6 +246,8 @@ function dayCalc(d){
 const orderOT=o=>o.days.reduce((a,d)=>a+(dayCalc(d).ot||0),0);
 const orderNetto=o=>o.days.reduce((a,d)=>a+(dayCalc(d).netto||0),0);
 const orderTGdays=o=>o.days.reduce((a,d)=>a+(dayCalc(d).tg.state==="ok"?1:0),0);
+const orderDate=o=>o.days.map(d=>d.datum).filter(Boolean).sort()[0]||"";
+const byDate=(a,b)=>(orderDate(a)||"0000").localeCompare(orderDate(b)||"0000");
 
 /* ===== Routing ===== */
 let state={tab:"orders",orderId:null};
@@ -264,8 +277,8 @@ function renderOrders(){
       <div class="meta">${o.auftragsnr?`<span><b>${esc(o.auftragsnr)}</b></span>`:""}${o.prodNummer?`<span>Prod. ${esc(o.prodNummer)}</span>`:""}<span>${o.days.length} Tag${o.days.length===1?"":"e"}</span></div>
       ${o.abgerechnet?`<div style="margin-top:8px"><span class="uechip">✓ abgerechnet</span></div>`:(tgd>0?`<div style="margin-top:8px"><span class="tgchip">${tgd}× Tagegeld möglich</span></div>`:"")}
       ${chips?`<div class="daystrip">${chips}</div>`:""}</div>`;};
-    DB.orders.filter(o=>!o.abgerechnet).slice().reverse().forEach(o=>h+=cardHtml(o));
-    const done=DB.orders.filter(o=>o.abgerechnet).slice().reverse();
+    DB.orders.filter(o=>!o.abgerechnet).slice().sort(byDate).forEach(o=>h+=cardHtml(o));
+    const done=DB.orders.filter(o=>o.abgerechnet).slice().sort(byDate);
     if(done.length){h+=`<div class="section-h" style="margin-top:26px"><h3>Abgerechnet</h3><span class="tot">${done.length}</span></div>`;done.forEach(o=>h+=cardHtml(o));}
   }
   view.innerHTML=h;
@@ -356,7 +369,7 @@ function renderStats(){
       h+=`<div class="srow"><div class="nm">${yk}<small>${yy.days} Tag(e) · ${fmtMin(yy.netto)} Std</small></div><div class="v ${otClass(yy.ot)}">${fmtSigned(yy.ot)}</div></div>`;});
   }
   if(DB.orders.length){h+=`<div class="section-h"><h3>Pro Auftrag</h3></div>`;
-    DB.orders.slice().reverse().forEach(o=>{const ot=orderOT(o),tgd=orderTGdays(o);
+    DB.orders.slice().sort((a,b)=>byDate(b,a)).forEach(o=>{const ot=orderOT(o),tgd=orderTGdays(o);
       h+=`<div class="srow" data-open="${o.id}"><div class="nm">${esc(o.titel||"Ohne Titel")}<small>${o.days.length} Tag(e) · ${fmtMin(orderNetto(o))} Std${tgd>0?` · ${tgd}× Tagegeld mögl.`:""}</small></div><div class="v ${otClass(ot)}">${fmtSigned(ot)}</div></div>`;});
   }else h+=`<div class="empty"><div class="big">📊</div><p>Noch keine Daten.</p></div>`;
   view.innerHTML=h;
@@ -365,8 +378,14 @@ function renderStats(){
 
 /* ===== Sheet ===== */
 const scrim=document.getElementById("scrim"),sheet=document.getElementById("sheet");
-function openSheet(html){sheet.innerHTML='<div class="grip"></div>'+html;scrim.classList.add("on");sheet.scrollTop=0;}
-function closeSheet(){scrim.classList.remove("on");sheet.style.transform="";sheet.style.transition="";}
+let shT=null;
+function openSheet(html){clearTimeout(shT);scrim.classList.remove("out");sheet.classList.remove("out");sheet.innerHTML='<div class="grip"></div>'+html;scrim.classList.add("on");sheet.scrollTop=0;}
+function closeSheet(){
+  if(!scrim.classList.contains("on")||scrim.classList.contains("out"))return;
+  scrim.classList.add("out");
+  if(!sheet.style.transform)sheet.classList.add("out");/* Swipe hat das Sheet schon rausgeschoben */
+  shT=setTimeout(()=>{scrim.classList.remove("on","out");sheet.classList.remove("out");sheet.style.transform="";sheet.style.transition="";},200);
+}
 scrim.addEventListener("click",e=>{if(e.target===scrim)closeSheet();});
 /* Wisch nach unten schließt das Sheet (nur wenn der Inhalt oben steht) */
 let swY=null,swActive=false;
@@ -825,7 +844,7 @@ function confirmImport(p){
 function val(id){return (document.getElementById(id)||{}).value||"";}
 function esc(s){return String(s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
 let toastT;function toast(m){const el=document.getElementById("toast");el.textContent=m;el.classList.add("on");clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove("on"),2600);}
-function askConfirm(msg,onYes,yesLabel){const el=document.getElementById("confirmBox");el.querySelector(".cmsg").textContent=msg;el.classList.add("on");const yes=document.getElementById("cYes"),no=document.getElementById("cNo");yes.textContent=yesLabel||"Löschen";const close=()=>{el.classList.remove("on");yes.onclick=null;no.onclick=null;};yes.onclick=()=>{close();onYes();};no.onclick=close;}
+function askConfirm(msg,onYes,yesLabel){const el=document.getElementById("confirmBox");el.querySelector(".cmsg").textContent=msg;el.classList.remove("out");el.classList.add("on");const yes=document.getElementById("cYes"),no=document.getElementById("cNo");yes.textContent=yesLabel||"Löschen";const close=()=>{el.classList.add("out");setTimeout(()=>{el.classList.remove("on","out");},150);yes.onclick=null;no.onclick=null;};yes.onclick=()=>{close();onYes();};no.onclick=close;}
 if("serviceWorker" in navigator&&(location.protocol==="https:"||location.hostname==="localhost"))navigator.serviceWorker.register("sw.js").catch(()=>{});
 applyTheme();
 render();
