@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="Zeiterfassung">
 <meta name="theme-color" content="#15171A">
 <title>Zeiterfassung</title>
-<!-- Zeiterfassung V2.3 -->
+<!-- Zeiterfassung V2.4 -->
 <!-- impeccable-disable single-font -- Nutzer wählte beim V1.2-Redesign bewusst "Inter durchgängig" (eine Familie, tabular-nums für Zeiten) -->
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -187,7 +187,7 @@ body.light .card:active,body.light .day:active{background:rgba(0,0,0,.03)}
   <div class="foot">
     <div class="foot-facts"><span>Soll 7,5 Std/Tag</span><span>+30 Min Pause = 8 Std</span><span>Tagegeld: eintägig · Inland · ab 8 Std</span></div>
     <div class="foot-note">Daten bleiben nur auf diesem Gerät · alle Angaben ohne Gewähr</div>
-    <div class="foot-v">Zeiterfassung <b>V2.3</b></div>
+    <div class="foot-v">Zeiterfassung <b>V2.4</b></div>
   </div>
 </div>
 <input type="file" id="pdfInput" accept="application/pdf" class="hidden">
@@ -542,6 +542,7 @@ function openSettings(){
   const lastBak=S.lastBackup?fmtDE(new Date(S.lastBackup)):"noch keins";
   openSheet(`<h3>Einstellungen</h3>
     <button class="btn ghost" id="helpBtn">📖 Anleitung – so funktioniert die App</button>
+    <button class="btn ghost" id="shareApp">📤 App weiterempfehlen</button>
     <div class="divider"></div>
     <div class="field"><label>Datensicherung</label>
       <div class="btnrow"><button class="btn ghost" id="bakOut" style="margin-bottom:0">⤴ Backup teilen</button><button class="btn ghost" id="bakIn" style="margin-bottom:0">⤵ Backup einlesen</button></div>
@@ -561,6 +562,13 @@ function openSettings(){
   document.getElementById("saveSet").onclick=()=>{S.email=val("s_mail");S.empfaenger=val("s_empf");S.absender=val("s_name");persist();closeSheet();render();toast("Einstellungen gespeichert");};
   document.getElementById("rulesBtn").onclick=openRules;
   document.getElementById("helpBtn").onclick=openHelp;
+  document.getElementById("shareApp").onclick=()=>{
+    const url="https://msydow1.github.io/ebz/";
+    const data={title:"Zeiterfassung",text:"Zeiterfassung für EB-Einsätze: Aufträge, Überstunden, Dispo-Import, Nachweis als PDF. Daten bleiben auf deinem Gerät.",url};
+    if(navigator.share)navigator.share(data).catch(()=>{});
+    else if(navigator.clipboard)navigator.clipboard.writeText(url).then(()=>toast("Link kopiert")).catch(()=>toast(url));
+    else toast(url);
+  };
   document.getElementById("bakOut").onclick=exportBackup;
   document.getElementById("bakIn").onclick=()=>document.getElementById("backupInput").click();
   document.getElementById("wipe").onclick=()=>{askConfirm("Wirklich ALLE Aufträge löschen?",()=>{DB.orders=[];persist();closeSheet();state.orderId=null;render();toast("Alle Daten gelöscht");});};
@@ -638,6 +646,7 @@ function openHelp(){
       <ol><li>In der Mail das <b>PDF antippen</b></li><li><b>Teilen</b> → „In Dateien sichern" (dein Cloud-Ordner geht auch)</li><li>In der App: <b>„PDF von der Dispo importieren"</b></li><li>Die Datei liegt gleich oben unter „Zuletzt benutzt"</li></ol>
       <p>Die App erkennt Titel, Nummern, Personen und Einsatzzeiten. Danach kurz prüfen und die <b>Reiseart</b> wählen:</p>
       <p><b>Einzeltage</b> · jeden Tag hin und zurück → Tagegeld je Tag möglich.<br><b>Mehrtägig</b> · mit Übernachtung → Anreise nur am ersten, Rückreise nur am letzten Tag.</p>
+      <p>Die <b>Personen-Vorauswahl</b> im Import folgt „Dein Name" aus den Einstellungen.</p>
       <p class="tip">Direkt „aus der Mail in die App teilen" erlaubt iOS bei Web-Apps nicht – der Weg über „Dateien" ist der kürzeste.</p></div>
     <div class="hsec"><h4>⏱ Tag erfassen</h4>
       <p><b>Der Einsatzbeginn ist der Anker.</b> Alle anderen Zeiten schlägt die App nur vor – du passt sie einfach an.</p>
@@ -658,6 +667,9 @@ function openHelp(){
     <div class="hsec"><h4>📡 Offline & Installation</h4>
       <p>Nach dem ersten Laden funktioniert die App auch <b>ohne Internet</b> – inklusive PDF-Export.</p>
       <p>Installieren: Seite in Safari öffnen → Teilen → <b>„Zum Home-Bildschirm"</b>. Danach immer über dieses Icon öffnen.</p></div>
+    <div class="hsec"><h4>👥 App weitergeben</h4>
+      <p>Einstellungen → <b>„App weiterempfehlen"</b> teilt den Link zur App (WhatsApp, Mail, AirDrop …).</p>
+      <p>Jeder Kollege bekommt seine <b>eigene, leere App</b> – Daten werden nie geteilt oder vermischt. Nach dem Öffnen: „Zum Home-Bildschirm" hinzufügen und in den Einstellungen den eigenen Namen eintragen.</p></div>
     <div class="hsec"><h4>☀️ Hell / Dunkel</h4>
       <p>Mit dem Sonne/Mond-Symbol oben wechselst du das Design. Die Wahl wird gespeichert.</p></div>
   </div>
@@ -825,7 +837,10 @@ function parseZDF(raw){const t=clean(raw);const meta=parseMeta(t);meta.persons=p
 let impData,impSel;
 function confirmImport(p){
   impData=p;const persons=p.persons||[];
-  impSel=persons.findIndex(x=>/sydow/i.test(x.name));if(impSel<0)impSel=persons.length?0:-1;
+  /* Vorauswahl anhand "Dein Name" (Nachname) – macht die App kollegen-tauglich */
+  const meNachname=clean(S.absender).split(/\s+/).pop()||"";
+  impSel=meNachname?persons.findIndex(x=>x.name.toLowerCase().includes(meNachname.toLowerCase())):-1;
+  if(impSel<0)impSel=persons.length?0:-1;
   let impTrip=null,tripTouched=false;
   const defTrip=()=>"ein";
   openSheet(`<h3>PDF importieren</h3><p class="note" style="margin-top:0">Automatisch erkannt – bitte prüfen &amp; ergänzen:</p>
