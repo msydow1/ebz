@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="Zeiterfassung">
 <meta name="theme-color" content="#15171A">
 <title>Zeiterfassung</title>
-<!-- Zeiterfassung V2.5 -->
+<!-- Zeiterfassung V2.6 -->
 <!-- impeccable-disable single-font -- Nutzer wählte beim V1.2-Redesign bewusst "Inter durchgängig" (eine Familie, tabular-nums für Zeiten) -->
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -187,7 +187,7 @@ body.light .card:active,body.light .day:active{background:rgba(0,0,0,.03)}
   <div class="foot">
     <div class="foot-facts"><span>Soll 7,5 Std/Tag</span><span>+30 Min Pause = 8 Std</span><span>Tagegeld: eintägig · Inland · ab 8 Std</span></div>
     <div class="foot-note">Daten bleiben nur auf diesem Gerät · alle Angaben ohne Gewähr</div>
-    <div class="foot-v">Zeiterfassung <b>V2.5</b></div>
+    <div class="foot-v">Zeiterfassung <b>V2.6</b></div>
   </div>
 </div>
 <input type="file" id="pdfInput" accept="application/pdf" class="hidden">
@@ -410,7 +410,7 @@ function editOrder(id){
     <div class="two"><div class="field"><label>Auftrags-Nr.</label><input type="text" id="f_anr" value="${esc(o.auftragsnr||"")}" placeholder="A1234567"></div><div class="field"><label>Prod.-Nr.</label><input type="text" id="f_pnr" value="${esc(o.prodNummer||"")}" placeholder="123456789"></div></div>
     <div class="two"><div class="field"><label>Kostenträger</label><input type="text" id="f_kt" value="${esc(o.kostentraeger||"")}" placeholder="123456789"></div><div class="field"><label>Produktionsort</label><input type="text" class="txt" id="f_ort" value="${esc(o.produktionsort||"")}" placeholder="z. B. München"></div></div>
     <div class="field"><label>Mitarbeiter (für Nachweis)</label><input type="text" class="txt" id="f_mit" value="${esc(o.mitarbeiter||"")}" placeholder="Nachname, Vorname"></div>
-    <div class="field"><label>Sonder-Equipment (Mehrfachauswahl)</label><div class="toggles wrap" id="f_equip">${["Sony Alpha 7S III","Drohne","2. Kamera","Timecode-Sync","Slider","Gimbal","Funkstrecke","Licht","Stativ/Head","Ton"].map(e=>`<button type="button" data-e="${esc(e)}"${(o.equipment||[]).includes(e)?' class="on"':''}>${esc(e)}</button>`).join("")}</div></div>
+    <div class="field"><label>Sonder-Equipment (Mehrfachauswahl)</label><div class="toggles wrap" id="f_equip">${["Sony Alpha 7S III","Sony FX6","Sony FX3","2. Kamera","Drohne","DJI RS-Gimbal","Slider","Stativ/Head","ND-/Vari-ND-Filter","Timecode-Sync","Funkstrecke","Ton","Licht","Datenmanagement"].map(e=>`<button type="button" data-e="${esc(e)}"${(o.equipment||[]).includes(e)?' class="on"':''}>${esc(e)}</button>`).join("")}</div></div>
     <div class="field"><label>Sonstiges (optional)</label><input type="text" class="txt" id="f_notiz" value="${esc(o.notiz||"")}" placeholder="z. B. weitere Hinweise"></div>
     <button class="btn" id="saveOrder">Speichern</button><button class="btn ghost" id="cancelOrder" style="margin-bottom:0">Abbrechen</button>
     ${id?'<div class="divider"></div><button class="btn danger" id="delOrder" style="margin-bottom:0">Diesen Auftrag löschen</button>':''}`);
