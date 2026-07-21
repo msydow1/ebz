@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="Zeiterfassung">
 <meta name="theme-color" content="#15171A">
 <title>Zeiterfassung</title>
-<!-- Zeiterfassung V2.7 -->
+<!-- Zeiterfassung V2.8 -->
 <!-- impeccable-disable single-font -- Nutzer wählte beim V1.2-Redesign bewusst "Inter durchgängig" (eine Familie, tabular-nums für Zeiten) -->
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -187,7 +187,7 @@ body.light .card:active,body.light .day:active{background:rgba(0,0,0,.03)}
   <div class="foot">
     <div class="foot-facts"><span>Soll 7,5 Std/Tag</span><span>+30 Min Pause = 8 Std</span><span>Tagegeld: eintägig · Inland · ab 8 Std</span></div>
     <div class="foot-note">Daten bleiben nur auf diesem Gerät · alle Angaben ohne Gewähr</div>
-    <div class="foot-v">Zeiterfassung <b>V2.7</b></div>
+    <div class="foot-v">Zeiterfassung <b>V2.8</b></div>
   </div>
 </div>
 <input type="file" id="pdfInput" accept="application/pdf" class="hidden">
@@ -563,8 +563,8 @@ function openSettings(){
   document.getElementById("helpBtn").onclick=openHelp;
   document.getElementById("shareApp").onclick=()=>{
     const url="https://msydow1.github.io/ebz/";
-    const text="Ich erfasse meine ZDF-EB-Einsätze mit dieser kleinen App – vielleicht auch was für dich: Dispo-PDF importieren, Zeiten eintragen, die Überstunden rechnet sie von selbst, und den Stundennachweis schickst du direkt als PDF raus. Läuft einfach im Browser (auch offline), kostenlos, und deine Daten bleiben nur auf deinem Gerät.";
-    const data={title:"Zeiterfassung für EB-Einsätze",text,url};
+    const text="Schau mal, meine App für die Stundenerfassung – vielleicht auch was für dich. Kostenlos, läuft im Browser, deine Daten bleiben bei dir.";
+    const data={title:"Zeiterfassung",text,url};
     if(navigator.share)navigator.share(data).catch(()=>{});
     else if(navigator.clipboard)navigator.clipboard.writeText(text+"\n\n"+url).then(()=>toast("Text + Link kopiert")).catch(()=>toast(url));
     else toast(url);
