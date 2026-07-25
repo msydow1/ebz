@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="Zeiterfassung">
 <meta name="theme-color" content="#15171A">
 <title>Zeiterfassung</title>
-<!-- Zeiterfassung V3.1 · Design "Amber Editorial" -->
+<!-- Zeiterfassung V3.2 · Design "Amber Editorial" -->
 <!-- impeccable-disable single-font -- Nutzer wählte beim V1.2-Redesign bewusst "Inter durchgängig" (eine Familie, tabular-nums für Zeiten) -->
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -259,7 +259,7 @@ body.light .btn.danger{border-color:rgba(194,78,59,.4)}
   <div class="view" id="view"></div>
   <div class="foot">
     <div class="foot-note">Daten bleiben nur auf diesem Gerät · alle Angaben ohne Gewähr</div>
-    <div class="foot-v">Zeiterfassung <b>V3.1</b></div>
+    <div class="foot-v">Zeiterfassung <b>V3.2</b></div>
   </div>
 </div>
 <input type="file" id="pdfInput" accept="application/pdf" class="hidden">
@@ -467,7 +467,7 @@ function renderDetail(){
       <div class="toggles" id="tripSeg"><button data-t="ein"${trip==="ein"?' class="on"':''}>Einzeltage</button><button data-t="mehr"${trip==="mehr"?' class="on"':''}>Mehrtägig</button></div>
       <p class="note">${trip==="mix"
         ? "Einzelne Tage haben Übernachtung, andere nicht. Umstellen setzt alle Tage einheitlich."
-        : "Umstellen setzt Übernachtung und die Reisezeiten aller Tage neu. Einsatz- und Drehzeiten bleiben unverändert, die Überstunden ändern sich also nicht."}</p>
+        : "Tagegeld gibt es nur bei Einzeltagen – mehrtägig mit Übernachtung läuft über die Dienstreise-Abrechnung. Umstellen setzt Übernachtung und die Reisezeiten aller Tage neu; Einsatz- und Drehzeiten bleiben unverändert, die Überstunden ändern sich also nicht."}</p>
     </div>`;
   }
   if(!days.length)h+=`<div class="empty" style="padding:32px 20px"><div class="big">📅</div><p>Noch kein Tag erfasst.</p></div>`;
@@ -502,8 +502,8 @@ function renderDetail(){
     const trip=b.dataset.t; if(trip===orderTrip(o))return;
     const n=o.days.length;
     const was=trip==="mehr"
-      ? `Alle ${n} Tage werden auf Übernachtung gesetzt. Anreise nur am ersten, Rückreise nur am letzten Tag. Der Tagegeld-Hinweis entfällt dann.`
-      : `Alle ${n} Tage werden auf „keine Übernachtung" gesetzt und bekommen eigene An- und Rückreise. Tagegeld wird je Tag geprüft.`;
+      ? `Alle ${n} Tage werden auf Übernachtung gesetzt. Anreise nur am ersten, Rückreise nur am letzten Tag. Bei Übernachtung besteht kein Tagegeld-Anspruch – das läuft über die Dienstreise-Abrechnung.`
+      : `Alle ${n} Tage werden auf „keine Übernachtung" gesetzt und bekommen eigene An- und Rückreise. Tagegeld wird dann je Tag geprüft.`;
     askConfirm(was+" Einsatz- und Drehzeiten bleiben unverändert.",()=>{
       applyTrip(o,trip);persist();render();
       const tgd=orderTGdays(o);
@@ -684,8 +684,8 @@ function editDay(orderId,dayId){
     const box=g("tgbox");const t=c.tg;
     if(t.state==="ok"){box.innerHTML=`<div class="tgbox ok"><div class="t"><span>Tagegeld: 28,00 €</span><span class="in">nur intern</span></div><div class="why">Abwesenheit ${fmtMin(c.absence)} h · über der Schwelle von ${fmtMin(S.abwesenheitMin)} h, eintägig, Inland. Bitte selbst prüfen.</div></div>`;}
     else{
-      const why=t.state==="ue"?"Mit Übernachtung läuft die Reise über die Dienstreise-Abrechnung."
-        :t.state==="ausland"?"Auslandsreise – kein automatischer Hinweis, bitte mit der Reisekostenstelle klären."
+      const why=t.state==="ue"?"Mehrtägige Reise mit Übernachtung: kein Tagegeld-Anspruch, das läuft über die Dienstreise-Abrechnung."
+        :t.state==="ausland"?"Auslandsreise: Der Spesensatz ist Ländersache und wird über den Reisedienst abgerechnet – deshalb hier kein Betrag."
         :t.state==="under"?`Abwesenheit ${fmtMin(c.absence)} h liegt unter der Schwelle von ${fmtMin(S.abwesenheitMin)} h.`
         :"Zeiten eintragen.";
       box.innerHTML=`<div class="tgbox"><div class="t"><span>Kein Tagegeld</span><span class="in">nur intern</span></div><div class="why">${why}</div></div>`;
@@ -814,7 +814,7 @@ function openHelp(){
   openSheet(`<h3>Anleitung</h3>
     <div class="hsec"><div class="eb">1 · Auftrag</div><p>Lege einen <b>Auftrag</b> an oder importiere ein <b>Dispo-PDF</b> – die App erkennt Titel, Nummern, Personen und deine Einsatzzeiten. Danach kurz prüfen und die Reiseart wählen.</p></div>
     <div class="hsec"><div class="eb">2 · Zeiten</div><p>Der <b>Einsatzbeginn ist der Anker</b> – alle anderen Zeiten schlägt die App nur vor. Das <b>Einsatzende</b> rechnet sich automatisch (letzte Tätigkeit + 30 Min), bis du es selbst tippst. „kein Dreh" und „entfällt" leeren einen Block.</p></div>
-    <div class="hsec"><div class="eb">3 · Tagegeld</div><p>Der grüne Hinweis erscheint bei <b>eintägig · Inland · über 8 Std</b> Abwesenheit. Er ist nur für dich – er taucht nie in Mail oder PDF auf. Antragsfrist: 6 Monate.</p></div>
+    <div class="hsec"><div class="eb">3 · Tagegeld</div><p>Tagegeld gibt es <b>nur bei Einzeltagen</b>: eintägig, Inland, über 8 Std abwesend. <b>Bei einer mehrtägigen Reise mit Übernachtung besteht kein Anspruch</b> – das läuft über die Dienstreise-Abrechnung.</p><p>Im <b>Ausland</b> ist der Spesensatz Ländersache und wird über den Reisedienst abgerechnet – die App nennt dort deshalb keinen Betrag.</p><p>Der grüne Hinweis ist nur für dich – er taucht nie in Mail oder PDF auf. Antragsfrist: 6 Monate.</p></div>
     <div class="hsec"><div class="eb">4 · Export</div><p><b>„Als PDF"</b> öffnet das Teilen-Menü mit der fertigen Datei, <b>„Als E-Mail"</b> deine Mail-App mit dem Nachweis als Text – als 7-Spalten-Tabelle ohne Summen. Danach den Auftrag als <b>abgerechnet</b> markieren.</p></div>
     <div class="hsec"><div class="eb">5 · Sicherung</div><p>Deine Daten liegen <b>nur im Browser dieses Geräts</b>. Mach regelmäßig ein Backup (Einstellungen → „Backup teilen") und lies es bei Bedarf mit „Backup einlesen" wieder ein. Nach dem ersten Laden läuft die App auch offline – installieren über Safari → Teilen → „Zum Home-Bildschirm".</p></div>
     <button class="btn" id="helpBack" style="margin-top:6px">Verstanden</button>`);
@@ -996,7 +996,7 @@ function confirmImport(p,fname){
     <div class="field" style="margin-top:12px"><label>Name (für Nachweis)</label><input type="text" class="txt" id="i_name" value=""></div>`:`<p class="note">Keine Personen erkannt – du kannst den Auftrag trotzdem anlegen und Tage manuell erfassen.</p>`}
     <div class="section-h" style="margin:18px 0 8px"><h3>Reiseart</h3></div>
     <div class="toggles" id="i_trip"><button data-t="ein">Einzeltage</button><button data-t="mehr">Mehrtägig</button></div>
-    <div class="rnote"><b>Einzeltage</b> · jeden Tag hin &amp; zurück, Tagegeld je Tag möglich.<br><b>Mehrtägig</b> · Anreise am ersten, Rückreise am letzten Tag, Übernachtung vorbelegt – kein Tagegeld-Hinweis. Dreh- und Reisezeiten passt du danach je Tag an.</div>
+    <div class="rnote"><b>Einzeltage</b> · jeden Tag hin &amp; zurück, ohne Übernachtung – Tagegeld je Tag möglich.<br><b>Mehrtägig</b> · Anreise am ersten, Rückreise am letzten Tag, Übernachtung vorbelegt – dann kein Tagegeld-Anspruch (läuft über die Dienstreise-Abrechnung). Dreh- und Reisezeiten passt du danach je Tag an.</div>
     <div class="section-h" style="margin:18px 0 4px"><h3>Tagesvorschau</h3></div>
     <div class="implist" id="i_days"></div>
     <button class="btn" id="doImport" style="margin-top:16px">Importieren</button><button class="btn ghost" id="cancelImport" style="margin-bottom:0">Abbrechen</button>`);
