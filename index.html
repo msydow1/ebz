@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="Zeiterfassung">
 <meta name="theme-color" content="#15171A">
 <title>Zeiterfassung</title>
-<!-- Zeiterfassung V3.0 · Design "Amber Editorial" -->
+<!-- Zeiterfassung V3.1 · Design "Amber Editorial" -->
 <!-- impeccable-disable single-font -- Nutzer wählte beim V1.2-Redesign bewusst "Inter durchgängig" (eine Familie, tabular-nums für Zeiten) -->
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -233,6 +233,8 @@ body.light .btn.danger{border-color:rgba(194,78,59,.4)}
 .crow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .crow .btn{margin:0;padding:12px;font-size:13px}
 .crow .btn.do{background:var(--danger);color:#fff;border:none;box-shadow:none;font-weight:700;border-radius:12px}
+/* Nicht-destruktive Bestätigung (z. B. Reiseart umstellen): Amber statt Rot */
+.crow .btn.do.go{background:var(--accent);color:var(--on-accent)}
 /* Toast */
 .toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 46px);transform:translateX(-50%) translateY(20px);width:min(520px,calc(100% - 40px));background:var(--field);border:1px solid var(--accent-line);color:var(--text);padding:13px 15px;border-radius:12px;font-size:12px;font-weight:600;text-align:center;z-index:80;opacity:0;transition:.3s;pointer-events:none;box-shadow:0 10px 40px rgba(0,0,0,.4)}
 .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
@@ -257,7 +259,7 @@ body.light .btn.danger{border-color:rgba(194,78,59,.4)}
   <div class="view" id="view"></div>
   <div class="foot">
     <div class="foot-note">Daten bleiben nur auf diesem Gerät · alle Angaben ohne Gewähr</div>
-    <div class="foot-v">Zeiterfassung <b>V3.0</b></div>
+    <div class="foot-v">Zeiterfassung <b>V3.1</b></div>
   </div>
 </div>
 <input type="file" id="pdfInput" accept="application/pdf" class="hidden">
@@ -333,6 +335,35 @@ const orderNetto=o=>o.days.reduce((a,d)=>a+(dayCalc(d).netto||0),0);
 const orderTGdays=o=>o.days.reduce((a,d)=>a+(dayCalc(d).tg.state==="ok"?1:0),0);
 const orderDate=o=>o.days.map(d=>d.datum).filter(Boolean).sort()[0]||"";
 const byDate=(a,b)=>(orderDate(a)||"0000").localeCompare(orderDate(b)||"0000");
+
+/* ===== Reiseart (abgeleitet, nicht gespeichert) =====
+   Eine Wahrheit: der Zustand ergibt sich aus days[].uebernachtung, damit Reiseart und
+   Tage nie auseinanderlaufen (auch nicht, wenn ein einzelner Tag im Sheet umgestellt wird).
+   "mix" = uneinheitlich, z. B. zwei Nächte Hotel und der letzte Tag heimgefahren. */
+function orderTrip(o){
+  if(!o.days.length)return "none";
+  const ue=o.days.filter(d=>d.uebernachtung).length;
+  if(ue===0)return "ein";
+  if(ue===o.days.length)return "mehr";
+  return "mix";
+}
+/* Reiseart auf alle Tage anwenden. Ändert NUR uebernachtung und die vier Reisefelder –
+   Einsatzbeginn/-ende, Dreh und Pause bleiben unangetastet, damit Netto und Überstunden
+   sich nicht verschieben. Muster wie beim Import: bei "mehr" Anreise nur am ersten,
+   Rückreise nur am letzten Tag; bei "ein" beide Fahrten an jedem Tag. */
+function applyTrip(o,trip){
+  const mehr=trip==="mehr";
+  const days=o.days.slice().sort((a,b)=>((a.datum||"")+(a.einsatz||"")).localeCompare((b.datum||"")+(b.einsatz||"")));
+  const last=days.length-1;
+  days.forEach((d,i)=>{
+    d.uebernachtung=mehr;
+    const hin=!mehr||i===0, rueck=!mehr||i===last;
+    d.anreise=hin&&d.einsatz?addMin(d.einsatz,30):"";
+    d.anreiseEnde=hin&&d.einsatz?addMin(d.einsatz,60):"";
+    d.rueckBeginn=rueck&&d.ende?addMin(d.ende,-60):"";
+    d.rueck=rueck&&d.ende?addMin(d.ende,-30):"";
+  });
+}
 
 /* ===== Routing ===== */
 let state={tab:"orders",orderId:null};
@@ -429,6 +460,16 @@ function renderDetail(){
   </div>
   <div class="btnrow" style="margin-top:14px"><button class="btn ghost" id="editOrder" style="margin-bottom:0">Bearbeiten</button><button class="btn ghost" id="abrToggle" style="margin-bottom:0">${o.abgerechnet?"Wieder aktiv":"Abgerechnet"}</button></div>
   <div class="section-h"><h3>Arbeitstage</h3><span class="tot">${days.length} ${days.length===1?"Tag":"Tage"} · ${fmtSigned(ot)}</span></div>`;
+  if(days.length){
+    const trip=orderTrip(o);
+    h+=`<div class="field" style="margin:8px 0 16px">
+      <div class="nrow"><span class="rlbl">Reiseart</span>${trip==="mix"?'<span class="chip">gemischt</span>':""}</div>
+      <div class="toggles" id="tripSeg"><button data-t="ein"${trip==="ein"?' class="on"':''}>Einzeltage</button><button data-t="mehr"${trip==="mehr"?' class="on"':''}>Mehrtägig</button></div>
+      <p class="note">${trip==="mix"
+        ? "Einzelne Tage haben Übernachtung, andere nicht. Umstellen setzt alle Tage einheitlich."
+        : "Umstellen setzt Übernachtung und die Reisezeiten aller Tage neu. Einsatz- und Drehzeiten bleiben unverändert, die Überstunden ändern sich also nicht."}</p>
+    </div>`;
+  }
   if(!days.length)h+=`<div class="empty" style="padding:32px 20px"><div class="big">📅</div><p>Noch kein Tag erfasst.</p></div>`;
   else days.forEach(d=>{
     const c=dayCalc(d);
@@ -457,6 +498,18 @@ function renderDetail(){
   document.getElementById("addDay").onclick=()=>editDay(o.id,null);
   document.getElementById("mailOrder").onclick=()=>mailOrder(o);
   document.getElementById("pdfOrder").onclick=()=>pdfOrder(o);
+  view.querySelectorAll("#tripSeg button").forEach(b=>b.onclick=()=>{
+    const trip=b.dataset.t; if(trip===orderTrip(o))return;
+    const n=o.days.length;
+    const was=trip==="mehr"
+      ? `Alle ${n} Tage werden auf Übernachtung gesetzt. Anreise nur am ersten, Rückreise nur am letzten Tag. Der Tagegeld-Hinweis entfällt dann.`
+      : `Alle ${n} Tage werden auf „keine Übernachtung" gesetzt und bekommen eigene An- und Rückreise. Tagegeld wird je Tag geprüft.`;
+    askConfirm(was+" Einsatz- und Drehzeiten bleiben unverändert.",()=>{
+      applyTrip(o,trip);persist();render();
+      const tgd=orderTGdays(o);
+      toast(trip==="mehr"?"Auf mehrtägig umgestellt":(tgd>0?`Auf Einzeltage umgestellt · ${tgd}× Tagegeld möglich`:"Auf Einzeltage umgestellt"));
+    },"Umstellen","go");
+  });
   view.querySelectorAll(".dayDel").forEach(b=>b.onclick=e=>{e.stopPropagation();const id=b.dataset.del;askConfirm("Diesen Arbeitstag wirklich löschen?",()=>{o.days=o.days.filter(x=>x.id!==id);persist();render();toast("Tag gelöscht");});});
   view.querySelectorAll("[data-day]").forEach(el=>el.onclick=()=>editDay(o.id,el.dataset.day));
 }
@@ -985,7 +1038,8 @@ function confirmImport(p,fname){
 function val(id){return (document.getElementById(id)||{}).value||"";}
 function esc(s){return String(s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
 let toastT;function toast(m){const el=document.getElementById("toast");el.textContent=m;el.classList.add("on");clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove("on"),2600);}
-function askConfirm(msg,onYes,yesLabel){const el=document.getElementById("confirmBox");el.querySelector(".ctitle").textContent=(yesLabel||"Löschen")+"?";el.querySelector(".cmsg").textContent=msg;el.classList.remove("out");el.classList.add("on");const yes=document.getElementById("cYes"),no=document.getElementById("cNo");yes.textContent=yesLabel||"Löschen";const close=()=>{el.classList.add("out");setTimeout(()=>{el.classList.remove("on","out");},150);yes.onclick=null;no.onclick=null;};yes.onclick=()=>{close();onYes();};no.onclick=close;}
+/* kind="go" = nicht-destruktiv (Amber), sonst destruktiv (Rot) */
+function askConfirm(msg,onYes,yesLabel,kind){const el=document.getElementById("confirmBox");el.querySelector(".ctitle").textContent=(yesLabel||"Löschen")+"?";el.querySelector(".cmsg").textContent=msg;el.classList.remove("out");el.classList.add("on");const yes=document.getElementById("cYes"),no=document.getElementById("cNo");yes.textContent=yesLabel||"Löschen";yes.classList.toggle("go",kind==="go");const close=()=>{el.classList.add("out");setTimeout(()=>{el.classList.remove("on","out");},150);yes.onclick=null;no.onclick=null;};yes.onclick=()=>{close();onYes();};no.onclick=close;}
 if("serviceWorker" in navigator&&(location.protocol==="https:"||location.hostname==="localhost"))navigator.serviceWorker.register("sw.js").catch(()=>{});
 applyTheme();
 render();
