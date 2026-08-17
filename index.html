@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="Zeiterfassung">
 <meta name="theme-color" content="#15171A">
 <title>Zeiterfassung</title>
-<!-- Zeiterfassung V3.3.1 · Design "Amber Editorial" -->
+<!-- Zeiterfassung V3.4 · Design "Amber Editorial" -->
 <!-- impeccable-disable single-font -- Nutzer wählte beim V1.2-Redesign bewusst "Inter durchgängig" (eine Familie, tabular-nums für Zeiten) -->
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -260,7 +260,7 @@ body.light .btn.danger{border-color:rgba(194,78,59,.4)}
   <div class="view" id="view"></div>
   <div class="foot">
     <div class="foot-note">Daten bleiben nur auf diesem Gerät · alle Angaben ohne Gewähr</div>
-    <div class="foot-v">Zeiterfassung <b>V3.3.1</b></div>
+    <div class="foot-v">Zeiterfassung <b>V3.4</b></div>
   </div>
 </div>
 <input type="file" id="pdfInput" accept="application/pdf" class="hidden">
@@ -278,6 +278,33 @@ let DB=Store.load()||{orders:[],settings:{}};
 const S=DB.settings;
 S.sollMin??=450; if(S.sollMin===462)S.sollMin=450; S.standardPause??=30; S.abwesenheitMin??=480; S.email??=""; S.absender??=""; S.empfaenger??=""; S.theme??="dark";
 S.status??="frei"; S.flink30??=390; S.flink45??=585;  /* FLINK-Schwellen: 6:30 und 9:45 */
+
+/* ===== Was ist neu =====
+   Wird einmal nach jedem Update gezeigt: Vergleich S.seenVersion gegen APP_VERSION.
+   Nicht bei frischen Installationen (keine Aufträge) – ein neuer Kollege soll kein
+   Changelog sehen, bevor er die App überhaupt kennt. Neue Einträge oben anfügen. */
+const APP_VERSION="3.4";
+const WHATSNEW=[
+  {v:"3.4", t:"Was ist neu", items:[
+    ["Diese Übersicht", "Nach einem Update siehst du künftig einmalig, was sich geändert hat. Jederzeit erneut aufrufbar über Einstellungen → Was ist neu."]
+  ]},
+  {v:"3.3", t:"Pausen-Korrektur für den Nachweis", items:[
+    ["FLINK zieht ab 9:45 Std pauschal 45 Min ab","Du machst aber 30. Der Nachweis verlängert das Einsatzende deshalb um 15 Min, damit deine echte Arbeitszeit ankommt. Nur bei freien Mitarbeitern und nur mit Pausenhaken."],
+    ["Pause steht jetzt als Zahl im Nachweis","„0,5\" statt „ja\" – so wie es das ZDF-Formular vorsieht. Die Rückfrage, wie viel „ja\" bedeutet, erübrigt sich."],
+    ["Freier Mitarbeiter oder fest angestellt","Wählbar im Import, im Auftrag und als Vorgabe in den Einstellungen. Fest Angestellte bekommen den Nachweis unverändert."],
+    ["Neuer Block im Tages-Sheet","„Nachweis für FLINK\" zeigt dir immer, was auf dem Papier landet."]
+  ]},
+  {v:"3.2", t:"Tagegeld und Icon", items:[
+    ["Tagegeld nur bei Einzeltagen","Bei mehrtägigen Reisen mit Übernachtung besteht kein Anspruch, das läuft über die Dienstreise-Abrechnung. Im Ausland ist der Satz Ländersache."],
+    ["Neues App-Icon","Klappe mit „EB\" statt des alten „Z\"."]
+  ]},
+  {v:"3.1", t:"Reiseart nachträglich umstellen", items:[
+    ["Einzeltage oder mehrtägig – jederzeit","Im Auftrag über den Arbeitstagen umschaltbar. Übernachtung und Reisezeiten aller Tage werden neu gesetzt, deine Überstunden bleiben unverändert."]
+  ]},
+  {v:"3.0", t:"Neues Design", items:[
+    ["Amber Editorial","Größere Zahlen, ruhigere Flächen, Hell- und Dunkelmodus gleichwertig."]
+  ]}
+];
 DB.orders.forEach(o=>{o.notiz??=""; o.equipment??=[]; o.abgerechnet??=false; o.days.forEach(d=>{
   if(d.einsatz===undefined){ d.einsatz=d.istStart||d.geplStart||""; d.ende=d.istEnde||d.geplEnde||""; d.anreise=""; d.rueck="";
     d.dispo={einsatz:d.geplStart||d.istStart||"",ende:d.geplEnde||d.istEnde||""}; delete d.istStart;delete d.istEnde;delete d.geplStart;delete d.geplEnde; }
@@ -787,6 +814,7 @@ function openSettings(){
   openSheet(`<h3>Einstellungen</h3>
     <div class="section-h" style="margin-top:0"><h3>Hilfe</h3></div>
     <button class="setrow" id="helpBtn"><span>Anleitung</span><span class="chev">›</span></button>
+    <button class="setrow" id="wnBtn"><span>Was ist neu<small>Version ${APP_VERSION}</small></span><span class="chev">›</span></button>
     <button class="setrow" id="shareApp"><span>App weiterempfehlen</span><span class="chev">›</span></button>
     <div class="section-h"><h3>Datensicherung</h3></div>
     <div class="setcard">
@@ -814,6 +842,7 @@ function openSettings(){
   document.getElementById("saveSet").onclick=()=>{S.email=val("s_mail");S.empfaenger=val("s_empf");S.absender=val("s_name");S.status=setStatus;persist();closeSheet();render();toast("Einstellungen gespeichert");};
   document.getElementById("rulesBtn").onclick=openRules;
   document.getElementById("helpBtn").onclick=openHelp;
+  document.getElementById("wnBtn").onclick=()=>openWhatsNew(true);
   document.getElementById("shareApp").onclick=()=>{
     const url="https://msydow1.github.io/ebz/";
     const text="Schau mal, meine App für die Stundenerfassung – vielleicht auch was für dich. Kostenlos, läuft im Browser, deine Daten bleiben bei dir.";
@@ -868,6 +897,22 @@ document.getElementById("backupInput").addEventListener("change",e=>{
   }catch(err){console.error(err);toast("Backup konnte nicht gelesen werden");}};
   r.readAsText(f);
 });
+
+/* ===== Was ist neu ===== */
+function openWhatsNew(alle){
+  /* Nach einem Update nur die Versionen zeigen, die der Nutzer noch nicht gesehen hat.
+     Beim Aufruf aus den Einstellungen (alle=true) die komplette Liste. */
+  const seen=S.seenVersion||"";
+  const cmp=(a,b)=>a.split(".").map(Number).reduce((r,n,i)=>r||n-(+b.split(".")[i]||0),0);
+  const zeigen=alle?WHATSNEW:WHATSNEW.filter(w=>!seen||cmp(w.v,seen)>0);
+  const liste=(zeigen.length?zeigen:WHATSNEW.slice(0,1));
+  openSheet(`<h3>Was ist neu</h3>
+    <p class="note" style="margin:-8px 0 16px">Version ${APP_VERSION}${seen?" · zuletzt gesehen: "+esc(seen):""}</p>
+    ${liste.map(w=>`<div class="section-h" style="margin:18px 0 8px"><h3>V${w.v} · ${esc(w.t)}</h3></div>
+      ${w.items.map(([k,txt])=>`<div class="hsec"><div class="eb">${esc(k)}</div><p>${esc(txt)}</p></div>`).join("")}`).join("")}
+    <button class="btn" id="wnOk" style="margin-top:16px">Verstanden</button>`);
+  document.getElementById("wnOk").onclick=()=>{S.seenVersion=APP_VERSION;persist();closeSheet();};
+}
 
 /* ===== Anleitung ===== */
 function openHelp(){
@@ -1109,6 +1154,10 @@ function askConfirm(msg,onYes,yesLabel,kind){const el=document.getElementById("c
 if("serviceWorker" in navigator&&(location.protocol==="https:"||location.hostname==="localhost"))navigator.serviceWorker.register("sw.js").catch(()=>{});
 applyTheme();
 render();
+/* Was-ist-neu einmalig nach einem Update. Nicht bei frischen Installationen –
+   wer die App zum ersten Mal öffnet, soll kein Changelog sehen, sondern die App. */
+if(DB.orders.length&&S.seenVersion!==APP_VERSION)setTimeout(openWhatsNew,400);
+else if(!S.seenVersion){S.seenVersion=APP_VERSION;persist();}
 </script>
 </body>
 </html>
