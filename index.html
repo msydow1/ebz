@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="Zeiterfassung">
 <meta name="theme-color" content="#15171A">
 <title>Zeiterfassung</title>
-<!-- Zeiterfassung V3.2.1 · Design "Amber Editorial" -->
+<!-- Zeiterfassung V3.3 · Design "Amber Editorial" -->
 <!-- impeccable-disable single-font -- Nutzer wählte beim V1.2-Redesign bewusst "Inter durchgängig" (eine Familie, tabular-nums für Zeiten) -->
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -260,7 +260,7 @@ body.light .btn.danger{border-color:rgba(194,78,59,.4)}
   <div class="view" id="view"></div>
   <div class="foot">
     <div class="foot-note">Daten bleiben nur auf diesem Gerät · alle Angaben ohne Gewähr</div>
-    <div class="foot-v">Zeiterfassung <b>V3.2.1</b></div>
+    <div class="foot-v">Zeiterfassung <b>V3.3</b></div>
   </div>
 </div>
 <input type="file" id="pdfInput" accept="application/pdf" class="hidden">
@@ -277,6 +277,7 @@ const Store={mem:{},load(){try{const r=localStorage.getItem(KEY);return r?JSON.p
 let DB=Store.load()||{orders:[],settings:{}};
 const S=DB.settings;
 S.sollMin??=450; if(S.sollMin===462)S.sollMin=450; S.standardPause??=30; S.abwesenheitMin??=480; S.email??=""; S.absender??=""; S.empfaenger??=""; S.theme??="dark";
+S.status??="frei"; S.flink30??=390; S.flink45??=585;  /* FLINK-Schwellen: 6:30 und 9:45 */
 DB.orders.forEach(o=>{o.notiz??=""; o.equipment??=[]; o.abgerechnet??=false; o.days.forEach(d=>{
   if(d.einsatz===undefined){ d.einsatz=d.istStart||d.geplStart||""; d.ende=d.istEnde||d.geplEnde||""; d.anreise=""; d.rueck="";
     d.dispo={einsatz:d.geplStart||d.istStart||"",ende:d.geplEnde||d.istEnde||""}; delete d.istStart;delete d.istEnde;delete d.geplStart;delete d.geplEnde; }
@@ -317,6 +318,18 @@ function rangeOrt(o){const r=fmtRange(o);return [r,o.produktionsort].filter(Bool
 function headEyebrow(){const n=new Date();let s=MN[n.getMonth()].toUpperCase()+" "+n.getFullYear();const a=clean(S.absender);if(a)s+=" · "+a.toUpperCase();return s;}
 
 /* ===== Berechnung pro Tag ===== */
+/* ===== FLINK-Pausenautomatik (ZDF-System) =====
+   Gesetzliche Ruhepause, die FLINK selbst abzieht – unabhängig davon, was im Nachweis steht:
+   Anwesenheit über 9:45 Std → 45 Min · über 6:30 Std → 30 Min · darunter → keine.
+   Quelle: ZDF/FLINK-Regel (6,5 bzw. 9,75 Stunden). Bei freien Mitarbeitern weicht die
+   tatsächliche Pause davon ab (real 30 Min oder keine), deshalb muss der Nachweis
+   korrigiert werden – siehe exportEnde(). */
+function flinkPause(span){
+  if(span==null)return 0;
+  if(span>S.flink45)return 45;
+  if(span>S.flink30)return 30;
+  return 0;
+}
 function dayCalc(d){
   const span=dur(hm2min(d.einsatz),hm2min(d.ende));
   const az=dur(hm2min(d.drehbeginn),hm2min(d.drehende));
@@ -329,8 +342,26 @@ function dayCalc(d){
   else if(span==null) tg={state:"none"};
   else if(span>S.abwesenheitMin) tg={state:"ok"};
   else tg={state:"under"};
-  return {span,az,pause:pauseMin,pauseJa:!!d.pause,netto,ot,absence:span,tg};
+  const fp=flinkPause(span);
+  return {span,az,pause:pauseMin,pauseJa:!!d.pause,netto,ot,absence:span,tg,
+          flink:fp, korr:span==null?0:fp-pauseMin};
 }
+/* Einsatzende für den Nachweis. Bei freien Mitarbeitern wird es um die Differenz
+   verschoben, die FLINK zu viel (oder zu wenig) abzieht – damit nach dessen Automatik
+   die tatsächlich geleistete Nettozeit herauskommt. Feste bekommen die echte Zeit,
+   für sie stimmt die Automatik.
+   Beispiel frei: 09:00–19:00 (10:00), Pause 30. FLINK zieht 45 → Nachweis 19:15;
+   FLINK rechnet 10:15 − 45 = 9:30 = die echte Nettozeit. */
+function exportEnde(o,d){
+  if(orderStatus(o)!=="frei")return d.ende||"";
+  const c=dayCalc(d);
+  if(!d.ende||!c.korr)return d.ende||"";
+  return addMin(d.ende,c.korr);
+}
+/* Pausenwert für den Nachweis in Dezimalstunden, wie im ZDF-Formular üblich ("0,5"). */
+function pauseDez(min){if(!min)return "—";return (min/60).toFixed(2).replace(/0$/,"").replace(".",",");}
+/* Status des Auftrags: frei (Default aus den Einstellungen) oder fest angestellt. */
+function orderStatus(o){return (o&&o.status)||S.status||"frei";}
 const orderOT=o=>o.days.reduce((a,d)=>a+(dayCalc(d).ot||0),0);
 const orderNetto=o=>o.days.reduce((a,d)=>a+(dayCalc(d).netto||0),0);
 const orderTGdays=o=>o.days.reduce((a,d)=>a+(dayCalc(d).tg.state==="ok"?1:0),0);
@@ -591,15 +622,21 @@ function editOrder(id){
     <div class="two"><div class="field"><label>Auftrags-Nr.</label><input type="text" id="f_anr" value="${esc(o.auftragsnr||"")}" placeholder="A1234567"></div><div class="field"><label>Prod.-Nr.</label><input type="text" id="f_pnr" value="${esc(o.prodNummer||"")}" placeholder="12345678"></div></div>
     <div class="two"><div class="field"><label>Kostenträger</label><input type="text" id="f_kt" value="${esc(o.kostentraeger||"")}" placeholder="80123456"></div><div class="field"><label>Produktionsort</label><input type="text" class="txt" id="f_ort" value="${esc(o.produktionsort||"")}" placeholder="z. B. München"></div></div>
     <div class="field"><label>Mitarbeiter (für Nachweis)</label><input type="text" class="txt" id="f_mit" value="${esc(o.mitarbeiter||"")}" placeholder="Nachname, Vorname"></div>
+    <div class="field"><label>Beschäftigung</label><div class="toggles" id="f_status"><button data-s="frei">Freier Mitarbeiter</button><button data-s="fest">Fest angestellt</button></div>
+      <p class="note">Bei freien Mitarbeitern korrigiert der Nachweis das Einsatzende, weil FLINK ab 9:45 Std pauschal 45 Min Pause abzieht. Fest Angestellte bekommen die Zeiten unverändert.</p></div>
     <div class="field"><label>Sonder-Equipment (Mehrfachauswahl)</label><div class="chips" id="f_equip">${["Sony Alpha 7S III","Sony FX6","Sony FX3","2. Kamera","Drohne","DJI RS-Gimbal","Slider","Stativ/Head","ND-/Vari-ND-Filter","Timecode-Sync","Funkstrecke","Ton","Licht","Datenmanagement"].map(e=>`<button type="button" data-e="${esc(e)}"${(o.equipment||[]).includes(e)?' class="on"':''}>${esc(e)}</button>`).join("")}</div></div>
     <div class="field"><label>Sonstiges (optional)</label><textarea class="txt" id="f_notiz" rows="3" placeholder="z. B. weitere Hinweise">${esc(o.notiz||"")}</textarea></div>
     <button class="btn" id="saveOrder">Speichern</button><button class="btn ghost" id="cancelOrder" style="margin-bottom:0">Abbrechen</button>
     ${id?'<button class="btn danger" id="delOrder" style="margin:16px 0 0">Auftrag löschen</button>':''}`);
   document.getElementById("cancelOrder").onclick=closeSheet;
   document.querySelectorAll("#f_equip button").forEach(b=>b.onclick=()=>b.classList.toggle("on"));
+  let tmpStatus=orderStatus(id?o:null);
+  const paintStatus=()=>document.querySelectorAll("#f_status button").forEach(b=>b.classList.toggle("on",b.dataset.s===tmpStatus));
+  document.querySelectorAll("#f_status button").forEach(b=>b.onclick=()=>{tmpStatus=b.dataset.s;paintStatus();});
+  paintStatus();
   document.getElementById("saveOrder").onclick=()=>{
     const equipment=[...document.querySelectorAll("#f_equip button.on")].map(b=>b.dataset.e);
-    const data={titel:val("f_titel"),auftragsnr:val("f_anr"),prodNummer:val("f_pnr"),kostentraeger:val("f_kt"),produktionsort:val("f_ort"),mitarbeiter:val("f_mit"),notiz:val("f_notiz"),equipment};
+    const data={titel:val("f_titel"),auftragsnr:val("f_anr"),prodNummer:val("f_pnr"),kostentraeger:val("f_kt"),produktionsort:val("f_ort"),mitarbeiter:val("f_mit"),notiz:val("f_notiz"),equipment,status:tmpStatus};
     if(!data.titel){toast("Bitte einen Titel eingeben");return;}
     if(id)Object.assign(o,data);else{const no={id:uid(),...data,days:[]};DB.orders.push(no);state.orderId=no.id;}
     persist();closeSheet();render();toast(id?"Gespeichert":"Auftrag angelegt");};
@@ -636,6 +673,8 @@ function editDay(orderId,dayId){
     </div>
     <div class="field"><label>Pause genommen?</label><div class="toggles" id="pausebtns"><button data-p="1">Ja · ${fmtMin(S.standardPause)}</button><button data-p="0">Nein</button></div></div>
     <div class="calc" id="calc"></div>
+    <div class="section-h" style="margin:18px 0 8px"><h3>Nachweis für FLINK</h3></div>
+    <div id="flinkbox"></div>
     <div class="section-h" style="margin:18px 0 8px"><h3>Dienstreise</h3></div>
     <div class="two">
       <div class="field"><label>Übernachtung?</label><div class="toggles" id="uebtns"><button data-u="1">Ja</button><button data-u="0">Nein</button></div></div>
@@ -682,6 +721,20 @@ function editDay(orderId,dayId){
         <div class="c"><div class="l">Soll</div><div class="n">${fmtMin(S.sollMin)}</div></div>
         <div class="c"><div class="l">Überstunden</div><div class="n big ${otClass(c.ot)}">${fmtSigned(c.ot)}</div></div>
       </div>`;
+    /* FLINK-Hinweis: zeigt, was das ZDF-System abzieht und wie der Nachweis korrigiert wird */
+    const fb=g("flinkbox");
+    if(fb){
+      const frei=orderStatus(o)==="frei";
+      const mm=n=>n+" Min";
+      if(c.span==null){fb.innerHTML="";}
+      else if(!frei){fb.innerHTML=`<div class="tgbox"><div class="t"><span>FLINK zieht ${mm(c.flink)} ab</span><span class="in">fest angestellt</span></div><div class="why">Der Nachweis zeigt deine Zeiten unverändert.</div></div>`;}
+      else if(c.korr>0){
+        const warn=!tmpPause&&c.flink>0;
+        fb.innerHTML=`<div class="tgbox ok"><div class="t"><span>Nachweis endet ${addMin(val("d_ende"),c.korr)}</span><span class="in">statt ${val("d_ende")}</span></div><div class="why">${warn?"<b>Ohne Pause-Haken:</b> FLINK zieht ab "+fmtMin(S.flink30)+" Std trotzdem "+mm(c.flink)+" ab – die gesetzliche Ruhepause ist nicht abwählbar. ":""}FLINK zieht ${mm(c.flink)}, du machst ${mm(c.pause)}. Die ${mm(c.korr)} Differenz kommt hinten drauf, damit deine echte Nettozeit ankommt.</div></div>`;
+      }
+      else if(c.korr<0){fb.innerHTML=`<div class="tgbox"><div class="t"><span>Nachweis endet ${addMin(val("d_ende"),c.korr)}</span><span class="in">statt ${val("d_ende")}</span></div><div class="why">Kurzer Tag: FLINK zieht ${mm(c.flink)} ab, du machst ${mm(c.pause)}. Der Nachweis wird um ${mm(-c.korr)} gekürzt, sonst bekämst du zu viel gutgeschrieben.</div></div>`;}
+      else{fb.innerHTML=`<div class="tgbox"><div class="t"><span>Nachweis unverändert</span><span class="in">FLINK ${mm(c.flink)}</span></div><div class="why">Deine Pause und der FLINK-Abzug sind gleich – keine Korrektur nötig.</div></div>`;}
+    }
     const box=g("tgbox");const t=c.tg;
     if(t.state==="ok"){box.innerHTML=`<div class="tgbox ok"><div class="t"><span>Tagegeld: 28,00 €</span><span class="in">nur intern</span></div><div class="why">Abwesenheit ${fmtMin(c.absence)} h · über der Schwelle von ${fmtMin(S.abwesenheitMin)} h, eintägig, Inland. Bitte selbst prüfen.</div></div>`;}
     else{
@@ -745,14 +798,19 @@ function openSettings(){
     <div class="setcard">
       <div class="field"><label>Empfänger-E-Mail (Dispo)</label><input type="email" class="txt" id="s_mail" value="${esc(S.email||"")}" placeholder="empfangsadresse@…"></div>
       <div class="field"><label>Empfänger-Name (Anrede in der Mail)</label><input type="text" class="txt" id="s_empf" value="${esc(S.empfaenger||"")}" placeholder="Name"></div>
-      <div class="field" style="margin-bottom:12px"><label>Dein Name (für Nachweise)</label><input type="text" class="txt" id="s_name" value="${esc(S.absender||"")}" placeholder="Vorname Nachname"></div>
+      <div class="field"><label>Dein Name (für Nachweise)</label><input type="text" class="txt" id="s_name" value="${esc(S.absender||"")}" placeholder="Vorname Nachname"></div>
+      <div class="field" style="margin-bottom:12px"><label>Beschäftigung (Vorgabe für neue Aufträge)</label><div class="toggles" id="s_status"><button data-s="frei">Freier Mitarbeiter</button><button data-s="fest">Fest angestellt</button></div></div>
       <button class="btn" id="saveSet" style="margin:0;padding:12px;font-size:13px">Speichern</button>
     </div>
     <button class="btn danger" id="wipe" style="margin-top:16px">Alle Daten löschen</button>
     <button class="btn ghost" id="closeSet" style="margin-bottom:0">Schließen</button>
     <p class="note" style="text-align:center">Alles liegt lokal auf dem Gerät – kein Konto, keine Server.</p>`);
   document.getElementById("closeSet").onclick=closeSheet;
-  document.getElementById("saveSet").onclick=()=>{S.email=val("s_mail");S.empfaenger=val("s_empf");S.absender=val("s_name");persist();closeSheet();render();toast("Einstellungen gespeichert");};
+  let setStatus=S.status||"frei";
+  const paintSetStatus=()=>document.querySelectorAll("#s_status button").forEach(b=>b.classList.toggle("on",b.dataset.s===setStatus));
+  document.querySelectorAll("#s_status button").forEach(b=>b.onclick=()=>{setStatus=b.dataset.s;paintSetStatus();});
+  paintSetStatus();
+  document.getElementById("saveSet").onclick=()=>{S.email=val("s_mail");S.empfaenger=val("s_empf");S.absender=val("s_name");S.status=setStatus;persist();closeSheet();render();toast("Einstellungen gespeichert");};
   document.getElementById("rulesBtn").onclick=openRules;
   document.getElementById("helpBtn").onclick=openHelp;
   document.getElementById("shareApp").onclick=()=>{
@@ -848,11 +906,11 @@ function mailOrder(o){
   o.days.slice().sort((a,b)=>(a.datum||"").localeCompare(b.datum||"")).forEach(d=>{const c=dayCalc(d);
     const dreh=(d.drehbeginn||d.drehende)?((d.drehbeginn||"—")+"–"+(d.drehende||"—")):"—";
     L.push(fmtDateLong(d.datum));
-    L.push("Einsatz: "+(d.einsatz||"—")+"–"+(d.ende||"—"));
+    L.push("Einsatz: "+(d.einsatz||"—")+"–"+(exportEnde(o,d)||"—"));
     L.push("Dreh: "+dreh);
     L.push("Anreise: "+((d.anreise||d.anreiseEnde)?((d.anreise||"—")+"–"+(d.anreiseEnde||"—")):"—"));
     L.push("Rückreise: "+((d.rueckBeginn||d.rueck)?((d.rueckBeginn||"—")+"–"+(d.rueck||"—")):"—"));
-    L.push("Pause: "+(c.pauseJa?"ja":"nein"));
+    L.push("Pause: "+pauseDez(c.pause));
     L.push("");});
   const eq=equipText(o);if(eq){L.push("Sonder-Equipment: "+eq);L.push("");}
   L.push("Viele liebe Grüße");L.push(sender);
@@ -877,8 +935,8 @@ function pdfOrder(o){
       doc.text((d.anreise||d.anreiseEnde)?((d.anreise||"—")+"–"+(d.anreiseEnde||"—")):"—",C.an,y);
       doc.text((d.drehbeginn||d.drehende)?((d.drehbeginn||"—")+"–"+(d.drehende||"—")):"—",C.dr,y);
       doc.text((d.rueckBeginn||d.rueck)?((d.rueckBeginn||"—")+"–"+(d.rueck||"—")):"—",C.rk,y);
-      doc.text(d.ende||"—",C.ee,y);
-      doc.text(c.pauseJa?"ja":"nein",C.pa,y);
+      doc.text(exportEnde(o,d)||"—",C.ee,y);
+      doc.text(pauseDez(c.pause),C.pa,y);
       y+=6.6;});
     y+=2;doc.line(M,y,196,y);y+=10;
     if(y>250){doc.addPage();y=M;}
@@ -994,7 +1052,9 @@ function confirmImport(p,fname){
     ${persons.length?`<div class="section-h" style="margin:18px 0 8px"><h3>Personen im PDF</h3></div>
     <div class="chips" id="i_persons">${persons.map((x,i)=>`<button type="button" data-i="${i}">${esc(x.name)} · ${x.days.length} ${x.days.length===1?"Tag":"Tage"}</button>`).join("")}</div>
     <p class="note">Vorauswahl folgt „Dein Name" aus den Einstellungen.</p>
-    <div class="field" style="margin-top:12px"><label>Name (für Nachweis)</label><input type="text" class="txt" id="i_name" value=""></div>`:`<p class="note">Keine Personen erkannt – du kannst den Auftrag trotzdem anlegen und Tage manuell erfassen.</p>`}
+    <div class="field" style="margin-top:12px"><label>Beschäftigung</label><div class="toggles" id="i_status"><button data-s="frei">Freier Mitarbeiter</button><button data-s="fest">Fest angestellt</button></div>
+      <p class="note">Freie: Nachweis korrigiert das Einsatzende, weil FLINK ab 9:45 Std pauschal 45 Min abzieht. Fest Angestellte: Zeiten unverändert.</p></div>
+    <div class="field"><label>Name (für Nachweis)</label><input type="text" class="txt" id="i_name" value=""></div>`:`<p class="note">Keine Personen erkannt – du kannst den Auftrag trotzdem anlegen und Tage manuell erfassen.</p>`}
     <div class="section-h" style="margin:18px 0 8px"><h3>Reiseart</h3></div>
     <div class="toggles" id="i_trip"><button data-t="ein">Einzeltage</button><button data-t="mehr">Mehrtägig</button></div>
     <div class="rnote"><b>Einzeltage</b> · jeden Tag hin &amp; zurück, ohne Übernachtung – Tagegeld je Tag möglich.<br><b>Mehrtägig</b> · Anreise am ersten, Rückreise am letzten Tag, Übernachtung vorbelegt – dann kein Tagegeld-Anspruch (läuft über die Dienstreise-Abrechnung). Dreh- und Reisezeiten passt du danach je Tag an.</div>
@@ -1014,6 +1074,10 @@ function confirmImport(p,fname){
     document.querySelectorAll("#i_trip button").forEach(b=>b.classList.toggle("on",b.dataset.t===impTrip));
     const di=document.getElementById("doImport");if(di)di.textContent=days.length?`Importieren · ${days.length} ${days.length===1?"Tag":"Tage"}`:"Importieren";
   }
+  let impStatus=S.status||"frei";
+  const paintImpStatus=()=>document.querySelectorAll("#i_status button").forEach(b=>b.classList.toggle("on",b.dataset.s===impStatus));
+  document.querySelectorAll("#i_status button").forEach(b=>b.onclick=()=>{impStatus=b.dataset.s;paintImpStatus();});
+  paintImpStatus();
   if(persons.length){document.querySelectorAll("#i_persons button").forEach(b=>b.onclick=()=>{impSel=+b.dataset.i;paint();});}
   document.querySelectorAll("#i_trip button").forEach(b=>b.onclick=()=>{impTrip=b.dataset.t;tripTouched=true;document.querySelectorAll("#i_trip button").forEach(x=>x.classList.toggle("on",x.dataset.t===impTrip));});
   paint();
@@ -1030,7 +1094,7 @@ function confirmImport(p,fname){
       rueckBeginn:"",
       rueck:d.rueck||(((!mehr||i===last)&&d.ende)?addMin(d.ende,-30):""),
       ende:d.ende,pause:true,uebernachtung:mehr,ausland:false,dispo:{einsatz:d.einsatz,ende:d.ende}}));
-    const no={id:uid(),titel:val("i_titel"),auftragsnr:val("i_anr"),prodNummer:val("i_pnr"),kostentraeger:val("i_kt"),produktionsort:val("i_ort"),mitarbeiter:val("i_name"),days};
+    const no={id:uid(),titel:val("i_titel"),auftragsnr:val("i_anr"),prodNummer:val("i_pnr"),kostentraeger:val("i_kt"),produktionsort:val("i_ort"),mitarbeiter:val("i_name"),status:impStatus,days};
     DB.orders.push(no);persist();state.orderId=no.id;state.tab="orders";closeSheet();render();toast(days.length?days.length+" Tag(e) importiert – bitte prüfen!":"Auftrag angelegt");
   };
 }
