@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="Zeiterfassung">
 <meta name="theme-color" content="#15171A">
 <title>Zeiterfassung</title>
-<!-- Zeiterfassung V3.3 · Design "Amber Editorial" -->
+<!-- Zeiterfassung V3.3.1 · Design "Amber Editorial" -->
 <!-- impeccable-disable single-font -- Nutzer wählte beim V1.2-Redesign bewusst "Inter durchgängig" (eine Familie, tabular-nums für Zeiten) -->
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -260,7 +260,7 @@ body.light .btn.danger{border-color:rgba(194,78,59,.4)}
   <div class="view" id="view"></div>
   <div class="foot">
     <div class="foot-note">Daten bleiben nur auf diesem Gerät · alle Angaben ohne Gewähr</div>
-    <div class="foot-v">Zeiterfassung <b>V3.3</b></div>
+    <div class="foot-v">Zeiterfassung <b>V3.3.1</b></div>
   </div>
 </div>
 <input type="file" id="pdfInput" accept="application/pdf" class="hidden">
@@ -343,8 +343,12 @@ function dayCalc(d){
   else if(span>S.abwesenheitMin) tg={state:"ok"};
   else tg={state:"under"};
   const fp=flinkPause(span);
-  return {span,az,pause:pauseMin,pauseJa:!!d.pause,netto,ot,absence:span,tg,
-          flink:fp, korr:span==null?0:fp-pauseMin};
+  /* Korrektur nur im 45-Minuten-Fenster und nur, wenn Pause gemacht wurde:
+     FLINK zieht dort 45 statt der tatsächlichen 30 Min ab, die Differenz kommt hinten drauf.
+     Im 30-Minuten-Fenster deckt sich beides – Pause ist in der Arbeitszeit mit drin, kein Eingriff.
+     Ohne Pausenhaken wird ebenfalls nicht gerechnet (nur ein Hinweis im Tages-Sheet). */
+  const korr=(span!=null&&fp===45&&pauseMin>0)?Math.max(0,45-pauseMin):0;
+  return {span,az,pause:pauseMin,pauseJa:!!d.pause,netto,ot,absence:span,tg,flink:fp,korr};
 }
 /* Einsatzende für den Nachweis. Bei freien Mitarbeitern wird es um die Differenz
    verschoben, die FLINK zu viel (oder zu wenig) abzieht – damit nach dessen Automatik
@@ -728,12 +732,9 @@ function editDay(orderId,dayId){
       const mm=n=>n+" Min";
       if(c.span==null){fb.innerHTML="";}
       else if(!frei){fb.innerHTML=`<div class="tgbox"><div class="t"><span>FLINK zieht ${mm(c.flink)} ab</span><span class="in">fest angestellt</span></div><div class="why">Der Nachweis zeigt deine Zeiten unverändert.</div></div>`;}
-      else if(c.korr>0){
-        const warn=!tmpPause&&c.flink>0;
-        fb.innerHTML=`<div class="tgbox ok"><div class="t"><span>Nachweis endet ${addMin(val("d_ende"),c.korr)}</span><span class="in">statt ${val("d_ende")}</span></div><div class="why">${warn?"<b>Ohne Pause-Haken:</b> FLINK zieht ab "+fmtMin(S.flink30)+" Std trotzdem "+mm(c.flink)+" ab – die gesetzliche Ruhepause ist nicht abwählbar. ":""}FLINK zieht ${mm(c.flink)}, du machst ${mm(c.pause)}. Die ${mm(c.korr)} Differenz kommt hinten drauf, damit deine echte Nettozeit ankommt.</div></div>`;
-      }
-      else if(c.korr<0){fb.innerHTML=`<div class="tgbox"><div class="t"><span>Nachweis endet ${addMin(val("d_ende"),c.korr)}</span><span class="in">statt ${val("d_ende")}</span></div><div class="why">Kurzer Tag: FLINK zieht ${mm(c.flink)} ab, du machst ${mm(c.pause)}. Der Nachweis wird um ${mm(-c.korr)} gekürzt, sonst bekämst du zu viel gutgeschrieben.</div></div>`;}
-      else{fb.innerHTML=`<div class="tgbox"><div class="t"><span>Nachweis unverändert</span><span class="in">FLINK ${mm(c.flink)}</span></div><div class="why">Deine Pause und der FLINK-Abzug sind gleich – keine Korrektur nötig.</div></div>`;}
+      else if(c.korr>0){fb.innerHTML=`<div class="tgbox ok"><div class="t"><span>Nachweis endet ${addMin(val("d_ende"),c.korr)}</span><span class="in">statt ${val("d_ende")}</span></div><div class="why">Über ${fmtMin(S.flink45)} Std zieht FLINK ${mm(c.flink)} ab, du machst ${mm(c.pause)}. Die ${mm(c.korr)} Differenz kommt hinten drauf, damit deine echte Nettozeit ankommt.</div></div>`;}
+      else if(c.flink===45&&!tmpPause){fb.innerHTML=`<div class="tgbox"><div class="t"><span>Nachweis unverändert</span><span class="in">ohne Pause</span></div><div class="why"><b>Achtung:</b> FLINK zieht über ${fmtMin(S.flink45)} Std trotzdem 45 Min ab – die gesetzliche Ruhepause ist nicht abwählbar. Ohne Pausenhaken wird nichts korrigiert, dir fehlen dann 45 Min. Wenn du Pause gemacht hast, hake sie an.</div></div>`;}
+      else{fb.innerHTML=`<div class="tgbox"><div class="t"><span>Nachweis unverändert</span><span class="in">FLINK ${mm(c.flink)}</span></div><div class="why">${c.flink===c.pause?"Deine Pause und der FLINK-Abzug sind gleich – die Pause steckt in der Arbeitszeit, kein Eingriff nötig.":"Keine Korrektur nötig."}</div></div>`;}
     }
     const box=g("tgbox");const t=c.tg;
     if(t.state==="ok"){box.innerHTML=`<div class="tgbox ok"><div class="t"><span>Tagegeld: 28,00 €</span><span class="in">nur intern</span></div><div class="why">Abwesenheit ${fmtMin(c.absence)} h · über der Schwelle von ${fmtMin(S.abwesenheitMin)} h, eintägig, Inland. Bitte selbst prüfen.</div></div>`;}
