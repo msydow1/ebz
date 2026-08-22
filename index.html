@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="Zeiterfassung">
 <meta name="theme-color" content="#15171A">
 <title>Zeiterfassung</title>
-<!-- Zeiterfassung V3.4 · Design "Amber Editorial" -->
+<!-- Zeiterfassung V3.5 · Design "Amber Editorial" -->
 <!-- impeccable-disable single-font -- Nutzer wählte beim V1.2-Redesign bewusst "Inter durchgängig" (eine Familie, tabular-nums für Zeiten) -->
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -260,7 +260,7 @@ body.light .btn.danger{border-color:rgba(194,78,59,.4)}
   <div class="view" id="view"></div>
   <div class="foot">
     <div class="foot-note">Daten bleiben nur auf diesem Gerät · alle Angaben ohne Gewähr</div>
-    <div class="foot-v">Zeiterfassung <b>V3.4</b></div>
+    <div class="foot-v">Zeiterfassung <b>V3.5</b></div>
   </div>
 </div>
 <input type="file" id="pdfInput" accept="application/pdf" class="hidden">
@@ -283,8 +283,12 @@ S.status??="frei"; S.flink30??=390; S.flink45??=585;  /* FLINK-Schwellen: 6:30 u
    Wird einmal nach jedem Update gezeigt: Vergleich S.seenVersion gegen APP_VERSION.
    Nicht bei frischen Installationen (keine Aufträge) – ein neuer Kollege soll kein
    Changelog sehen, bevor er die App überhaupt kennt. Neue Einträge oben anfügen. */
-const APP_VERSION="3.4";
+const APP_VERSION="3.5";
 const WHATSNEW=[
+  {v:"3.5", t:"Grenzübertritt bei Auslandsreisen", items:[
+    ["Grenze hin und zurück dokumentieren","Im Tages-Sheet unter „Ausland: Ja\" kannst du festhalten, wann du Deutschland verlassen hast und wann du zurück warst. Standardmäßig aus – ein Tipp auf „dokumentieren\" macht die Felder scharf."],
+    ["Nur für deine Unterlagen","Der Grenzübertritt erscheint nicht im Stundennachweis. Er gehört zur Reisekosten-Abrechnung, nicht zur Arbeitszeit."]
+  ]},
   {v:"3.4", t:"Was ist neu", items:[
     ["Diese Übersicht", "Nach einem Update siehst du künftig einmalig, was sich geändert hat. Jederzeit erneut aufrufbar über Einstellungen → Was ist neu."]
   ]},
@@ -311,7 +315,7 @@ DB.orders.forEach(o=>{o.notiz??=""; o.equipment??=[]; o.abgerechnet??=false; o.d
   d.dispo??={einsatz:"",ende:""}; d.uebernachtung??=false; d.ausland??=false;
   if(typeof d.pause==="number") d.pause=d.pause>0; d.pause??=true;
   d.drehbeginn??=(d.einsatz?addMin(d.einsatz,60):""); d.drehende??=(d.ende?addMin(d.ende,-60):"");
-  d.anreiseEnde??=""; d.rueckBeginn??="";
+  d.anreiseEnde??=""; d.rueckBeginn??=""; d.grenzHin??=""; d.grenzRueck??="";
 });});
 function persist(){Store.save(DB);}
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
@@ -545,6 +549,7 @@ function renderDetail(){
     if(c.tg.state==="ok")chips+=`<span class="chip pos">Tagegeld</span>`;
     if(d.uebernachtung)chips+=`<span class="chip">Übernachtung</span>`;
     if(d.ausland)chips+=`<span class="chip">Ausland</span>`;
+    if(d.grenzHin||d.grenzRueck)chips+=`<span class="chip">Grenze ${d.grenzHin||"–"} / ${d.grenzRueck||"–"}</span>`;
     h+=`<div class="day" data-day="${d.id}">
       <div class="top"><div class="date">${fmtDayC(d.datum)}</div><div style="display:flex;align-items:center;gap:10px"><span class="ot ${otClass(c.ot)}">${fmtSigned(c.ot)}</span><button class="dayDel" data-del="${d.id}" aria-label="Tag löschen">${ICON_TRASH}</button></div></div>
       <div class="line"><span>EZ ${d.einsatz||"–"}–${d.ende||"–"} · ${azTxt} · Pause ${c.pauseJa?fmtMin(c.pause):"nein"}</span></div>
@@ -711,6 +716,16 @@ function editDay(orderId,dayId){
       <div class="field"><label>Übernachtung?</label><div class="toggles" id="uebtns"><button data-u="1">Ja</button><button data-u="0">Nein</button></div></div>
       <div class="field"><label>Ausland?</label><div class="toggles" id="albtns"><button data-a="1">Ja</button><button data-a="0">Nein</button></div></div>
     </div>
+    <div id="grenzwrap" class="hidden">
+      <div class="timebox" id="grenzbox">
+        <div class="tl trow"><span>Grenzübertritt</span><button type="button" class="offbtn" id="grenzOn">dokumentieren</button></div>
+        <div class="two" id="grenzFields">
+          <div class="tfield"><span class="tlbl">Grenze hin</span><input type="time" id="d_grenzHin" value="${d.grenzHin||""}"></div>
+          <div class="tfield"><span class="tlbl">Grenze zurück</span><input type="time" id="d_grenzRueck" value="${d.grenzRueck||""}"></div>
+        </div>
+        <p class="note" id="grenznote">Verlassen von Deutschland und Ankunft in Deutschland. Nur für deine Reisekosten-Unterlagen – erscheint nicht im Stundennachweis.</p>
+      </div>
+    </div>
     <div id="tgbox"></div>
     <p class="note">„kein Dreh" und „entfällt" lassen den jeweiligen Block leer – gerechnet wird dann nur mit der Einsatzzeit. Einsatzende rechnet sich automatisch aus der letzten Tätigkeit + 30 Min, bis du es selbst tippst.</p>
     <button class="btn" id="saveDay" style="margin-top:14px">Speichern</button>
@@ -720,8 +735,23 @@ function editDay(orderId,dayId){
   document.querySelectorAll("#pausebtns button").forEach(b=>b.onclick=()=>{tmpPause=b.dataset.p==="1";paintPause();recalc();});
   function paintUE(){document.querySelectorAll("#uebtns button").forEach(b=>b.classList.toggle("on",(b.dataset.u==="1")===tmpUE));}
   document.querySelectorAll("#uebtns button").forEach(b=>b.onclick=()=>{tmpUE=b.dataset.u==="1";paintUE();recalc();});
-  function paintAL(){document.querySelectorAll("#albtns button").forEach(b=>b.classList.toggle("on",(b.dataset.a==="1")===tmpAL));}
+  function paintAL(){document.querySelectorAll("#albtns button").forEach(b=>b.classList.toggle("on",(b.dataset.a==="1")===tmpAL));
+    /* Grenzuebertritt nur bei Auslandsreisen anbieten */
+    g("grenzwrap").classList.toggle("hidden",!tmpAL);}
   document.querySelectorAll("#albtns button").forEach(b=>b.onclick=()=>{tmpAL=b.dataset.a==="1";paintAL();recalc();});
+
+  /* Grenzuebertritt: standardmaessig inaktiv und leer, per Schalter scharf.
+     Zustand wird aus der Leere der Felder abgeleitet - kein eigenes Datenfeld. */
+  let tmpGrenz=!!(d.grenzHin||d.grenzRueck);
+  function paintGrenz(){
+    g("grenzOn").classList.toggle("on",tmpGrenz);
+    g("d_grenzHin").disabled=!tmpGrenz; g("d_grenzRueck").disabled=!tmpGrenz;
+    g("grenzbox").classList.toggle("acc",tmpGrenz);
+    g("grenznote").textContent=tmpGrenz
+      ? "Verlassen von Deutschland und Ankunft in Deutschland. Nur für deine Reisekosten-Unterlagen – erscheint nicht im Stundennachweis."
+      : "Nicht dokumentiert. Antippen, wenn du den Grenzübertritt festhalten willst.";
+  }
+  g("grenzOn").onclick=()=>{tmpGrenz=!tmpGrenz;if(!tmpGrenz){g("d_grenzHin").value="";g("d_grenzRueck").value="";}paintGrenz();};
   let anEd=!!(d.anreise&&d.anreise!==addMin(d.einsatz,30));
   let aeEd=!!(d.anreiseEnde&&d.anreiseEnde!==addMin(d.einsatz,60));
   let dbEd=!!(d.drehbeginn&&d.drehbeginn!==addMin(d.einsatz,60));
@@ -793,11 +823,11 @@ function editDay(orderId,dayId){
     anNoneBtn.classList.toggle("on",anN);g("d_anreise").disabled=anN;g("d_anreiseEnde").disabled=anN;if(anN){anEd=true;aeEd=true;}
     rkNoneBtn.classList.toggle("on",rkN);g("d_rueckBeginn").disabled=rkN;g("d_rueck").disabled=rkN;
   }
-  paintPause();paintUE();paintAL();initNone();recalc();
+  paintPause();paintUE();paintAL();paintGrenz();initNone();recalc();
   g("cancelDay").onclick=closeSheet;
   if(dayId)g("delDay").onclick=()=>{askConfirm("Diesen Arbeitstag wirklich löschen?",()=>{o.days=o.days.filter(x=>x.id!==dayId);persist();closeSheet();render();toast("Tag gelöscht");});};
   g("saveDay").onclick=()=>{
-    const data={datum:val("d_datum"),einsatz:val("d_einsatz"),anreise:val("d_anreise"),anreiseEnde:val("d_anreiseEnde"),drehbeginn:val("d_drehbeginn"),drehende:val("d_drehende"),rueckBeginn:val("d_rueckBeginn"),rueck:val("d_rueck"),ende:val("d_ende"),pause:tmpPause,uebernachtung:tmpUE,ausland:tmpAL};
+    const data={datum:val("d_datum"),einsatz:val("d_einsatz"),anreise:val("d_anreise"),anreiseEnde:val("d_anreiseEnde"),drehbeginn:val("d_drehbeginn"),drehende:val("d_drehende"),rueckBeginn:val("d_rueckBeginn"),rueck:val("d_rueck"),ende:val("d_ende"),pause:tmpPause,uebernachtung:tmpUE,ausland:tmpAL,grenzHin:tmpAL?val("d_grenzHin"):"",grenzRueck:tmpAL?val("d_grenzRueck"):""};
     if(!data.datum){toast("Bitte Datum angeben");return;}
     if(dayId)Object.assign(d,data);else o.days.push({id:uid(),...data,dispo:d.dispo});
     persist();const c=dayCalc(data);closeSheet();render();
