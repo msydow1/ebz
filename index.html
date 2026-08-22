@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="Zeiterfassung">
 <meta name="theme-color" content="#15171A">
 <title>Zeiterfassung</title>
-<!-- Zeiterfassung V3.5 · Design "Amber Editorial" -->
+<!-- Zeiterfassung V3.5.1 · Design "Amber Editorial" -->
 <!-- impeccable-disable single-font -- Nutzer wählte beim V1.2-Redesign bewusst "Inter durchgängig" (eine Familie, tabular-nums für Zeiten) -->
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -260,7 +260,7 @@ body.light .btn.danger{border-color:rgba(194,78,59,.4)}
   <div class="view" id="view"></div>
   <div class="foot">
     <div class="foot-note">Daten bleiben nur auf diesem Gerät · alle Angaben ohne Gewähr</div>
-    <div class="foot-v">Zeiterfassung <b>V3.5</b></div>
+    <div class="foot-v">Zeiterfassung <b>V3.5.1</b></div>
   </div>
 </div>
 <input type="file" id="pdfInput" accept="application/pdf" class="hidden">
@@ -283,11 +283,11 @@ S.status??="frei"; S.flink30??=390; S.flink45??=585;  /* FLINK-Schwellen: 6:30 u
    Wird einmal nach jedem Update gezeigt: Vergleich S.seenVersion gegen APP_VERSION.
    Nicht bei frischen Installationen (keine Aufträge) – ein neuer Kollege soll kein
    Changelog sehen, bevor er die App überhaupt kennt. Neue Einträge oben anfügen. */
-const APP_VERSION="3.5";
+const APP_VERSION="3.5.1";
 const WHATSNEW=[
   {v:"3.5", t:"Grenzübertritt bei Auslandsreisen", items:[
     ["Grenze hin und zurück dokumentieren","Im Tages-Sheet unter „Ausland: Ja\" kannst du festhalten, wann du Deutschland verlassen hast und wann du zurück warst. Standardmäßig aus – ein Tipp auf „dokumentieren\" macht die Felder scharf."],
-    ["Nur für deine Unterlagen","Der Grenzübertritt erscheint nicht im Stundennachweis. Er gehört zur Reisekosten-Abrechnung, nicht zur Arbeitszeit."]
+    ["Erscheint unten im Nachweis","Sind Grenzzeiten erfasst, stehen sie im Notizfeld von PDF und Mail. Die Zeitentabelle bleibt unberührt – Arbeitszeit und Überstunden ändern sich nicht."]
   ]},
   {v:"3.4", t:"Was ist neu", items:[
     ["Diese Übersicht", "Nach einem Update siehst du künftig einmalig, was sich geändert hat. Jederzeit erneut aufrufbar über Einstellungen → Was ist neu."]
@@ -974,6 +974,15 @@ function flipName(n){const p=String(n||"").split(",");return p.length===2?clean(
 function initials(n){const p=clean(flipName(n)).split(/\s+/).filter(Boolean);if(!p.length)return "";const a=p[0][0].toUpperCase();const b=p.length>1?p[p.length-1][0].toUpperCase():"";return a+"."+(b?b+".":"");}
 function fmtDE(dt){const d=dt||new Date();return String(d.getDate()).padStart(2,"0")+"."+String(d.getMonth()+1).padStart(2,"0")+"."+d.getFullYear();}
 function equipText(o){return [...(o.equipment||[]),o.notiz].filter(Boolean).join(", ");}
+/* Grenzuebertritte fuer den Nachweis: eine kurze Zeile, nur wenn welche erfasst sind.
+   Landet unten im Notizfeld, nicht in der Zeitentabelle - die Arbeitszeit bleibt davon unberuehrt. */
+function grenzText(o){
+  const z=o.days.slice().sort((a,b)=>(a.datum||"").localeCompare(b.datum||""))
+    .filter(d=>d.grenzHin||d.grenzRueck)
+    .map(d=>{const p=[];if(d.grenzHin)p.push("hin "+d.grenzHin);if(d.grenzRueck)p.push("zurück "+d.grenzRueck);
+      return fmtDate(d.datum)+" "+p.join(", ");});
+  return z.length?"Grenzübertritt: "+z.join(" · "):"";
+}
 function mailOrder(o){
   const subj="Zeitnachweis"+(o.prodNummer?" – Produktion "+o.prodNummer:(o.titel?" – "+o.titel:(o.auftragsnr?" – "+o.auftragsnr:"")));
   const prodTxt=o.titel?(o.titel+(o.prodNummer?" ("+o.prodNummer+")":"")):(o.prodNummer?"mit der Prod.-Nr. "+o.prodNummer:(o.auftragsnr||""));
@@ -989,6 +998,7 @@ function mailOrder(o){
     L.push("Pause: "+pauseDez(c.pause));
     L.push("");});
   const eq=equipText(o);if(eq){L.push("Sonder-Equipment: "+eq);L.push("");}
+  const gz=grenzText(o);if(gz){L.push(gz);L.push("");}
   L.push("Viele liebe Grüße");L.push(sender);
   window.location.href="mailto:"+encodeURIComponent(S.email||"")+"?subject="+encodeURIComponent(subj)+"&body="+encodeURIComponent(L.join("\n"));
 }
@@ -1018,8 +1028,11 @@ function pdfOrder(o){
     if(y>250){doc.addPage();y=M;}
     const created=fmtDE();const sig=initials(o.mitarbeiter||S.absender);const eq=equipText(o);
     doc.setFont("helvetica","bold");doc.setFontSize(8.5);doc.setTextColor(90,82,72);doc.text("Notiz / Sonder-Equipment",M,y);y+=5;
-    doc.setFont("helvetica","normal");doc.setFontSize(9);doc.setTextColor(40,35,28);if(eq)doc.text(eq,M,y);
-    doc.setDrawColor(210,203,190);doc.line(M,y+1.5,196,y+1.5);y+=20;
+    doc.setFont("helvetica","normal");doc.setFontSize(9);doc.setTextColor(40,35,28);
+    const notizZeilen=doc.splitTextToSize([eq,grenzText(o)].filter(Boolean).join("  ·  "),182);
+    notizZeilen.forEach((zl,i)=>doc.text(zl,M,y+i*4.6));
+    const nH=Math.max(1,notizZeilen.length);
+    doc.setDrawColor(210,203,190);doc.line(M,y+(nH-1)*4.6+1.5,196,y+(nH-1)*4.6+1.5);y+=20+(nH-1)*4.6;
     doc.setFontSize(9);doc.setTextColor(40,35,28);doc.text(created,M,y);if(sig)doc.text(sig,M+50,y);
     doc.setDrawColor(120,110,95);doc.line(M,y+2,M+80,y+2);
     doc.setFontSize(7.5);doc.setTextColor(150,140,125);doc.text("Datum, Unterschrift",M,y+6.5);
