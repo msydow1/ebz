@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="Zeiterfassung">
 <meta name="theme-color" content="#15171A">
 <title>Zeiterfassung</title>
-<!-- Zeiterfassung V3.5.1 · Design "Amber Editorial" -->
+<!-- Zeiterfassung V3.6.1 · Design "Amber Editorial" -->
 <!-- impeccable-disable single-font -- Nutzer wählte beim V1.2-Redesign bewusst "Inter durchgängig" (eine Familie, tabular-nums für Zeiten) -->
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -212,7 +212,9 @@ body.light .btn.danger{border-color:rgba(194,78,59,.4)}
 /* Anleitung */
 .hsec{background:var(--surface);border-radius:14px;padding:16px;margin-bottom:10px}
 .hsec .eb{font-size:9px;font-weight:600;letter-spacing:1.4px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:8px}
-.hsec p{margin:0;font-size:13px;font-weight:500;line-height:1.65;color:var(--silver)}
+.hsec p{margin:0 0 10px;font-size:13px;font-weight:500;line-height:1.65;color:var(--silver)}
+.hsec p:last-child{margin-bottom:0}
+.hsec .tip{background:var(--field);border-radius:10px;padding:10px 12px;font-size:12.5px;color:var(--muted);margin-top:12px}
 .hsec b{color:var(--text-strong);font-weight:600}
 /* Import-Vorschau */
 .implist .irow{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid var(--line)}
@@ -260,7 +262,7 @@ body.light .btn.danger{border-color:rgba(194,78,59,.4)}
   <div class="view" id="view"></div>
   <div class="foot">
     <div class="foot-note">Daten bleiben nur auf diesem Gerät · alle Angaben ohne Gewähr</div>
-    <div class="foot-v">Zeiterfassung <b>V3.5.1</b></div>
+    <div class="foot-v">Zeiterfassung <b>V3.6.1</b></div>
   </div>
 </div>
 <input type="file" id="pdfInput" accept="application/pdf" class="hidden">
@@ -278,35 +280,42 @@ let DB=Store.load()||{orders:[],settings:{}};
 const S=DB.settings;
 S.sollMin??=450; if(S.sollMin===462)S.sollMin=450; S.standardPause??=30; S.abwesenheitMin??=480; S.email??=""; S.absender??=""; S.empfaenger??=""; S.theme??="dark";
 S.status??="frei"; S.flink30??=390; S.flink45??=585;  /* FLINK-Schwellen: 6:30 und 9:45 */
+S.anschreiben??=""; S.gruss??="";  /* leer = Standardtext, siehe mailOrder */
 
 /* ===== Was ist neu =====
    Wird einmal nach jedem Update gezeigt: Vergleich S.seenVersion gegen APP_VERSION.
    Nicht bei frischen Installationen (keine Aufträge) – ein neuer Kollege soll kein
    Changelog sehen, bevor er die App überhaupt kennt. Neue Einträge oben anfügen. */
-const APP_VERSION="3.5.1";
+const APP_VERSION="3.6.1";
 const WHATSNEW=[
+  {v:"3.6", t:"Eigenes Anschreiben und zwei Korrekturen", items:[
+    ["Du schreibst die Mail jetzt selbst","In den Einstellungen kannst du Anrede und Grußformel frei formulieren. Lässt du die Felder leer, bleibt alles beim bisherigen Text. Wenn du magst, setzt du Platzhalter ein: {name} für den Empfänger, dazu {produktion}, {auftrag} und {tage}."],
+    ["Pausenkorrektur greift wieder in allen Fällen","Das Abrechnungssystem zieht die gesetzliche Ruhepause immer ab, auch an Tagen ohne Pause. Der Nachweis gleicht das jetzt vollständig aus. Ein Tag von 09:00 bis 17:30 ohne Pause erscheint dort als 09:00 bis 18:00, damit deine echten 8:30 Stunden ankommen."],
+    ["Der Folgetag stimmt wieder","Tag hinzufügen hat bisher immer das Datum des Vortags vorgeschlagen. Das ist behoben."],
+    ["Keine erfundene Dispo-Zeile mehr","Von Hand erfasste Tage zeigten dauerhaft die Zeile Laut Dispo 09:00 bis 18:00, obwohl es nie eine Dispo gab. Ein Tipp auf Übernehmen hat dabei echte Zeiten überschrieben. Der Knopf setzt jetzt nur noch die Einsatzzeit."],
+    ["Anleitung neu geschrieben","Sie erklärt den Ablauf jetzt Schritt für Schritt, statt nur Stichworte aufzuzählen."]
+  ]},
   {v:"3.5", t:"Grenzübertritt bei Auslandsreisen", items:[
-    ["Grenze hin und zurück dokumentieren","Im Tages-Sheet unter „Ausland: Ja\" kannst du festhalten, wann du Deutschland verlassen hast und wann du zurück warst. Standardmäßig aus – ein Tipp auf „dokumentieren\" macht die Felder scharf."],
-    ["Erscheint unten im Nachweis","Sind Grenzzeiten erfasst, stehen sie im Notizfeld von PDF und Mail. Die Zeitentabelle bleibt unberührt – Arbeitszeit und Überstunden ändern sich nicht."]
+    ["Grenze hin und zurück festhalten","Steht ein Tag auf Ausland, kannst du eintragen, wann du Deutschland verlassen hast und wann du zurück warst. Die Felder sind zunächst gesperrt. Ein Tipp auf dokumentieren schaltet sie frei."],
+    ["Erscheint unten im Nachweis","Hast du Grenzzeiten erfasst, stehen sie im Notizfeld von PDF und Mail. Die Tabelle mit deinen Arbeitszeiten bleibt unberührt."]
   ]},
-  {v:"3.4", t:"Was ist neu", items:[
-    ["Diese Übersicht", "Nach einem Update siehst du künftig einmalig, was sich geändert hat. Jederzeit erneut aufrufbar über Einstellungen → Was ist neu."]
+  {v:"3.4", t:"Diese Übersicht", items:[
+    ["Neuerungen auf einen Blick","Nach einem Update siehst du künftig einmalig, was sich geändert hat. Du erreichst die Liste jederzeit wieder über Einstellungen und dann Was ist neu."]
   ]},
-  {v:"3.3", t:"Pausen-Korrektur für den Nachweis", items:[
-    ["FLINK zieht ab 9:45 Std pauschal 45 Min ab","Du machst aber 30. Der Nachweis verlängert das Einsatzende deshalb um 15 Min, damit deine echte Arbeitszeit ankommt. Nur bei freien Mitarbeitern und nur mit Pausenhaken."],
-    ["Pause steht jetzt als Zahl im Nachweis","„0,5\" statt „ja\" – so wie es das ZDF-Formular vorsieht. Die Rückfrage, wie viel „ja\" bedeutet, erübrigt sich."],
-    ["Freier Mitarbeiter oder fest angestellt","Wählbar im Import, im Auftrag und als Vorgabe in den Einstellungen. Fest Angestellte bekommen den Nachweis unverändert."],
-    ["Neuer Block im Tages-Sheet","„Nachweis für FLINK\" zeigt dir immer, was auf dem Papier landet."]
+  {v:"3.3", t:"Pausen richtig auf dem Nachweis", items:[
+    ["Ab 9:45 Stunden zieht das System 45 Minuten ab","Du machst aber nur 30. Der Nachweis verlängert dein Einsatzende deshalb um die Differenz, damit deine echte Arbeitszeit ankommt."],
+    ["Die Pause steht jetzt als Zahl im Nachweis","Statt ja oder nein steht dort 0,5 Stunden, so wie es das Formular vorsieht. Damit erübrigt sich die Rückfrage, wie viel ja eigentlich bedeutet."],
+    ["Freier Mitarbeiter oder fest angestellt","Du wählst es im Import, im Auftrag und als Vorgabe in den Einstellungen. Fest Angestellte bekommen den Nachweis mit unveränderten Zeiten."]
   ]},
-  {v:"3.2", t:"Tagegeld und Icon", items:[
-    ["Tagegeld nur bei Einzeltagen","Bei mehrtägigen Reisen mit Übernachtung besteht kein Anspruch, das läuft über die Dienstreise-Abrechnung. Im Ausland ist der Satz Ländersache."],
-    ["Neues App-Icon","Klappe mit „EB\" statt des alten „Z\"."]
+  {v:"3.2", t:"Tagegeld und neues Symbol", items:[
+    ["Tagegeld nur bei Einzeltagen","Bei einer mehrtägigen Reise mit Übernachtung besteht kein Anspruch, das läuft über die Dienstreise-Abrechnung. Im Ausland richtet sich der Satz nach dem Land."],
+    ["Neues App-Symbol","Eine Klappe mit EB löst das alte Z ab."]
   ]},
-  {v:"3.1", t:"Reiseart nachträglich umstellen", items:[
-    ["Einzeltage oder mehrtägig – jederzeit","Im Auftrag über den Arbeitstagen umschaltbar. Übernachtung und Reisezeiten aller Tage werden neu gesetzt, deine Überstunden bleiben unverändert."]
+  {v:"3.1", t:"Reiseart nachträglich ändern", items:[
+    ["Einzeltage oder mehrtägig, jederzeit","Im Auftrag kannst du über den Arbeitstagen umschalten. Übernachtung und Reisezeiten aller Tage werden neu gesetzt, deine Überstunden bleiben gleich."]
   ]},
   {v:"3.0", t:"Neues Design", items:[
-    ["Amber Editorial","Größere Zahlen, ruhigere Flächen, Hell- und Dunkelmodus gleichwertig."]
+    ["Ruhiger und klarer","Größere Zahlen, mehr Luft, und Hell- und Dunkelmodus sind gleichwertig gepflegt."]
   ]}
 ];
 DB.orders.forEach(o=>{o.notiz??=""; o.equipment??=[]; o.abgerechnet??=false; o.days.forEach(d=>{
@@ -374,11 +383,13 @@ function dayCalc(d){
   else if(span>S.abwesenheitMin) tg={state:"ok"};
   else tg={state:"under"};
   const fp=flinkPause(span);
-  /* Korrektur nur im 45-Minuten-Fenster und nur, wenn Pause gemacht wurde:
-     FLINK zieht dort 45 statt der tatsächlichen 30 Min ab, die Differenz kommt hinten drauf.
-     Im 30-Minuten-Fenster deckt sich beides – Pause ist in der Arbeitszeit mit drin, kein Eingriff.
-     Ohne Pausenhaken wird ebenfalls nicht gerechnet (nur ein Hinweis im Tages-Sheet). */
-  const korr=(span!=null&&fp===45&&pauseMin>0)?Math.max(0,45-pauseMin):0;
+  /* Korrektur = was FLINK abzieht minus die tatsaechlich gemachte Pause.
+     FLINK zieht die gesetzliche Ruhepause immer ab, auch wenn keine gemacht wurde.
+     Damit nach diesem Abzug die echte Arbeitszeit ankommt, wandert die Differenz
+     ans Einsatzende. Beispiele: 30er-Fenster mit Pause 30 -> 0 (deckt sich, die Pause
+     steckt in der Arbeitszeit) · 45er-Fenster mit Pause 30 -> +15 · ohne Pause -> voller
+     FLINK-Abzug. Nie negativ: der Nachweis wird nie kuerzer als die echte Zeit. */
+  const korr=span==null?0:Math.max(0,fp-pauseMin);
   return {span,az,pause:pauseMin,pauseJa:!!d.pause,netto,ot,absence:span,tg,flink:fp,korr};
 }
 /* Einsatzende für den Nachweis. Bei freien Mitarbeitern wird es um die Differenz
@@ -683,7 +694,7 @@ function editOrder(id){
 let tmpPause,tmpUE,tmpAL;
 function editDay(orderId,dayId){
   const o=DB.orders.find(x=>x.id===orderId);
-  const d=dayId?o.days.find(x=>x.id===dayId):{datum:guessNextDate(o),einsatz:"09:00",anreise:"09:30",anreiseEnde:"10:00",drehbeginn:"10:00",drehende:"17:00",rueckBeginn:"17:00",rueck:"17:30",ende:"18:00",pause:true,uebernachtung:false,ausland:false,dispo:{einsatz:"09:00",ende:"18:00"}};
+  const d=dayId?o.days.find(x=>x.id===dayId):{datum:guessNextDate(o),einsatz:"09:00",anreise:"09:30",anreiseEnde:"10:00",drehbeginn:"10:00",drehende:"17:00",rueckBeginn:"17:00",rueck:"17:30",ende:"18:00",pause:true,uebernachtung:false,ausland:false,grenzHin:"",grenzRueck:"",dispo:{einsatz:"",ende:""}};
   tmpPause=d.pause!==false; tmpUE=!!d.uebernachtung; tmpAL=!!d.ausland;
   const dsp=d.dispo||{}; const hasDispo=dsp.einsatz||dsp.ende;
   openSheet(`<h3>${dayId?"Tag bearbeiten":"Tag erfassen"}</h3>
@@ -768,7 +779,11 @@ function editDay(orderId,dayId){
   g("d_rueck").oninput=()=>{computeEnde();recalc();};
   g("d_einsatz").oninput=()=>{deriveFromEinsatz();computeEnde();recalc();};
   g("d_ende").oninput=()=>{endeEd=true;recalc();};
-  if(hasDispo)g("useDispo").onclick=()=>{g("d_einsatz").value=dsp.einsatz||"";g("d_ende").value=dsp.ende||"";endeEd=true;anEd=aeEd=dbEd=false;applyAZ(false);applyAN(false);applyRK(false);deriveFromEinsatz();recalc();};
+  /* "Uebernehmen" setzt NUR die Einsatzzeit. Frueher hat es zusaetzlich die
+     "kein Dreh"- und "entfaellt"-Schalter aufgehoben und Reisezeiten erfunden -
+     an einem Uebernachtungstag landete so eine Rueckreise im Nachweis.
+     deriveFromEinsatz respektiert die Edit-Flags, getippte Felder bleiben stehen. */
+  if(hasDispo)g("useDispo").onclick=()=>{g("d_einsatz").value=dsp.einsatz||"";g("d_ende").value=dsp.ende||"";endeEd=true;deriveFromEinsatz();recalc();};
   function recalc(){
     const c=dayCalc({einsatz:val("d_einsatz"),ende:val("d_ende"),drehbeginn:val("d_drehbeginn"),drehende:val("d_drehende"),pause:tmpPause,uebernachtung:tmpUE,ausland:tmpAL});
     g("calc").innerHTML=`<div class="clbl">Rechnung</div>
@@ -789,9 +804,13 @@ function editDay(orderId,dayId){
       const mm=n=>n+" Min";
       if(c.span==null){fb.innerHTML="";}
       else if(!frei){fb.innerHTML=`<div class="tgbox"><div class="t"><span>FLINK zieht ${mm(c.flink)} ab</span><span class="in">fest angestellt</span></div><div class="why">Der Nachweis zeigt deine Zeiten unverändert.</div></div>`;}
-      else if(c.korr>0){fb.innerHTML=`<div class="tgbox ok"><div class="t"><span>Nachweis endet ${addMin(val("d_ende"),c.korr)}</span><span class="in">statt ${val("d_ende")}</span></div><div class="why">Über ${fmtMin(S.flink45)} Std zieht FLINK ${mm(c.flink)} ab, du machst ${mm(c.pause)}. Die ${mm(c.korr)} Differenz kommt hinten drauf, damit deine echte Nettozeit ankommt.</div></div>`;}
-      else if(c.flink===45&&!tmpPause){fb.innerHTML=`<div class="tgbox"><div class="t"><span>Nachweis unverändert</span><span class="in">ohne Pause</span></div><div class="why"><b>Achtung:</b> FLINK zieht über ${fmtMin(S.flink45)} Std trotzdem 45 Min ab – die gesetzliche Ruhepause ist nicht abwählbar. Ohne Pausenhaken wird nichts korrigiert, dir fehlen dann 45 Min. Wenn du Pause gemacht hast, hake sie an.</div></div>`;}
-      else{fb.innerHTML=`<div class="tgbox"><div class="t"><span>Nachweis unverändert</span><span class="in">FLINK ${mm(c.flink)}</span></div><div class="why">${c.flink===c.pause?"Deine Pause und der FLINK-Abzug sind gleich – die Pause steckt in der Arbeitszeit, kein Eingriff nötig.":"Keine Korrektur nötig."}</div></div>`;}
+      else if(c.korr>0){
+        const schwelle=c.flink===45?S.flink45:S.flink30;
+        const wieso=c.pause>0
+          ? `Über ${fmtMin(schwelle)} Std zieht FLINK ${mm(c.flink)} ab, du machst ${mm(c.pause)}.`
+          : `Über ${fmtMin(schwelle)} Std zieht FLINK ${mm(c.flink)} ab – die gesetzliche Ruhepause ist nicht abwählbar. Du hast keine Pause gemacht.`;
+        fb.innerHTML=`<div class="tgbox ok"><div class="t"><span>Nachweis endet ${addMin(val("d_ende"),c.korr)}</span><span class="in">statt ${val("d_ende")}</span></div><div class="why">${wieso} Die ${mm(c.korr)} Differenz kommt hinten drauf, damit deine echte Arbeitszeit ankommt.</div></div>`;}
+      else{fb.innerHTML=`<div class="tgbox"><div class="t"><span>Nachweis unverändert</span><span class="in">FLINK ${mm(c.flink)}</span></div><div class="why">${c.flink>0&&c.flink===c.pause?"Deine Pause und der FLINK-Abzug sind gleich – die Pause steckt in der Arbeitszeit, kein Eingriff nötig.":(c.flink===0?"Unter "+fmtMin(S.flink30)+" Std zieht FLINK keine Pause ab.":"Keine Korrektur nötig.")}</div></div>`;}
     }
     const box=g("tgbox");const t=c.tg;
     if(t.state==="ok"){box.innerHTML=`<div class="tgbox ok"><div class="t"><span>Tagegeld: 28,00 €</span><span class="in">nur intern</span></div><div class="why">Abwesenheit ${fmtMin(c.absence)} h · über der Schwelle von ${fmtMin(S.abwesenheitMin)} h, eintägig, Inland. Bitte selbst prüfen.</div></div>`;}
@@ -834,7 +853,10 @@ function editDay(orderId,dayId){
     toast(c.tg.state==="ok"?"Gespeichert · Tagegeld möglich":(dayId?"Gespeichert":"Tag hinzugefügt"));
   };
 }
-function guessNextDate(o){if(o.days.length){const last=o.days.map(d=>d.datum).filter(Boolean).sort().pop();if(last){const dt=new Date(last+"T00:00");dt.setDate(dt.getDate()+1);return dt.toISOString().slice(0,10);}}return new Date().toISOString().slice(0,10);}
+/* Lokales ISO-Datum. toISOString() rechnet nach UTC und verschiebt in Deutschland
+   den Tag zurueck - der Folgetag war dadurch immer der Vortag. */
+function isoLocal(dt){return dt.getFullYear()+"-"+String(dt.getMonth()+1).padStart(2,"0")+"-"+String(dt.getDate()).padStart(2,"0");}
+function guessNextDate(o){if(o.days.length){const last=o.days.map(d=>d.datum).filter(Boolean).sort().pop();if(last){const dt=new Date(last+"T00:00");dt.setDate(dt.getDate()+1);return isoLocal(dt);}}return isoLocal(new Date());}
 
 /* ===== Einstellungen ===== */
 function openSettings(){
@@ -858,7 +880,10 @@ function openSettings(){
       <div class="field"><label>Empfänger-E-Mail (Dispo)</label><input type="email" class="txt" id="s_mail" value="${esc(S.email||"")}" placeholder="empfangsadresse@…"></div>
       <div class="field"><label>Empfänger-Name (Anrede in der Mail)</label><input type="text" class="txt" id="s_empf" value="${esc(S.empfaenger||"")}" placeholder="Name"></div>
       <div class="field"><label>Dein Name (für Nachweise)</label><input type="text" class="txt" id="s_name" value="${esc(S.absender||"")}" placeholder="Vorname Nachname"></div>
-      <div class="field" style="margin-bottom:12px"><label>Beschäftigung (Vorgabe für neue Aufträge)</label><div class="toggles" id="s_status"><button data-s="frei">Freier Mitarbeiter</button><button data-s="fest">Fest angestellt</button></div></div>
+      <div class="field"><label>Beschäftigung (Vorgabe für neue Aufträge)</label><div class="toggles" id="s_status"><button data-s="frei">Freier Mitarbeiter</button><button data-s="fest">Fest angestellt</button></div></div>
+      <div class="field"><label>Anschreiben der Mail (optional)</label><textarea class="txt" id="s_anschr" rows="4" placeholder="Leer lassen für den Standardtext">${esc(S.anschreiben||"")}</textarea>
+        <p class="note">Leer = wie bisher. Platzhalter: <b>{name}</b> · <b>{produktion}</b> · <b>{auftrag}</b> · <b>{tage}</b></p></div>
+      <div class="field" style="margin-bottom:12px"><label>Grußformel (optional)</label><input type="text" class="txt" id="s_gruss" value="${esc(S.gruss||"")}" placeholder="Leer = Viele liebe Grüße"></div>
       <button class="btn" id="saveSet" style="margin:0;padding:12px;font-size:13px">Speichern</button>
     </div>
     <button class="btn danger" id="wipe" style="margin-top:16px">Alle Daten löschen</button>
@@ -869,7 +894,7 @@ function openSettings(){
   const paintSetStatus=()=>document.querySelectorAll("#s_status button").forEach(b=>b.classList.toggle("on",b.dataset.s===setStatus));
   document.querySelectorAll("#s_status button").forEach(b=>b.onclick=()=>{setStatus=b.dataset.s;paintSetStatus();});
   paintSetStatus();
-  document.getElementById("saveSet").onclick=()=>{S.email=val("s_mail");S.empfaenger=val("s_empf");S.absender=val("s_name");S.status=setStatus;persist();closeSheet();render();toast("Einstellungen gespeichert");};
+  document.getElementById("saveSet").onclick=()=>{S.email=val("s_mail");S.empfaenger=val("s_empf");S.absender=val("s_name");S.status=setStatus;S.anschreiben=val("s_anschr");S.gruss=val("s_gruss");persist();closeSheet();render();toast("Einstellungen gespeichert");};
   document.getElementById("rulesBtn").onclick=openRules;
   document.getElementById("helpBtn").onclick=openHelp;
   document.getElementById("wnBtn").onclick=()=>openWhatsNew(true);
@@ -947,11 +972,53 @@ function openWhatsNew(alle){
 /* ===== Anleitung ===== */
 function openHelp(){
   openSheet(`<h3>Anleitung</h3>
-    <div class="hsec"><div class="eb">1 · Auftrag</div><p>Lege einen <b>Auftrag</b> an oder importiere ein <b>Dispo-PDF</b> – die App erkennt Titel, Nummern, Personen und deine Einsatzzeiten. Danach kurz prüfen und die Reiseart wählen.</p></div>
-    <div class="hsec"><div class="eb">2 · Zeiten</div><p>Der <b>Einsatzbeginn ist der Anker</b> – alle anderen Zeiten schlägt die App nur vor. Das <b>Einsatzende</b> rechnet sich automatisch (letzte Tätigkeit + 30 Min), bis du es selbst tippst. „kein Dreh" und „entfällt" leeren einen Block.</p></div>
-    <div class="hsec"><div class="eb">3 · Tagegeld</div><p>Tagegeld gibt es <b>nur bei Einzeltagen</b>: eintägig, Inland, über 8 Std abwesend. <b>Bei einer mehrtägigen Reise mit Übernachtung besteht kein Anspruch</b> – das läuft über die Dienstreise-Abrechnung.</p><p>Im <b>Ausland</b> ist der Spesensatz Ländersache und wird über den Reisedienst abgerechnet – die App nennt dort deshalb keinen Betrag.</p><p>Der grüne Hinweis ist nur für dich – er taucht nie in Mail oder PDF auf. Antragsfrist: 6 Monate.</p></div>
-    <div class="hsec"><div class="eb">4 · Export</div><p><b>„Als PDF"</b> öffnet das Teilen-Menü mit der fertigen Datei, <b>„Als E-Mail"</b> deine Mail-App mit dem Nachweis als Text – als 7-Spalten-Tabelle ohne Summen. Danach den Auftrag als <b>abgerechnet</b> markieren.</p></div>
-    <div class="hsec"><div class="eb">5 · Sicherung</div><p>Deine Daten liegen <b>nur im Browser dieses Geräts</b>. Mach regelmäßig ein Backup (Einstellungen → „Backup teilen") und lies es bei Bedarf mit „Backup einlesen" wieder ein. Nach dem ersten Laden läuft die App auch offline – installieren über Safari → Teilen → „Zum Home-Bildschirm".</p></div>
+    <p class="note" style="margin:-8px 0 16px">So arbeitest du mit der App. Einmal lesen reicht.</p>
+
+    <div class="hsec"><div class="eb">Der Ablauf in Kurzform</div>
+      <p>Du legst einen <b>Auftrag</b> an, das ist ein Dreh oder eine Produktion. In diesen Auftrag trägst du deine <b>Arbeitstage</b> ein. Am Ende schickst du daraus einen Stundennachweis an die Disposition, als PDF oder als E-Mail.</p>
+      <p>Alles andere rechnet die App: Überstunden, Pausen und den Hinweis auf mögliches Tagegeld.</p></div>
+
+    <div class="hsec"><div class="eb">1 · Auftrag anlegen</div>
+      <p>Am schnellsten geht es mit der Dispo. Tippe auf <b>PDF importieren</b> und wähle die Datei aus. Die App liest Titel, Auftragsnummer, Produktionsnummer, Ort und die Namen aller eingeteilten Personen heraus und legt dir die Drehtage gleich mit an.</p>
+      <p>Bevor der Import durchläuft, prüfst du zwei Dinge: Steht dein Name in der Auswahl, und stimmt die <b>Reiseart</b>? Einzeltage heißt, du fährst jeden Tag hin und zurück. Mehrtägig heißt, du übernachtest vor Ort.</p>
+      <p>Ohne Dispo geht es genauso über <b>Auftrag anlegen</b>. Dann trägst du die Tage von Hand ein.</p>
+      <p class="tip">Die Dispo kommt per Mail? Tippe das PDF an, dann auf Teilen und auf In Dateien sichern. Danach findest du es im Import ganz oben unter Zuletzt benutzt.</p></div>
+
+    <div class="hsec"><div class="eb">2 · Einen Tag erfassen</div>
+      <p>Der <b>Einsatzbeginn ist der Ausgangspunkt</b>. Sobald du ihn einträgst, schlägt die App alle übrigen Zeiten vor. Die Vorschläge sind nur Startwerte, du überschreibst sie einfach mit deinen echten Zeiten.</p>
+      <p>Das <b>Einsatzende</b> rechnet sich dabei selbst aus. Es liegt immer 30 Minuten nach deiner letzten Tätigkeit, also nach der Rückreise, sonst nach dem Dreh. Sobald du es einmal selbst eintippst, bleibt dein Wert stehen.</p>
+      <p>Zwei Schalter helfen bei besonderen Tagen. <b>Kein Dreh</b> nimmst du für reine Anreisetage. <b>Entfällt</b> steht bei Anreise und Rückreise getrennt zur Verfügung, für Tage ohne Fahrt.</p></div>
+
+    <div class="hsec"><div class="eb">3 · Pausen und was FLINK daraus macht</div>
+      <p>Das Abrechnungssystem des Senders zieht die gesetzliche Ruhepause <b>immer automatisch</b> ab. Ab 6:30 Stunden Anwesenheit sind das 30 Minuten, ab 9:45 Stunden 45 Minuten. Daran kann niemand etwas ändern, auch die Disposition nicht.</p>
+      <p>Machst du tatsächlich 30 Minuten Pause, gehen dir bei langen Tagen also 15 Minuten verloren. Machst du gar keine, sogar die vollen 30 oder 45.</p>
+      <p>Deshalb verlängert die App auf dem Nachweis dein Einsatzende genau um diese Differenz. Beispiel: Du arbeitest von 09:00 bis 17:30 ohne Pause. Auf dem Nachweis steht <b>09:00 bis 18:00</b>. Das System zieht davon 30 Minuten ab und bucht deine echten 8:30.</p>
+      <p>In der App selbst siehst du weiterhin deine tatsächlichen Zeiten. Im Tages-Sheet steht unter <b>Nachweis für FLINK</b> immer, was am Ende auf dem Papier landet.</p>
+      <p class="tip">Das gilt nur für freie Mitarbeiter. Fest Angestellte bekommen den Nachweis mit den unveränderten Zeiten.</p></div>
+
+    <div class="hsec"><div class="eb">4 · Tagegeld</div>
+      <p>Tagegeld gibt es <b>nur bei Einzeltagen</b>. Du musst eintägig unterwegs gewesen sein, im Inland, und länger als 8 Stunden abwesend.</p>
+      <p>Bei einer mehrtägigen Reise mit Übernachtung besteht <b>kein Anspruch</b>. Das läuft vollständig über die Dienstreise-Abrechnung. Im Ausland richtet sich der Satz nach dem jeweiligen Land und wird über den Reisedienst abgewickelt, deshalb nennt die App dort keinen Betrag.</p>
+      <p>Der grüne Hinweis ist nur für dich gedacht. Er taucht weder im PDF noch in der Mail auf. Denk daran: Der Antrag muss innerhalb von sechs Monaten raus.</p></div>
+
+    <div class="hsec"><div class="eb">5 · Nachweis verschicken</div>
+      <p><b>Als PDF</b> erzeugt die fertige Datei und öffnet das Teilen-Menü. Von dort schickst du sie per Mail, legst sie in Dateien ab oder gibst sie per AirDrop weiter.</p>
+      <p><b>Als E-Mail</b> öffnet deine Mail-App mit dem Nachweis als Text. Empfängeradresse, Anrede und Grußformel stellst du einmal in den Einstellungen ein, danach steht alles automatisch drin.</p>
+      <p>Ist ein Auftrag erledigt, markierst du ihn mit <b>Abgerechnet</b>. Er wandert dann ausgegraut ans Ende der Liste und ist nicht mehr im Weg.</p></div>
+
+    <div class="hsec"><div class="eb">6 · Sicherung, das Wichtigste</div>
+      <p>Deine Daten liegen ausschließlich in diesem Browser, auf diesem Gerät. Es gibt keinen Server und kein Konto. Das heißt auch: Wenn das iPhone die Websitedaten löscht, sind sie weg.</p>
+      <p>Mach deshalb regelmäßig ein Backup. Du findest es unter <b>Einstellungen</b> und dann <b>Backup teilen</b>. Sichere die Datei in deiner Cloud oder schick sie dir selbst per Mail. Zurückholen kannst du sie jederzeit mit <b>Backup einlesen</b>.</p>
+      <p class="tip">Beim Einlesen wird der aktuelle Stand komplett ersetzt. Prüfe also kurz, ob du die richtige Datei erwischt hast.</p></div>
+
+    <div class="hsec"><div class="eb">7 · Auf dem iPhone installieren</div>
+      <p>Öffne die Adresse in <b>Safari</b>, tippe auf Teilen und dann auf <b>Zum Home-Bildschirm</b>. Ab da startest du die App über ihr Symbol und sie läuft im Vollbild.</p>
+      <p>Nach dem ersten Laden funktioniert alles auch <b>ohne Internet</b>, sogar der PDF-Export.</p></div>
+
+    <div class="hsec"><div class="eb">8 · An Kollegen weitergeben</div>
+      <p>Unter <b>Einstellungen</b> und <b>App weiterempfehlen</b> teilst du den Link. Jeder Kollege bekommt seine eigene, leere App. Daten werden nie geteilt oder vermischt.</p>
+      <p>Sag ihm dazu, dass er nach dem Öffnen zwei Dinge erledigen sollte: die App zum Home-Bildschirm hinzufügen und in den Einstellungen seinen Namen eintragen. Der Name sorgt dafür, dass beim Dispo-Import automatisch die richtige Person vorausgewählt wird.</p></div>
+
     <button class="btn" id="helpBack" style="margin-top:6px">Verstanden</button>`);
   document.getElementById("helpBack").onclick=openSettings;
 }
@@ -987,7 +1054,20 @@ function mailOrder(o){
   const subj="Zeitnachweis"+(o.prodNummer?" – Produktion "+o.prodNummer:(o.titel?" – "+o.titel:(o.auftragsnr?" – "+o.auftragsnr:"")));
   const prodTxt=o.titel?(o.titel+(o.prodNummer?" ("+o.prodNummer+")":"")):(o.prodNummer?"mit der Prod.-Nr. "+o.prodNummer:(o.auftragsnr||""));
   const sender=flipName(o.mitarbeiter||S.absender)||"[Dein Name]";
-  const L=["Hallo "+(S.empfaenger||"[Name]")+",","","anbei mein/unser Stundennachweis für die Produktion "+prodTxt+".",""];
+  /* Anschreiben und Gruss sind in den Einstellungen frei formulierbar.
+     Leer = der bisherige Standardtext, damit sich fuer niemanden etwas aendert.
+     Platzhalter werden ersetzt, sind aber optional - wer den Namen ausschreibt,
+     braucht sie nicht. */
+  const tage=o.days.length;
+  const platzhalter=s=>String(s)
+    .replace(/\{name\}/g,S.empfaenger||"[Name]")
+    .replace(/\{produktion\}/g,prodTxt)
+    .replace(/\{auftrag\}/g,o.auftragsnr||"")
+    .replace(/\{tage\}/g,tage+" "+(tage===1?"Einsatztag":"Einsatztage"));
+  const kopf=clean(S.anschreiben)
+    ? platzhalter(S.anschreiben).split("\n")
+    : ["Hallo "+(S.empfaenger||"[Name]")+",","","nachfolgend mein Stundennachweis für die Produktion "+prodTxt+" ("+tage+" "+(tage===1?"Einsatztag":"Einsatztage")+")."];
+  const L=[...kopf,""];
   o.days.slice().sort((a,b)=>(a.datum||"").localeCompare(b.datum||"")).forEach(d=>{const c=dayCalc(d);
     const dreh=(d.drehbeginn||d.drehende)?((d.drehbeginn||"—")+"–"+(d.drehende||"—")):"—";
     L.push(fmtDateLong(d.datum));
@@ -999,7 +1079,7 @@ function mailOrder(o){
     L.push("");});
   const eq=equipText(o);if(eq){L.push("Sonder-Equipment: "+eq);L.push("");}
   const gz=grenzText(o);if(gz){L.push(gz);L.push("");}
-  L.push("Viele liebe Grüße");L.push(sender);
+  (clean(S.gruss)?platzhalter(S.gruss).split("\n"):["Viele liebe Grüße"]).forEach(z=>L.push(z));L.push(sender);
   window.location.href="mailto:"+encodeURIComponent(S.email||"")+"?subject="+encodeURIComponent(subj)+"&body="+encodeURIComponent(L.join("\n"));
 }
 function pdfOrder(o){
