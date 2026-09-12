@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="Zeiterfassung">
 <meta name="theme-color" content="#15171A">
 <title>Zeiterfassung</title>
-<!-- Zeiterfassung V3.6.1 · Design "Amber Editorial" -->
+<!-- Zeiterfassung V3.6.2 · Design "Amber Editorial" -->
 <!-- impeccable-disable single-font -- Nutzer wählte beim V1.2-Redesign bewusst "Inter durchgängig" (eine Familie, tabular-nums für Zeiten) -->
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -262,7 +262,7 @@ body.light .btn.danger{border-color:rgba(194,78,59,.4)}
   <div class="view" id="view"></div>
   <div class="foot">
     <div class="foot-note">Daten bleiben nur auf diesem Gerät · alle Angaben ohne Gewähr</div>
-    <div class="foot-v">Zeiterfassung <b>V3.6.1</b></div>
+    <div class="foot-v">Zeiterfassung <b>V3.6.2</b></div>
   </div>
 </div>
 <input type="file" id="pdfInput" accept="application/pdf" class="hidden">
@@ -286,7 +286,7 @@ S.anschreiben??=""; S.gruss??="";  /* leer = Standardtext, siehe mailOrder */
    Wird einmal nach jedem Update gezeigt: Vergleich S.seenVersion gegen APP_VERSION.
    Nicht bei frischen Installationen (keine Aufträge) – ein neuer Kollege soll kein
    Changelog sehen, bevor er die App überhaupt kennt. Neue Einträge oben anfügen. */
-const APP_VERSION="3.6.1";
+const APP_VERSION="3.6.2";
 const WHATSNEW=[
   {v:"3.6", t:"Eigenes Anschreiben und zwei Korrekturen", items:[
     ["Du schreibst die Mail jetzt selbst","In den Einstellungen kannst du Anrede und Grußformel frei formulieren. Lässt du die Felder leer, bleibt alles beim bisherigen Text. Wenn du magst, setzt du Platzhalter ein: {name} für den Empfänger, dazu {produktion}, {auftrag} und {tage}."],
@@ -881,9 +881,9 @@ function openSettings(){
       <div class="field"><label>Empfänger-Name (Anrede in der Mail)</label><input type="text" class="txt" id="s_empf" value="${esc(S.empfaenger||"")}" placeholder="Name"></div>
       <div class="field"><label>Dein Name (für Nachweise)</label><input type="text" class="txt" id="s_name" value="${esc(S.absender||"")}" placeholder="Vorname Nachname"></div>
       <div class="field"><label>Beschäftigung (Vorgabe für neue Aufträge)</label><div class="toggles" id="s_status"><button data-s="frei">Freier Mitarbeiter</button><button data-s="fest">Fest angestellt</button></div></div>
-      <div class="field"><label>Anschreiben der Mail (optional)</label><textarea class="txt" id="s_anschr" rows="4" placeholder="Leer lassen für den Standardtext">${esc(S.anschreiben||"")}</textarea>
-        <p class="note">Leer = wie bisher. Platzhalter: <b>{name}</b> · <b>{produktion}</b> · <b>{auftrag}</b> · <b>{tage}</b></p></div>
-      <div class="field" style="margin-bottom:12px"><label>Grußformel (optional)</label><input type="text" class="txt" id="s_gruss" value="${esc(S.gruss||"")}" placeholder="Leer = Viele liebe Grüße"></div>
+      <div class="field"><label>Anschreiben der Mail (optional)</label><textarea class="txt" id="s_anschr" rows="4" placeholder="Hallo {name},&#10;&#10;nachfolgend mein Stundennachweis für {produktion}.">${esc(S.anschreiben||"")}</textarea>
+        <p class="note">Leer lassen heißt: es bleibt beim Text oben. Platzhalter, die du nutzen kannst: <b>{name}</b> · <b>{produktion}</b> · <b>{auftrag}</b> · <b>{tage}</b></p></div>
+      <div class="field" style="margin-bottom:12px"><label>Grußformel (optional)</label><input type="text" class="txt" id="s_gruss" value="${esc(S.gruss||"")}" placeholder="Viele liebe Grüße"></div>
       <button class="btn" id="saveSet" style="margin:0;padding:12px;font-size:13px">Speichern</button>
     </div>
     <button class="btn danger" id="wipe" style="margin-top:16px">Alle Daten löschen</button>
