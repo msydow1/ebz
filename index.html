@@ -8,18 +8,19 @@
 <meta name="apple-mobile-web-app-title" content="Zeiterfassung">
 <meta name="theme-color" content="#15171A">
 <title>Zeiterfassung</title>
-<!-- Zeiterfassung V3.6.2 · Design "Amber Editorial" -->
+<!-- Zeiterfassung V4.0.0 · Design "Amber Editorial" -->
 <!-- impeccable-disable single-font -- Nutzer wählte beim V1.2-Redesign bewusst "Inter durchgängig" (eine Familie, tabular-nums für Zeiten) -->
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-180.png">
-<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link href="vendor/inter.css" rel="stylesheet">
 <script src="vendor/pdf.min.js"></script>
 <script src="vendor/jspdf.umd.min.js"></script>
 <style>
 /* ===== Tokens (Handoff "Amber Editorial") ===== */
-:root{--bg:#15171A;--surface:#1E2228;--surface-2:#262B31;--field:#22262C;--field-input:#34393F;--line:#2A2F35;--line-strong:#3A4048;--text:#E8E8E8;--text-strong:#FFFFFF;--muted:#8A9099;--silver:#C3C3C3;--faint:#6E747B;--accent:#FA7D19;--accent-soft:rgba(250,125,25,.14);--accent-line:rgba(250,125,25,.28);--accent-ink:#B8925F;--pos:#54BE86;--pos-soft:rgba(84,190,134,.14);--pos-line:rgba(84,190,134,.40);--info:#6B87A2;--info-soft:rgba(107,135,162,.14);--info-line:rgba(107,135,162,.32);--danger:#E0705C;--on-accent:#15171A;--glow:0 8px 24px rgba(250,125,25,.30);--cardshadow:none}
-body.light{--bg:#F5F4F1;--surface:#FFFFFF;--surface-2:#EFEDE8;--field:#E9E7E1;--field-input:#E9E7E1;--line:#DEDBD3;--line-strong:#C9C5BC;--text:#28251F;--text-strong:#141210;--muted:#7A756C;--silver:#545048;--faint:#9B968C;--accent:#E86F0C;--accent-soft:rgba(232,111,12,.12);--accent-line:rgba(232,111,12,.30);--accent-ink:#B07A3C;--pos:#1E9E60;--pos-soft:rgba(30,158,96,.12);--pos-line:rgba(30,158,96,.45);--info:#49688C;--info-soft:rgba(73,104,140,.10);--info-line:rgba(73,104,140,.30);--danger:#C24E3B;--on-accent:#FFFFFF;--glow:0 8px 24px rgba(232,111,12,.32);--cardshadow:0 2px 14px rgba(0,0,0,.05)}
+:root{--bg:#15171A;--surface:#1E2228;--surface-2:#262B31;--field:#22262C;--field-input:#34393F;--line:#2A2F35;--line-strong:#3A4048;--text:#E8E8E8;--text-strong:#FFFFFF;--muted:#8A9099;--silver:#C3C3C3;--faint:#6E747B;--accent:#FA7D19;--accent-soft:rgba(250,125,25,.14);--accent-line:rgba(250,125,25,.28);--accent-ink:#B8925F;--pos:#54BE86;--pos-soft:rgba(84,190,134,.14);--pos-line:rgba(84,190,134,.40);--info:#6B87A2;--info-soft:rgba(107,135,162,.14);--info-line:rgba(107,135,162,.32);--danger:#E0705C;--on-accent:#15171A;--glow:0 8px 24px rgba(250,125,25,.30);--cardshadow:none;--holo-1:#FA7D19;--holo-2:#FFC08A;--holo-3:#F2A9CF;--holo-4:#B6A8F4;--holo-5:#8ED8EA}
+body.light{--bg:#F5F4F1;--surface:#FFFFFF;--surface-2:#EFEDE8;--field:#E9E7E1;--field-input:#E9E7E1;--line:#DEDBD3;--line-strong:#C9C5BC;--text:#28251F;--text-strong:#141210;--muted:#7A756C;--silver:#545048;--faint:#9B968C;--accent:#E86F0C;--accent-soft:rgba(232,111,12,.12);--accent-line:rgba(232,111,12,.30);--accent-ink:#B07A3C;--pos:#1E9E60;--pos-soft:rgba(30,158,96,.12);--pos-line:rgba(30,158,96,.45);--info:#49688C;--info-soft:rgba(73,104,140,.10);--info-line:rgba(73,104,140,.30);--danger:#C24E3B;--on-accent:#FFFFFF;--glow:0 8px 24px rgba(232,111,12,.32);--cardshadow:0 2px 14px rgba(0,0,0,.05);--holo-1:#E86F0C;--holo-2:#E8955A;--holo-3:#C9679D;--holo-4:#7C6AD0;--holo-5:#3C9DB8}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;padding:0;max-width:100%;overflow-x:hidden}
 body{background:var(--bg);color:var(--text);font-family:"Inter",-apple-system,system-ui,sans-serif;font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
@@ -27,7 +28,10 @@ body{background:var(--bg);color:var(--text);font-family:"Inter",-apple-system,sy
 /* Bar */
 .bar{position:sticky;top:0;z-index:30;background:rgba(21,23,26,.82);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);padding:calc(env(safe-area-inset-top) + 14px) 20px 12px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;min-height:58px}
 body.light .bar{background:rgba(245,244,241,.85)}
-.brand{width:28px;height:28px;border-radius:8px;background:var(--accent);color:var(--on-accent);font-weight:800;font-size:15px;display:flex;align-items:center;justify-content:center;flex:none}
+/* Logo V4.0 (Richtung 3c "Spanne Hologramm"): Zeiger auf Dienstbeginn in currentColor, Bogen = gelaufene Zeit */
+.brand{display:flex;align-items:center;gap:10px;flex:1;min-width:0;color:var(--text)}
+.brand svg{width:28px;height:28px;flex:none;display:block}
+.brand-name{font-weight:700;font-size:16px;line-height:1;letter-spacing:-.3px;color:var(--text-strong);white-space:nowrap}
 .eyebrow{font-size:9px;font-weight:600;letter-spacing:1.4px;text-transform:uppercase;color:var(--muted)}
 .iconbtn{width:36px;height:36px;border-radius:10px;border:none;background:transparent;color:var(--muted);display:flex;align-items:center;justify-content:center;flex:none;padding:0}
 .iconbtn:active{background:var(--surface)}
@@ -262,7 +266,7 @@ body.light .btn.danger{border-color:rgba(194,78,59,.4)}
   <div class="view" id="view"></div>
   <div class="foot">
     <div class="foot-note">Daten bleiben nur auf diesem Gerät · alle Angaben ohne Gewähr</div>
-    <div class="foot-v">Zeiterfassung <b>V3.6.2</b></div>
+    <div class="foot-v">Zeiterfassung <b>V4.0.0</b></div>
   </div>
 </div>
 <input type="file" id="pdfInput" accept="application/pdf" class="hidden">
@@ -278,7 +282,11 @@ const KEY="zeiterfassung_v2";
 const Store={mem:{},load(){try{const r=localStorage.getItem(KEY);return r?JSON.parse(r):null}catch(e){return this.mem[KEY]||null}},save(o){try{localStorage.setItem(KEY,JSON.stringify(o))}catch(e){this.mem[KEY]=o}}};
 let DB=Store.load()||{orders:[],settings:{}};
 const S=DB.settings;
-S.sollMin??=450; if(S.sollMin===462)S.sollMin=450; S.standardPause??=30; S.abwesenheitMin??=480; S.email??=""; S.absender??=""; S.empfaenger??=""; S.theme??="dark";
+/* Soll nach Tarif: PdTV Ziffer 6.2 i. V. m. Verguetungs-TV 2024-2026 § 6, seit 01.01.2026 7,7 Std = 462 Min ohne Pause.
+   Der alte Standard 450 (7:30) wird auf 462 gehoben, ausser der Nutzer hat 450 bewusst gespeichert (S.sollEigen, gesetzt
+   in saveRules). Bewusst kein "schon migriert"-Flag: Versionen bis 3.6.2 setzen 462 beim Start auf 450 zurueck; laeuft so
+   eine Altversion noch einmal (z. B. aus dem Cache), holt 4.0 den Wert beim naechsten Start zurueck. */
+S.sollMin??=462; if(S.sollMin===450&&S.sollEigen!==450)S.sollMin=462; S.standardPause??=30; S.abwesenheitMin??=480; S.email??=""; S.absender??=""; S.empfaenger??=""; S.theme??="dark";
 S.status??="frei"; S.flink30??=390; S.flink45??=585;  /* FLINK-Schwellen: 6:30 und 9:45 */
 S.anschreiben??=""; S.gruss??="";  /* leer = Standardtext, siehe mailOrder */
 
@@ -286,8 +294,15 @@ S.anschreiben??=""; S.gruss??="";  /* leer = Standardtext, siehe mailOrder */
    Wird einmal nach jedem Update gezeigt: Vergleich S.seenVersion gegen APP_VERSION.
    Nicht bei frischen Installationen (keine Aufträge) – ein neuer Kollege soll kein
    Changelog sehen, bevor er die App überhaupt kennt. Neue Einträge oben anfügen. */
-const APP_VERSION="3.6.2";
+const APP_VERSION="4.0.0";
 const WHATSNEW=[
+  {v:"4.0", t:"Neues Logo, Soll nach Tarif und genauere Pausenkorrektur", items:[
+    ["Neues Logo und neues App-Symbol","Oben in der App steht jetzt das neue Logo. Die Zeiger stehen auf Dienstbeginn, der Bogen ist die Zeit, die seitdem gelaufen ist. Das Symbol auf dem Home-Bildschirm tauscht das iPhone nicht von selbst aus. Wenn du das neue Symbol haben willst, mach zuerst unter Einstellungen ein Backup, denn beim Löschen vom Home-Bildschirm verschwinden auch die Daten der App. Dann löschst du die App und fügst sie in Safari neu zum Home-Bildschirm hinzu, wie in der Anleitung unter Punkt 7 beschrieben. Öffne sie über das neue Symbol und lies dort das Backup ein. Ohne diesen Schritt läuft alles weiter, nur mit dem alten Symbol."],
+    ["Das Soll steht jetzt auf 7:42 Stunden","Seit dem 01.01.2026 gilt im Tarifvertrag für die auf Produktionsdauer Beschäftigten eine Woche von 38,5 Stunden, also 7,7 Stunden am Tag ohne Pause. Stand bei dir noch der alte Standard von 7:30, hat die App ihn auf 7:42 umgestellt. Mit 7:30 zeigte sie pro Tag 12 Minuten zu viel an. Hattest du selbst einen anderen Wert eingetragen, bleibt er stehen. Das Soll gilt für alle Tage in der App, auch für ältere aus 2025. Du siehst und änderst es unter Einstellungen und Arbeitszeit-Regeln."],
+    ["Pausenkorrektur ohne Lücke kurz vor 9:45","An Tagen ohne Pause mit 9:16 bis 9:45 Stunden hat die Verlängerung den Nachweis über 9:45 geschoben. Dort zieht das System 45 statt 30 Minuten ab, und dir fehlten 15 Minuten. Die App rechnet die Korrektur jetzt auf den verlängerten Tag. Ein Tag von 09:00 bis 18:30 ohne Pause erscheint deshalb als 09:00 bis 19:15. Hast du solche Tage schon abgerechnet, lohnt ein Blick auf die alten Nachweise."],
+    ["Kurze Tage starten ohne Pause","Tage bis 6:30 Stunden legt der Dispo-Import jetzt ohne Pause an. Bis dahin zieht FLINK nichts ab, und eine vorgegebene Pause hat deine Nettozeit nur verkürzt. Längere Tage starten weiter mit Pause ja. Bereits angelegte Tage bleiben, wie sie sind, und den Schalter kannst du jederzeit umstellen."],
+    ["Tagegeld-Hinweis nennt 14 Euro","Für eintägige Reisen im Inland mit mehr als 8 Stunden Abwesenheit beträgt die Verpflegungspauschale 14 Euro. Bisher stand im Hinweis 28 Euro, das ist der Satz für volle 24 Stunden."]
+  ]},
   {v:"3.6", t:"Eigenes Anschreiben und zwei Korrekturen", items:[
     ["Du schreibst die Mail jetzt selbst","In den Einstellungen kannst du Anrede und Grußformel frei formulieren. Lässt du die Felder leer, bleibt alles beim bisherigen Text. Wenn du magst, setzt du Platzhalter ein: {name} für den Empfänger, dazu {produktion}, {auftrag} und {tage}."],
     ["Pausenkorrektur greift wieder in allen Fällen","Das Abrechnungssystem zieht die gesetzliche Ruhepause immer ab, auch an Tagen ohne Pause. Der Nachweis gleicht das jetzt vollständig aus. Ein Tag von 09:00 bis 17:30 ohne Pause erscheint dort als 09:00 bis 18:00, damit deine echten 8:30 Stunden ankommen."],
@@ -303,7 +318,7 @@ const WHATSNEW=[
     ["Neuerungen auf einen Blick","Nach einem Update siehst du künftig einmalig, was sich geändert hat. Du erreichst die Liste jederzeit wieder über Einstellungen und dann Was ist neu."]
   ]},
   {v:"3.3", t:"Pausen richtig auf dem Nachweis", items:[
-    ["Ab 9:45 Stunden zieht das System 45 Minuten ab","Du machst aber nur 30. Der Nachweis verlängert dein Einsatzende deshalb um die Differenz, damit deine echte Arbeitszeit ankommt."],
+    ["Über 9:45 Stunden zieht das System 45 Minuten ab","Du machst aber nur 30. Der Nachweis verlängert dein Einsatzende deshalb um die Differenz, damit deine echte Arbeitszeit ankommt."],
     ["Die Pause steht jetzt als Zahl im Nachweis","Statt ja oder nein steht dort 0,5 Stunden, so wie es das Formular vorsieht. Damit erübrigt sich die Rückfrage, wie viel ja eigentlich bedeutet."],
     ["Freier Mitarbeiter oder fest angestellt","Du wählst es im Import, im Auftrag und als Vorgabe in den Einstellungen. Fest Angestellte bekommen den Nachweis mit unveränderten Zeiten."]
   ]},
@@ -333,6 +348,8 @@ const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 const ICON_GEAR='<svg width="17" height="17" viewBox="0 0 17 17" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"><path d="M2 5.5h13M2 11.5h13"/><circle cx="6.2" cy="5.5" r="1.9"/><circle cx="10.8" cy="11.5" r="1.9"/></svg>';
 const ICON_MOON='<svg width="17" height="17" viewBox="0 0 17 17" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"><path d="M13.8 10.3A5.8 5.8 0 0 1 6.7 3.2a5.8 5.8 0 1 0 7.1 7.1Z"/></svg>';
 const ICON_SUN='<svg width="17" height="17" viewBox="0 0 17 17" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"><circle cx="8.5" cy="8.5" r="3.2"/><path d="M8.5 1.6v1.6M8.5 13.8v1.6M1.6 8.5h1.6M13.8 8.5h1.6M3.6 3.6l1.2 1.2M12.2 12.2l1.2 1.2M13.4 3.6l-1.2 1.2M4.8 12.2l-1.2 1.2"/></svg>';
+/* Logo als Inline-SVG: nur so greifen currentColor und die --holo-Tokens. Gradient-ID ebz-holo nur einmal pro Seite. */
+const LOGO_SVG='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="28" height="28" fill="none" aria-hidden="true"><defs><linearGradient id="ebz-holo" x1="27" y1="4" x2="6" y2="26" gradientUnits="userSpaceOnUse"><stop offset="0" style="stop-color:var(--holo-1,#FA7D19)"></stop><stop offset=".3" style="stop-color:var(--holo-2,#FFC08A)"></stop><stop offset=".55" style="stop-color:var(--holo-3,#F2A9CF)"></stop><stop offset=".78" style="stop-color:var(--holo-4,#B6A8F4)"></stop><stop offset="1" style="stop-color:var(--holo-5,#8ED8EA)"></stop></linearGradient></defs><path d="M16 3.5A12.5 12.5 0 1 1 7.16 24.84" stroke="url(#ebz-holo)" stroke-width="1.8" stroke-linecap="round"></path><path d="M16 9V16L12.1 19.9" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"></path></svg>';
 const ICON_TRASH='<svg width="13" height="14" viewBox="0 0 13 14" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 3.5h10M4.5 3.5V2h4v1.5M2.8 3.5l.6 9h6.2l.6-9"/></svg>';
 
 /* ===== Helfer ===== */
@@ -370,6 +387,10 @@ function flinkPause(span){
   if(span>S.flink30)return 30;
   return 0;
 }
+/* Pausen-Vorgabe fuer neu angelegte Tage (V4.0): Bis zur ersten FLINK-Schwelle (6:30) zieht FLINK nichts ab,
+   eine vorgegebene Pause wuerde nur die Nettozeit kuerzen. Darunter also "Pause nein", darueber "Pause ja".
+   Nur Startwert, der Schalter im Tag bleibt frei. Fehlen Zeiten, bleibt es bei "ja" wie bisher. */
+function pauseVorgabe(einsatz,ende){const s=dur(hm2min(einsatz),hm2min(ende));return s==null||s>S.flink30;}
 function dayCalc(d){
   const span=dur(hm2min(d.einsatz),hm2min(d.ende));
   const az=dur(hm2min(d.drehbeginn),hm2min(d.drehende));
@@ -388,9 +409,16 @@ function dayCalc(d){
      Damit nach diesem Abzug die echte Arbeitszeit ankommt, wandert die Differenz
      ans Einsatzende. Beispiele: 30er-Fenster mit Pause 30 -> 0 (deckt sich, die Pause
      steckt in der Arbeitszeit) · 45er-Fenster mit Pause 30 -> +15 · ohne Pause -> voller
-     FLINK-Abzug. Nie negativ: der Nachweis wird nie kuerzer als die echte Zeit. */
-  const korr=span==null?0:Math.max(0,fp-pauseMin);
-  return {span,az,pause:pauseMin,pauseJa:!!d.pause,netto,ot,absence:span,tg,flink:fp,korr};
+     FLINK-Abzug. Nie negativ: der Nachweis wird nie kuerzer als die echte Zeit.
+     Schwellensprung (V4.0): FLINK sieht die VERLAENGERTE Spanne. Rutscht sie dadurch ueber
+     die naechste Schwelle, zieht FLINK dort mehr ab. Deshalb wird die Korrektur auf die
+     verlaengerte Spanne nachgerechnet, bis sie stabil ist. Beispiel: 09:00-18:30 ohne Pause
+     -> +30 ergaebe 19:00 = 10:00 > 9:45 -> FLINK 45 -> es fehlten 15. Richtig: +45 = 19:15.
+     flinkPause steigt nur und hat drei Stufen, die Schleife endet nach hoechstens zwei Runden. */
+  let korr=span==null?0:Math.max(0,fp-pauseMin);
+  if(span!=null){for(let i=0;i<3;i++){const k=Math.max(0,flinkPause(span+korr)-pauseMin);if(k===korr)break;korr=k;}}
+  const flinkNw=span==null?0:flinkPause(span+korr);   /* was FLINK vom Nachweis abzieht */
+  return {span,az,pause:pauseMin,pauseJa:!!d.pause,netto,ot,absence:span,tg,flink:fp,flinkNw,korr};
 }
 /* Einsatzende für den Nachweis. Bei freien Mitarbeitern wird es um die Differenz
    verschoben, die FLINK zu viel (oder zu wenig) abzieht – damit nach dessen Automatik
@@ -454,7 +482,7 @@ function renderBar(){
     bar.innerHTML=`<button class="backlink" id="barBack">‹ Aufträge</button><span style="flex:1"></span><span class="eyebrow">Auftrag</span>`;
     document.getElementById("barBack").onclick=()=>{state.orderId=null;render();};
   }else{
-    bar.innerHTML=`<div class="brand">Z</div><div class="eyebrow" style="flex:1">Zeiterfassung</div><button class="iconbtn" id="themeBtn" aria-label="Hell/Dunkel"></button><button class="iconbtn" id="navSettings" aria-label="Einstellungen">${ICON_GEAR}</button>`;
+    bar.innerHTML=`<div class="brand">${LOGO_SVG}<span class="brand-name">Zeiterfassung</span></div><button class="iconbtn" id="themeBtn" aria-label="Hell/Dunkel"></button><button class="iconbtn" id="navSettings" aria-label="Einstellungen">${ICON_GEAR}</button>`;
     document.getElementById("themeBtn").onclick=()=>{S.theme=(S.theme==="light"?"dark":"light");persist();applyTheme();};
     document.getElementById("navSettings").onclick=openSettings;
     paintThemeIcon();
@@ -670,7 +698,7 @@ function editOrder(id){
     <div class="two"><div class="field"><label>Kostenträger</label><input type="text" id="f_kt" value="${esc(o.kostentraeger||"")}" placeholder="80123456"></div><div class="field"><label>Produktionsort</label><input type="text" class="txt" id="f_ort" value="${esc(o.produktionsort||"")}" placeholder="z. B. München"></div></div>
     <div class="field"><label>Mitarbeiter (für Nachweis)</label><input type="text" class="txt" id="f_mit" value="${esc(o.mitarbeiter||"")}" placeholder="Nachname, Vorname"></div>
     <div class="field"><label>Beschäftigung</label><div class="toggles" id="f_status"><button data-s="frei">Freier Mitarbeiter</button><button data-s="fest">Fest angestellt</button></div>
-      <p class="note">Bei freien Mitarbeitern korrigiert der Nachweis das Einsatzende, weil FLINK ab 9:45 Std pauschal 45 Min Pause abzieht. Fest Angestellte bekommen die Zeiten unverändert.</p></div>
+      <p class="note">Bei freien Mitarbeitern verlängert der Nachweis das Einsatzende, weil FLINK die Ruhepause immer abzieht: über 6:30 Std 30 Min, über 9:45 Std 45 Min, auch wenn du keine oder eine kürzere Pause gemacht hast. Fest Angestellte bekommen die Zeiten unverändert.</p></div>
     <div class="field"><label>Sonder-Equipment (Mehrfachauswahl)</label><div class="chips" id="f_equip">${["Sony Alpha 7S III","Sony FX6","Sony FX3","2. Kamera","Drohne","DJI RS-Gimbal","Slider","Stativ/Head","ND-/Vari-ND-Filter","Timecode-Sync","Funkstrecke","Ton","Licht","Datenmanagement"].map(e=>`<button type="button" data-e="${esc(e)}"${(o.equipment||[]).includes(e)?' class="on"':''}>${esc(e)}</button>`).join("")}</div></div>
     <div class="field"><label>Sonstiges (optional)</label><textarea class="txt" id="f_notiz" rows="3" placeholder="z. B. weitere Hinweise">${esc(o.notiz||"")}</textarea></div>
     <button class="btn" id="saveOrder">Speichern</button><button class="btn ghost" id="cancelOrder" style="margin-bottom:0">Abbrechen</button>
@@ -806,14 +834,17 @@ function editDay(orderId,dayId){
       else if(!frei){fb.innerHTML=`<div class="tgbox"><div class="t"><span>FLINK zieht ${mm(c.flink)} ab</span><span class="in">fest angestellt</span></div><div class="why">Der Nachweis zeigt deine Zeiten unverändert.</div></div>`;}
       else if(c.korr>0){
         const schwelle=c.flink===45?S.flink45:S.flink30;
-        const wieso=c.pause>0
+        const sprung=c.flinkNw>c.flink
+          ? ` Eine Verlängerung um ${mm(c.flink-c.pause)} würde den Nachweis aber über ${fmtMin(S.flink45)} Std schieben, und dort zieht FLINK ${mm(c.flinkNw)} ab.`
+          : "";
+        const wieso=(c.pause>0
           ? `Über ${fmtMin(schwelle)} Std zieht FLINK ${mm(c.flink)} ab, du machst ${mm(c.pause)}.`
-          : `Über ${fmtMin(schwelle)} Std zieht FLINK ${mm(c.flink)} ab – die gesetzliche Ruhepause ist nicht abwählbar. Du hast keine Pause gemacht.`;
+          : `Über ${fmtMin(schwelle)} Std zieht FLINK ${mm(c.flink)} ab, auch wenn du keine Pause gemacht hast.`)+sprung;
         fb.innerHTML=`<div class="tgbox ok"><div class="t"><span>Nachweis endet ${addMin(val("d_ende"),c.korr)}</span><span class="in">statt ${val("d_ende")}</span></div><div class="why">${wieso} Die ${mm(c.korr)} Differenz kommt hinten drauf, damit deine echte Arbeitszeit ankommt.</div></div>`;}
-      else{fb.innerHTML=`<div class="tgbox"><div class="t"><span>Nachweis unverändert</span><span class="in">FLINK ${mm(c.flink)}</span></div><div class="why">${c.flink>0&&c.flink===c.pause?"Deine Pause und der FLINK-Abzug sind gleich – die Pause steckt in der Arbeitszeit, kein Eingriff nötig.":(c.flink===0?"Unter "+fmtMin(S.flink30)+" Std zieht FLINK keine Pause ab.":"Keine Korrektur nötig.")}</div></div>`;}
+      else{fb.innerHTML=`<div class="tgbox"><div class="t"><span>Nachweis unverändert</span><span class="in">FLINK ${mm(c.flink)}</span></div><div class="why">${c.flink>0&&c.flink===c.pause?"Deine Pause und der FLINK-Abzug sind gleich – die Pause steckt in der Arbeitszeit, kein Eingriff nötig.":(c.flink===0?"Bis "+fmtMin(S.flink30)+" Std zieht FLINK keine Pause ab.":"Keine Korrektur nötig.")}</div></div>`;}
     }
     const box=g("tgbox");const t=c.tg;
-    if(t.state==="ok"){box.innerHTML=`<div class="tgbox ok"><div class="t"><span>Tagegeld: 28,00 €</span><span class="in">nur intern</span></div><div class="why">Abwesenheit ${fmtMin(c.absence)} h · über der Schwelle von ${fmtMin(S.abwesenheitMin)} h, eintägig, Inland. Bitte selbst prüfen.</div></div>`;}
+    if(t.state==="ok"){box.innerHTML=`<div class="tgbox ok"><div class="t"><span>Tagegeld: 14,00 €</span><span class="in">nur intern</span></div><div class="why">Abwesenheit ${fmtMin(c.absence)} h · über der Schwelle von ${fmtMin(S.abwesenheitMin)} h, eintägig, Inland. Bitte selbst prüfen.</div></div>`;}
     else{
       const why=t.state==="ue"?"Mehrtägige Reise mit Übernachtung: kein Tagegeld-Anspruch, das läuft über die Dienstreise-Abrechnung."
         :t.state==="ausland"?"Auslandsreise: Der Spesensatz ist Ländersache und wird über den Reisedienst abgerechnet – deshalb hier kein Betrag."
@@ -919,12 +950,12 @@ function openRules(){
         <div class="tfield"><span class="tlbl">Stunden</span><input type="number" id="s_h" min="0" max="14" value="${Math.floor(S.sollMin/60)}"></div>
         <div class="tfield"><span class="tlbl">Minuten</span><input type="number" id="s_m" min="0" max="59" value="${S.sollMin%60}"></div>
       </div>
-      <p class="note">Laut Vertrag: 7 Std 30 Min, zzgl. 30 Min Pause. Basis für die Überstunden.</p>
+      <p class="note">Laut Tarif seit 01.01.2026: 7 Std 42 Min ohne Pause, die Pause kommt dazu. Basis für die Überstunden. Steht in deinem Vertrag etwas anderes, trag es hier ein.</p>
     </div>
     <div class="field"><label>Pausenlänge</label><input type="number" id="s_p" min="0" max="240" step="5" value="${S.standardPause}"><p class="note">Minuten, wenn „Pause: Ja".</p></div>
     <div class="field"><label>Tagegeld-Schwelle</label><input type="number" id="s_ab" min="0" max="1440" step="15" value="${S.abwesenheitMin}"><p class="note">Abwesenheit in Minuten · Standard 480 = 8 Std.</p></div>
     <button class="btn" id="saveRules" style="margin-top:6px">Fertig</button>`);
-  document.getElementById("saveRules").onclick=()=>{S.sollMin=(parseInt(val("s_h"))||0)*60+(parseInt(val("s_m"))||0);S.standardPause=parseInt(val("s_p"))||0;S.abwesenheitMin=parseInt(val("s_ab"))||480;persist();render();openSettings();toast("Regeln gespeichert");};
+  document.getElementById("saveRules").onclick=()=>{S.sollMin=(parseInt(val("s_h"))||0)*60+(parseInt(val("s_m"))||0);S.sollEigen=S.sollMin;S.standardPause=parseInt(val("s_p"))||0;S.abwesenheitMin=parseInt(val("s_ab"))||480;persist();render();openSettings();toast("Regeln gespeichert");};
 }
 
 /* ===== Datensicherung ===== */
@@ -976,7 +1007,8 @@ function openHelp(){
 
     <div class="hsec"><div class="eb">Der Ablauf in Kurzform</div>
       <p>Du legst einen <b>Auftrag</b> an, das ist ein Dreh oder eine Produktion. In diesen Auftrag trägst du deine <b>Arbeitstage</b> ein. Am Ende schickst du daraus einen Stundennachweis an die Disposition, als PDF oder als E-Mail.</p>
-      <p>Alles andere rechnet die App: Überstunden, Pausen und den Hinweis auf mögliches Tagegeld.</p></div>
+      <p>Alles andere rechnet die App: Überstunden, Pausen und den Hinweis auf mögliches Tagegeld.</p>
+      <p>Die <b>Überstunden</b> misst die App an deinem Tages-Soll. Voreingestellt sind <b>7:42 Stunden ohne Pause</b>. So steht es seit dem 01.01.2026 im Tarifvertrag für die auf Produktionsdauer Beschäftigten: 38,5 Stunden in der Woche, also 7,7 Stunden am Tag. Die Pause kommt obendrauf. Steht in deinem Vertrag etwas anderes, stellst du es unter Einstellungen und Arbeitszeit-Regeln ein.</p></div>
 
     <div class="hsec"><div class="eb">1 · Auftrag anlegen</div>
       <p>Am schnellsten geht es mit der Dispo. Tippe auf <b>PDF importieren</b> und wähle die Datei aus. Die App liest Titel, Auftragsnummer, Produktionsnummer, Ort und die Namen aller eingeteilten Personen heraus und legt dir die Drehtage gleich mit an.</p>
@@ -990,14 +1022,16 @@ function openHelp(){
       <p>Zwei Schalter helfen bei besonderen Tagen. <b>Kein Dreh</b> nimmst du für reine Anreisetage. <b>Entfällt</b> steht bei Anreise und Rückreise getrennt zur Verfügung, für Tage ohne Fahrt.</p></div>
 
     <div class="hsec"><div class="eb">3 · Pausen und was FLINK daraus macht</div>
-      <p>Das Abrechnungssystem des Senders zieht die gesetzliche Ruhepause <b>immer automatisch</b> ab. Ab 6:30 Stunden Anwesenheit sind das 30 Minuten, ab 9:45 Stunden 45 Minuten. Daran kann niemand etwas ändern, auch die Disposition nicht.</p>
+      <p>Das Abrechnungssystem des Senders zieht die gesetzliche Ruhepause <b>immer automatisch</b> ab. Über 6:30 Stunden Anwesenheit sind das 30 Minuten, über 9:45 Stunden 45 Minuten. Daran kann niemand etwas ändern, auch die Disposition nicht.</p>
       <p>Machst du tatsächlich 30 Minuten Pause, gehen dir bei langen Tagen also 15 Minuten verloren. Machst du gar keine, sogar die vollen 30 oder 45.</p>
       <p>Deshalb verlängert die App auf dem Nachweis dein Einsatzende genau um diese Differenz. Beispiel: Du arbeitest von 09:00 bis 17:30 ohne Pause. Auf dem Nachweis steht <b>09:00 bis 18:00</b>. Das System zieht davon 30 Minuten ab und bucht deine echten 8:30.</p>
+      <p>Eine Besonderheit gibt es kurz vor 9:45 Stunden. Arbeitest du zum Beispiel von 09:00 bis 18:30 ohne Pause, würde eine Verlängerung um 30 Minuten den Nachweis über 9:45 Stunden schieben, und dort zieht das System 45 Minuten ab. Die App rechnet das mit ein und verlängert in diesem Fall gleich um 45 Minuten, auf <b>19:15</b>.</p>
+      <p>Beim Dispo-Import legt die App Tage bis 6:30 Stunden <b>ohne Pause</b> an, längere mit Pause. Bis 6:30 Stunden zieht FLINK nichts ab, eine Pause würde dort nur deine Nettozeit kürzen. Hast du doch Pause gemacht, stellst du den Schalter im Tag einfach um.</p>
       <p>In der App selbst siehst du weiterhin deine tatsächlichen Zeiten. Im Tages-Sheet steht unter <b>Nachweis für FLINK</b> immer, was am Ende auf dem Papier landet.</p>
       <p class="tip">Das gilt nur für freie Mitarbeiter. Fest Angestellte bekommen den Nachweis mit den unveränderten Zeiten.</p></div>
 
     <div class="hsec"><div class="eb">4 · Tagegeld</div>
-      <p>Tagegeld gibt es <b>nur bei Einzeltagen</b>. Du musst eintägig unterwegs gewesen sein, im Inland, und länger als 8 Stunden abwesend.</p>
+      <p>Tagegeld gibt es <b>nur bei Einzeltagen</b>. Du musst eintägig unterwegs gewesen sein, im Inland, und länger als 8 Stunden abwesend. Dann beträgt es <b>14 Euro</b>, das ist die Verpflegungspauschale für eintägige Reisen.</p>
       <p>Bei einer mehrtägigen Reise mit Übernachtung besteht <b>kein Anspruch</b>. Das läuft vollständig über die Dienstreise-Abrechnung. Im Ausland richtet sich der Satz nach dem jeweiligen Land und wird über den Reisedienst abgewickelt, deshalb nennt die App dort keinen Betrag.</p>
       <p>Der grüne Hinweis ist nur für dich gedacht. Er taucht weder im PDF noch in der Mail auf. Denk daran: Der Antrag muss innerhalb von sechs Monaten raus.</p></div>
 
@@ -1007,13 +1041,14 @@ function openHelp(){
       <p>Ist ein Auftrag erledigt, markierst du ihn mit <b>Abgerechnet</b>. Er wandert dann ausgegraut ans Ende der Liste und ist nicht mehr im Weg.</p></div>
 
     <div class="hsec"><div class="eb">6 · Sicherung, das Wichtigste</div>
-      <p>Deine Daten liegen ausschließlich in diesem Browser, auf diesem Gerät. Es gibt keinen Server und kein Konto. Das heißt auch: Wenn das iPhone die Websitedaten löscht, sind sie weg.</p>
+      <p>Deine Daten liegen ausschließlich in dieser App, auf diesem Gerät. Safari und die App auf dem Home-Bildschirm haben dabei getrennte Speicher. Es gibt keinen Server und kein Konto. Das heißt auch: Wenn das iPhone die Websitedaten löscht, sind sie weg.</p>
       <p>Mach deshalb regelmäßig ein Backup. Du findest es unter <b>Einstellungen</b> und dann <b>Backup teilen</b>. Sichere die Datei in deiner Cloud oder schick sie dir selbst per Mail. Zurückholen kannst du sie jederzeit mit <b>Backup einlesen</b>.</p>
       <p class="tip">Beim Einlesen wird der aktuelle Stand komplett ersetzt. Prüfe also kurz, ob du die richtige Datei erwischt hast.</p></div>
 
     <div class="hsec"><div class="eb">7 · Auf dem iPhone installieren</div>
-      <p>Öffne die Adresse in <b>Safari</b>, tippe auf Teilen und dann auf <b>Zum Home-Bildschirm</b>. Ab da startest du die App über ihr Symbol und sie läuft im Vollbild.</p>
-      <p>Nach dem ersten Laden funktioniert alles auch <b>ohne Internet</b>, sogar der PDF-Export.</p></div>
+      <p>Öffne die Adresse in <b>Safari</b> und tippe auf <b>Teilen</b>. Bei neuerem iOS liegt Teilen hinter den drei Punkten. Scrolle in der Liste nach unten zu <b>Zum Home-Bildschirm</b>, bei neuerem iOS heißt es „Zu Home-Bildschirm hinzufügen“, und lass <b>Als Web-App öffnen</b> eingeschaltet. Ab da startest du die App über ihr Symbol und sie läuft im Vollbild.</p>
+      <p>Nach dem ersten Laden funktioniert alles auch <b>ohne Internet</b>, sogar der PDF-Export.</p>
+      <p class="tip">Bekommt die App ein neues Symbol, tauscht das iPhone es auf dem Home-Bildschirm nicht von selbst aus. Dafür musst du die App löschen und neu hinzufügen. Mach vorher unbedingt ein Backup, denn beim Löschen verschwinden auch ihre Daten. Danach öffnest du die neue App über ihr Symbol und liest das Backup dort ein.</p></div>
 
     <div class="hsec"><div class="eb">8 · An Kollegen weitergeben</div>
       <p>Unter <b>Einstellungen</b> und <b>App weiterempfehlen</b> teilst du den Link. Jeder Kollege bekommt seine eigene, leere App. Daten werden nie geteilt oder vermischt.</p>
@@ -1222,7 +1257,7 @@ function confirmImport(p,fname){
     <div class="chips" id="i_persons">${persons.map((x,i)=>`<button type="button" data-i="${i}">${esc(x.name)} · ${x.days.length} ${x.days.length===1?"Tag":"Tage"}</button>`).join("")}</div>
     <p class="note">Vorauswahl folgt „Dein Name" aus den Einstellungen.</p>
     <div class="field" style="margin-top:12px"><label>Beschäftigung</label><div class="toggles" id="i_status"><button data-s="frei">Freier Mitarbeiter</button><button data-s="fest">Fest angestellt</button></div>
-      <p class="note">Freie: Nachweis korrigiert das Einsatzende, weil FLINK ab 9:45 Std pauschal 45 Min abzieht. Fest Angestellte: Zeiten unverändert.</p></div>
+      <p class="note">Freie: Der Nachweis verlängert das Einsatzende um den Pausenabzug von FLINK. Fest Angestellte: Zeiten unverändert.</p></div>
     <div class="field"><label>Name (für Nachweis)</label><input type="text" class="txt" id="i_name" value=""></div>`:`<p class="note">Keine Personen erkannt – du kannst den Auftrag trotzdem anlegen und Tage manuell erfassen.</p>`}
     <div class="section-h" style="margin:18px 0 8px"><h3>Reiseart</h3></div>
     <div class="toggles" id="i_trip"><button data-t="ein">Einzeltage</button><button data-t="mehr">Mehrtägig</button></div>
@@ -1235,7 +1270,7 @@ function confirmImport(p,fname){
     const sel=persons[impSel];const days=sel?sel.days:[];
     const dl=document.getElementById("i_days");
     dl.innerHTML=days.length?days.map(d=>{
-      const c=dayCalc({einsatz:d.einsatz,ende:d.ende,pause:true});
+      const c=dayCalc({einsatz:d.einsatz,ende:d.ende,pause:pauseVorgabe(d.einsatz,d.ende)});
       return `<div class="irow"><div class="d">${fmtDayC(d.datum)}<small>EZ ${d.einsatz||"?"}–${d.ende||"?"}</small></div><div class="o ${otClass(c.ot)}">${fmtSigned(c.ot)}</div></div>`;
     }).join(""):'<p class="note">Keine Tage erkannt.</p>';
     const nm=document.getElementById("i_name");if(nm&&sel)nm.value=sel.name;
@@ -1262,7 +1297,7 @@ function confirmImport(p,fname){
       drehende:d.ende?addMin(d.ende,-60):"",
       rueckBeginn:"",
       rueck:d.rueck||(((!mehr||i===last)&&d.ende)?addMin(d.ende,-30):""),
-      ende:d.ende,pause:true,uebernachtung:mehr,ausland:false,dispo:{einsatz:d.einsatz,ende:d.ende}}));
+      ende:d.ende,pause:pauseVorgabe(d.einsatz,d.ende),uebernachtung:mehr,ausland:false,dispo:{einsatz:d.einsatz,ende:d.ende}}));
     const no={id:uid(),titel:val("i_titel"),auftragsnr:val("i_anr"),prodNummer:val("i_pnr"),kostentraeger:val("i_kt"),produktionsort:val("i_ort"),mitarbeiter:val("i_name"),status:impStatus,days};
     DB.orders.push(no);persist();state.orderId=no.id;state.tab="orders";closeSheet();render();toast(days.length?days.length+" Tag(e) importiert – bitte prüfen!":"Auftrag angelegt");
   };
