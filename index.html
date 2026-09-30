@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="Zeiterfassung">
 <meta name="theme-color" content="#15171A">
 <title>Zeiterfassung</title>
-<!-- Zeiterfassung V4.1.0 · Design "Amber Editorial" -->
+<!-- Zeiterfassung V4.2.0 · Design "Amber Editorial" -->
 <!-- impeccable-disable single-font -- Nutzer wählte beim V1.2-Redesign bewusst "Inter durchgängig" (eine Familie, tabular-nums für Zeiten) -->
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -54,6 +54,15 @@ body.light .bar{background:rgba(245,244,241,.85)}
 .kpi.acc .l{color:var(--accent-ink)}
 .kpi.posk{background:var(--pos-soft);border-color:var(--pos-line)}
 .kpi.posk .n{color:var(--pos)}
+.kpi.warnk{border-color:var(--danger)}
+.kpi.warnk .l,.kpi.warnk .n{color:var(--danger)}
+.kpi.warnk .l{letter-spacing:.8px;white-space:nowrap}/* "Über Vertrag" passt so auch bei 375 px in eine Zeile */
+.vbar{display:flex;height:6px;border-radius:3px;background:var(--line);overflow:hidden;margin:-6px 0 14px}
+.vbar span{display:block;height:100%}
+.vbar .g{background:var(--accent)}
+.vbar .d{background:var(--accent-line)}
+.note.vline{margin:-6px 0 14px}
+.vwarn{color:var(--danger);font-weight:700;white-space:nowrap}
 /* Hero */
 .hero{background:linear-gradient(135deg,var(--accent-soft),transparent);border:1px solid var(--accent-line);border-radius:16px;padding:22px 18px;margin-bottom:14px}
 .hero .l{font-size:9px;font-weight:600;letter-spacing:1.4px;text-transform:uppercase;color:var(--accent-ink)}
@@ -109,6 +118,7 @@ body.light .bar{background:rgba(245,244,241,.85)}
 /* Buttons */
 .btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:16px;border-radius:14px;border:none;font-family:inherit;font-size:15px;font-weight:700;background:var(--accent);color:var(--on-accent);box-shadow:var(--glow);margin-bottom:10px}
 .btn:active{filter:brightness(.94)}
+.btn:disabled{opacity:.4;cursor:default;filter:none}
 .btn.ghost{background:transparent;color:var(--text);border:1px solid var(--line-strong);box-shadow:none;font-weight:600;padding:13px;border-radius:12px}
 .btn.ghost:active{background:var(--surface);filter:none}
 .btn.danger{background:transparent;color:var(--danger);border:1px solid rgba(224,112,92,.4);box-shadow:none;font-weight:600;padding:13px;border-radius:12px}
@@ -269,7 +279,7 @@ body.light .btn.danger{border-color:rgba(194,78,59,.4)}
   <div class="view" id="view"></div>
   <div class="foot">
     <div class="foot-note">Daten bleiben nur auf diesem Gerät · alle Angaben ohne Gewähr</div>
-    <div class="foot-v">Zeiterfassung <b>V4.1.0</b></div>
+    <div class="foot-v">Zeiterfassung <b>V4.2.0</b></div>
   </div>
 </div>
 <input type="file" id="pdfInput" accept="application/pdf" class="hidden">
@@ -295,14 +305,21 @@ S.status??="frei"; S.flink30??=390; S.flink45??=585;  /* FLINK-Schwellen: 6:30 u
 S.verdienstOn??=false; S.satzAssist??=null; S.satzKamera??=null; S.nettoQuote??=null; S.funktion??="assistent";
 /* Aus einem fremden oder beschädigten Backup nur echte Zahlen übernehmen, alles andere gilt als leer. */
 ["satzAssist","satzKamera","nettoQuote"].forEach(k=>{if(typeof S[k]!=="number"||!isFinite(S[k]))S[k]=null;});
+/* Arbeitstage laut Vertrag (V4.2): ganze Zahl 1 bis 366, sonst kein Zähler. Schützt vor fremden oder beschädigten Backups. */
+if(!(Number.isInteger(S.vertragstage)&&S.vertragstage>=1&&S.vertragstage<=366))S.vertragstage=null;
 S.anschreiben??=""; S.gruss??="";  /* leer = Standardtext, siehe mailOrder */
 
 /* ===== Was ist neu =====
    Wird einmal nach jedem Update gezeigt: Vergleich S.seenVersion gegen APP_VERSION.
    Nicht bei frischen Installationen (keine Aufträge) – ein neuer Kollege soll kein
    Changelog sehen, bevor er die App überhaupt kennt. Neue Einträge oben anfügen. */
-const APP_VERSION="4.1.0";
+const APP_VERSION="4.2.0";
 const WHATSNEW=[
+  {v:"4.2", t:"Vertragstage, dein Name und geprüfte Zuschläge", items:[
+    ["Vertragstage im Blick","Trag unter Einstellungen ein, wie viele Arbeitstage dein Vertrag im Jahr vorsieht. Dann siehst du in der Statistik und oben in den Aufträgen, wie viele Tage du dieses Jahr schon geleistet hast, wie viele disponiert sind und wie viele noch frei bleiben. Ohne Eintrag ändert sich nichts."],
+    ["Die App kennt deinen Namen","Beim Start fragt die App jetzt, wer sie nutzt, bis ein Name gespeichert ist. Beim Dispo-Import wählt sie dich darüber aus, auch wenn dein Name in der Dispo abgeschnitten ist. Findet sie dich nicht, wählt sie niemanden vor, und du tippst an, wer du bist. Vorher hat sie in dem Fall einfach die erste Person genommen, meistens einen Kollegen."],
+    ["Verdienst an echten Abrechnungen geprüft","Nacht- und Sonntagszuschlag stimmen mit echten Abrechnungen überein. Die App rundet den Stundensatz jetzt wie das ZDF, dadurch stimmen Mehrarbeit und Zuschläge in den geprüften Fällen auf den Cent. An langen Reisetagen kann sie noch abweichen. Warum, steht in der Anleitung unter Punkt 9. Die Beispiele in den Feldern für Tagessatz und Netto-Anteil zeigen jetzt übliche Spannen statt fester Zahlen."]
+  ]},
   {v:"4.1", t:"Verdienst nach Tarif, freiwillig", items:[
     ["Sieh, was dir zusteht","Wenn du magst, zeigt dir die App jetzt pro Monat, was dir nach Tarif zusteht und ungefähr aufs Konto kommen sollte. Die Option ist aus. Du schaltest sie unter Einstellungen und Verdienst ein und trägst dort deine Tagessätze ein. Wie gerechnet wird, steht in der Anleitung unter Punkt 9."]
   ]},
@@ -447,10 +464,12 @@ function pauseDez(min){if(!min)return "—";return (min/60).toFixed(2).replace(/
 /* Status des Auftrags: frei (Default aus den Einstellungen) oder fest angestellt. */
 function orderStatus(o){return (o&&o.status)||S.status||"frei";}
 /* === TARIF-BEGIN === Verdienst nach Tarif (V4.1, freiwillig). Reine Rechnung ohne DOM, getestet in tests/tarif.test.mjs.
-   Grundlage: PdTV 6.2 und 9.1-9.7 sowie die echte ZDF-Abrechnung Juli 2026: Stundensatz = Tagessatz / 7,7,
-   Mehrarbeit in halben Stunden, Zuschlag 25 % der Mehrarbeitsvergütung. Mehrarbeit und Zuschläge (Nacht, Sonntag) nur bei
-   Tagessatz bis 336,06 EUR (9.1). Nacht (22-6 Uhr, 25 %) und Sonntag (50 %) auf Arbeitszeit ohne Reise und ohne
-   FLINK-Pause, bei Überschneidung nur der höhere Zuschlag. Feiertage bewusst noch nicht. */
+   Grundlage: PdTV 6.2 und 9.1-9.7 sowie echte ZDF-Abrechnungen Januar bis Juli 2026: Stundensatz = Tagessatz / 7,7, wie beim
+   ZDF auf drei Stellen gerundet (V4.2), Mehrarbeit in halben Stunden, Zuschlag 25 % der Mehrarbeitsvergütung. Mehrarbeit und
+   Zuschläge (Nacht, Sonntag) nur bei Tagessatz bis 336,06 EUR (9.1). Nacht (22-6 Uhr, 25 %) und Sonntag (50 %) auf
+   Arbeitszeit ohne Reise und ohne FLINK-Pause, bei Überschneidung nur der höhere Zuschlag, an Abrechnungen geprüft (V4.2).
+   Reisezeit zählt bei der Mehrarbeit noch wie Arbeitszeit, ohne Kappung nach 6.7 und ohne Zuschlagsverbot nach 9.7, weil
+   das ZDF Fahrten nicht einheitlich wertet (siehe Protokoll). Feiertage bewusst noch nicht. */
 const TARIF_TAG_MIN=462;/* 7,7 Std am Tag (PdTV 9.2): Schwelle für Mehrarbeit, fest nach Tarif und unabhängig vom eigenen Soll */
 /* Kaufmännisch auf Cent: toPrecision(12) glättet Gleitkomma-Reste wie 2.135*100 = 213.49999999999997. */
 function runde2(x){return Math.round(+(x*100).toPrecision(12))/100;}
@@ -486,7 +505,8 @@ function tarifTag(o,d){
   /* PdTV 9.1: Mehrarbeit, Nacht- und Sonntagszuschlag gibt es nur bei einer Tagesvergütung bis 336,06 EUR. */
   const tarifOk=satzTag<=336.06;
   const mehrStd=tarifOk?Math.ceil(Math.max(0,anerkannt-TARIF_TAG_MIN)/30)/2:0;
-  const satz=satzTag/7.7;
+  /* Stundensatz wie auf der ZDF-Abrechnung auf drei Stellen gerundet, V4.2. */
+  const satz=Math.round(satzTag/7.7*1000)/1000;
   const mehrEur=runde2(mehrStd*satz),mehrZuschlEur=runde2(mehrEur*0.25);
   /* Zuschläge nur auf Arbeitsminuten, die FLINK bucht: Die Pause liegt in der Nachweis-Spanne, wird aber nicht bezahlt,
      und die Reise steckt in "anerkannt", zählt aber nicht als Zuschlagszeit. Also Deckel = anerkannt minus Reise. */
@@ -532,6 +552,20 @@ function fmtEur(n){return n==null?"–":n.toLocaleString("de-DE",{minimumFractio
 function fmtEurRund(n){return n==null?"–":Math.round(n).toLocaleString("de-DE")+" €";}
 function fmtStd(h){return String(h).replace(".",",")+" Std";}
 /* === TARIF-END === */
+/* ===== Vertragstage (V4.2) ===== Reine Rechnung ohne DOM, getestet in tests/vertragstage.test.mjs. */
+/* Arbeitstage laut Vertrag eingeben: ganze Zahl 1 bis 366, ein angehängtes "Tage" ist erlaubt. Sonst null (kein Zähler). */
+function parseTage(s){const m=String(s??"").trim().match(/^(\d{1,3})(\s*tage?)?$/i);if(!m)return null;const n=+m[1];return n>=1&&n<=366?n:null;}
+/* Vertragstage im laufenden Kalenderjahr. null ohne gültige Zahl in S.vertragstage. Gezählt werden Aufträge als freier
+   Mitarbeiter, abgerechnete eingeschlossen, jedes Datum einmal. Geleistet = bis einschließlich heute, disponiert = danach.
+   frei = Vertrag minus beides und darf negativ werden (über dem Vertrag). */
+function vertragsTage(heute){
+  const v=S.vertragstage;if(!Number.isInteger(v)||v<1||v>366)return null;
+  const bis=heute||isoLocal(new Date()),jahr=bis.slice(0,4),daten=new Set();
+  DB.orders.forEach(o=>{if(orderStatus(o)!=="frei")return;
+    o.days.forEach(d=>{if(d.datum&&d.datum.slice(0,4)===jahr)daten.add(d.datum);});});
+  let geleistet=0,disponiert=0;daten.forEach(t=>{if(t<=bis)geleistet++;else disponiert++;});
+  return {jahr,vertrag:v,geleistet,disponiert,frei:v-geleistet-disponiert};
+}
 const orderOT=o=>o.days.reduce((a,d)=>a+(dayCalc(d).ot||0),0);
 const orderNetto=o=>o.days.reduce((a,d)=>a+(dayCalc(d).netto||0),0);
 const orderTGdays=o=>o.days.reduce((a,d)=>a+(dayCalc(d).tg.state==="ok"?1:0),0);
@@ -603,7 +637,7 @@ function renderOrders(){
     <div class="kpi acc"><div class="l">Überstunden</div><div class="n ${otClass(totOT)}">${fmtSigned(totOT)}</div></div>
     <div class="kpi"><div class="l">Tage</div><div class="n">${totDays}</div></div>
     <div class="kpi"><div class="l">Tagegeld</div><div class="n" style="color:${totTG>0?'var(--pos)':'var(--muted)'}">${totTG>0?totTG+"×":"—"}</div></div>
-  </div>`+tabsHtml();
+  </div>`+vertragsZeileHtml()+tabsHtml();
   if(!DB.orders.length){
     h+=`<div class="empty"><div class="big">🗂</div><p>Noch kein Auftrag angelegt.<br>Leg einen an oder importiere ein Dispo-PDF.</p></div>`;
   }else{
@@ -717,6 +751,19 @@ function renderDetail(){
   view.querySelectorAll("[data-day]").forEach(el=>el.onclick=()=>editDay(o.id,el.dataset.day));
 }
 
+/* Vertragstage (V4.2): Kurzzeile in den Aufträgen, leer ohne Eintrag in den Einstellungen. */
+function vertragsZeileHtml(){const v=vertragsTage();if(!v)return "";
+  return `<p class="note vline">Vertragstage ${v.jahr} · ${v.geleistet}&nbsp;geleistet · ${v.disponiert}&nbsp;disponiert · ${v.frei>=0?`noch ${v.frei}&nbsp;frei`:`<span class="vwarn">${-v.frei} über Vertrag</span>`}</p>`;}
+/* Block in der Statistik: drei Kacheln und ein Balken (geleistet voll, disponiert heller, Rest leer). */
+function vertragsBlockHtml(){const v=vertragsTage();if(!v)return "";
+  const pct=x=>Math.max(0,Math.min(100,x/v.vertrag*100)),g=pct(v.geleistet),dsp=Math.min(pct(v.disponiert),100-g);
+  return `<div class="section-h"><h3>Vertragstage ${v.jahr}</h3><span class="tot">von ${v.vertrag}</span></div>
+  <div class="kpis">
+    <div class="kpi"><div class="l">Geleistet</div><div class="n">${v.geleistet}</div></div>
+    <div class="kpi"><div class="l">Disponiert</div><div class="n">${v.disponiert}</div></div>
+    <div class="kpi ${v.frei<0?"warnk":"acc"}"><div class="l">${v.frei<0?"Über Vertrag":"Frei"}</div><div class="n">${Math.abs(v.frei)}</div></div>
+  </div>
+  <div class="vbar" aria-hidden="true"><span class="g" style="width:${g}%"></span><span class="d" style="width:${dsp}%"></span></div>`;}
 /* ===== Statistik ===== */
 function renderStats(){
   const totOT=DB.orders.reduce((a,o)=>a+orderOT(o),0);
@@ -732,6 +779,7 @@ function renderStats(){
     <div class="kpi posk"><div class="l">Tagegeld-Tage</div><div class="n">${totTGd}</div></div>
     <div class="kpi"><div class="l">Soll / Tag</div><div class="n">${fmtMin(S.sollMin)}</div></div>
   </div>`;
+  h+=vertragsBlockHtml();
   // Gruppierung nach Monat und Jahr (aus den Tagesdaten)
   const perMonth={},perYear={};
   DB.orders.forEach(o=>o.days.forEach(d=>{
@@ -1063,6 +1111,8 @@ function openSettings(){
       <div class="field"><label>Empfänger-Name (Anrede in der Mail)</label><input type="text" class="txt" id="s_empf" value="${esc(S.empfaenger||"")}" placeholder="Name"></div>
       <div class="field"><label>Dein Name (für Nachweise)</label><input type="text" class="txt" id="s_name" value="${esc(S.absender||"")}" placeholder="Vorname Nachname"></div>
       <div class="field"><label>Beschäftigung (Vorgabe für neue Aufträge)</label><div class="toggles" id="s_status"><button data-s="frei">Freier Mitarbeiter</button><button data-s="fest">Fest angestellt</button></div></div>
+      <div class="field"><label>Arbeitstage laut Vertrag (pro Jahr)</label><input type="text" inputmode="numeric" id="s_tage" value="${S.vertragstage||""}" placeholder="leer = kein Zähler">
+        <p class="note">Steht in deinem Vertrag. Die App zählt, wie viele davon im laufenden Jahr geleistet und disponiert sind.</p></div>
       <div class="field"><label>Anschreiben der Mail (optional)</label><textarea class="txt" id="s_anschr" rows="4" placeholder="Hallo {name},&#10;&#10;nachfolgend mein Stundennachweis für {produktion}.">${esc(S.anschreiben||"")}</textarea>
         <p class="note">Leer lassen heißt: es bleibt beim Text oben. Platzhalter, die du nutzen kannst: <b>{name}</b> · <b>{produktion}</b> · <b>{auftrag}</b> · <b>{tage}</b></p></div>
       <div class="field" style="margin-bottom:12px"><label>Grußformel (optional)</label><input type="text" class="txt" id="s_gruss" value="${esc(S.gruss||"")}" placeholder="Viele liebe Grüße"></div>
@@ -1076,7 +1126,8 @@ function openSettings(){
   const paintSetStatus=()=>document.querySelectorAll("#s_status button").forEach(b=>b.classList.toggle("on",b.dataset.s===setStatus));
   document.querySelectorAll("#s_status button").forEach(b=>b.onclick=()=>{setStatus=b.dataset.s;paintSetStatus();});
   paintSetStatus();
-  document.getElementById("saveSet").onclick=()=>{S.email=val("s_mail");S.empfaenger=val("s_empf");S.absender=val("s_name");S.status=setStatus;S.anschreiben=val("s_anschr");S.gruss=val("s_gruss");persist();closeSheet();render();toast("Einstellungen gespeichert");};
+  document.getElementById("saveSet").onclick=()=>{const tg=val("s_tage");if(tg&&parseTage(tg)==null){toast("Arbeitstage: ganze Zahl von 1 bis 366");return;}
+    S.email=val("s_mail");S.empfaenger=val("s_empf");S.absender=val("s_name");S.status=setStatus;S.vertragstage=parseTage(val("s_tage"));S.anschreiben=val("s_anschr");S.gruss=val("s_gruss");persist();closeSheet();render();toast("Einstellungen gespeichert");};
   document.getElementById("rulesBtn").onclick=openRules;
   document.getElementById("verdBtn").onclick=openVerdienstSettings;
   document.getElementById("helpBtn").onclick=openHelp;
@@ -1101,13 +1152,13 @@ function openVerdienstSettings(){
     <p class="note" style="margin:-8px 0 16px">Freiwillig. Zeigt pro Monat, was dir nach Tarif zusteht und ungefähr aufs Konto kommen sollte. Das ist nur für dich und erscheint nie im Nachweis.</p>
     <div class="field"><label>Verdienst anzeigen</label><div class="toggles" id="v_on"><button data-v="1">An</button><button data-v="0">Aus</button></div></div>
     <div class="two">
-      <div class="field"><label>Tagessatz Dreh-Assistent</label><input type="text" inputmode="decimal" id="v_assist" value="${esc(zahl(S.satzAssist))}" placeholder="z. B. 261,31"></div>
-      <div class="field"><label>Tagessatz Kamera</label><input type="text" inputmode="decimal" id="v_kamera" value="${esc(zahl(S.satzKamera))}" placeholder="z. B. 303,66"></div>
+      <div class="field"><label>Tagessatz Dreh-Assistent</label><input type="text" inputmode="decimal" id="v_assist" value="${esc(zahl(S.satzAssist))}" placeholder="150 bis 300"></div>
+      <div class="field"><label>Tagessatz Kamera</label><input type="text" inputmode="decimal" id="v_kamera" value="${esc(zahl(S.satzKamera))}" placeholder="150 bis 300"></div>
     </div>
-    <p class="note">Brutto pro Einsatztag, wie im Vertrag. Mehrarbeit und Zuschläge zahlt das ZDF laut Tarif nur bei einem Tagessatz bis 336,06 €.</p>
+    <p class="note">Brutto pro Einsatztag, wie im Vertrag, meist zwischen 150 und 300 €. Mehrarbeit und Zuschläge zahlt das ZDF laut Tarif nur bei einem Tagessatz bis 336,06 €.</p>
     <div class="field" style="margin-top:12px"><label>Meistens als</label><div class="toggles" id="v_fk"><button data-f="assistent">Dreh-Assistent</button><button data-f="kamera">Kamera</button></div>
       <p class="note">Vorgabe für Aufträge ohne eigene Funktion. Beim Dispo-Import liest die App die Funktion selbst.</p></div>
-    <div class="field"><label>Netto-Anteil in % (optional)</label><input type="text" inputmode="decimal" id="v_quote" value="${esc(zahl(S.nettoQuote))}" placeholder="z. B. 54">
+    <div class="field"><label>Netto-Anteil in % (optional)</label><input type="text" inputmode="decimal" id="v_quote" value="${esc(zahl(S.nettoQuote))}" placeholder="50 bis 65">
       <p class="note">Nimm eine Abrechnung und teile die Auszahlung durch die Summe des Vertrags. Bei vielen Freien liegt das zwischen 50 und 65 %. Leer heißt: nur Brutto.</p></div>
     <button class="btn" id="v_save">Speichern</button><button class="btn ghost" id="v_back" style="margin-bottom:0">Zurück</button>`);
   const paint=()=>{
@@ -1181,6 +1232,19 @@ function openWhatsNew(alle){
   document.getElementById("wnOk").onclick=()=>{S.seenVersion=APP_VERSION;persist();closeSheet();};
 }
 
+/* Wer nutzt die App? (V4.2) Kommt bei jedem Start, bis ein Name gespeichert ist. Der Name dient dem Dispo-Import
+   (personMatch) und steht auf den Nachweisen. "weiter" läuft nach Speichern oder Später (Was ist neu oder schließen). */
+function openNameFrage(weiter){
+  openSheet(`<h3>Wer nutzt die App?</h3>
+    <p class="note" style="margin:-8px 0 16px">Trag deinen Namen so ein, wie er auf der Dispo steht. Damit wählt dich der Import selbst aus, und er steht auf deinen Nachweisen. Ändern kannst du ihn jederzeit in den Einstellungen.</p>
+    <div class="field"><label>Dein Name</label><input type="text" class="txt" id="n_name" placeholder="Vorname Nachname" autocomplete="name" autocapitalize="words" enterkeyhint="done"></div>
+    <button class="btn" id="n_save">Speichern</button><button class="btn ghost" id="n_later" style="margin-bottom:0">Später</button>`);
+  document.getElementById("n_save").onclick=()=>{const v=clean(val("n_name"));if(!v){toast("Trag bitte deinen Namen ein");return;}
+    S.absender=v;persist();render();weiter();};
+  document.getElementById("n_later").onclick=weiter;
+  document.getElementById("n_name").onkeydown=e=>{if(e.key==="Enter")document.getElementById("n_save").click();};
+}
+
 /* ===== Anleitung ===== */
 function openHelp(){
   openSheet(`<h3>Anleitung</h3>
@@ -1193,7 +1257,7 @@ function openHelp(){
 
     <div class="hsec"><div class="eb">1 · Auftrag anlegen</div>
       <p>Am schnellsten geht es mit der Dispo. Tippe auf <b>PDF importieren</b> und wähle die Datei aus. Die App liest Titel, Auftragsnummer, Produktionsnummer, Ort und die Namen aller eingeteilten Personen heraus und legt dir die Drehtage gleich mit an.</p>
-      <p>Bevor der Import durchläuft, prüfst du zwei Dinge: Steht dein Name in der Auswahl, und stimmt die <b>Reiseart</b>? Einzeltage heißt, du fährst jeden Tag hin und zurück. Mehrtägig heißt, du übernachtest vor Ort.</p>
+      <p>Die App sucht dich über deinen Namen aus den Einstellungen und wählt dich vor. Findet sie dich nicht, ist niemand ausgewählt, und du tippst an, wer du bist. Danach prüfst du die <b>Reiseart</b>. Einzeltage heißt, du fährst jeden Tag hin und zurück. Mehrtägig heißt, du übernachtest vor Ort.</p>
       <p>Ohne Dispo geht es genauso über <b>Auftrag anlegen</b>. Dann trägst du die Tage von Hand ein.</p>
       <p class="tip">Die Dispo kommt per Mail? Tippe das PDF an, dann auf Teilen und auf In Dateien sichern. Danach findest du es im Import ganz oben unter Zuletzt benutzt.</p></div>
 
@@ -1233,14 +1297,19 @@ function openHelp(){
 
     <div class="hsec"><div class="eb">8 · An Kollegen weitergeben</div>
       <p>Unter <b>Einstellungen</b> und <b>App weiterempfehlen</b> teilst du den Link. Jeder Kollege bekommt seine eigene, leere App. Daten werden nie geteilt oder vermischt.</p>
-      <p>Sag ihm dazu, dass er nach dem Öffnen zwei Dinge erledigen sollte: die App zum Home-Bildschirm hinzufügen und in den Einstellungen seinen Namen eintragen. Der Name sorgt dafür, dass beim Dispo-Import automatisch die richtige Person vorausgewählt wird.</p></div>
+      <p>Sag ihm dazu, dass er die App nach dem Öffnen zum Home-Bildschirm hinzufügen sollte. Beim ersten Start fragt die App nach seinem Namen. Der Name sorgt dafür, dass beim Dispo-Import automatisch die richtige Person vorausgewählt wird.</p></div>
 
     <div class="hsec"><div class="eb">9 · Verdienst (freiwillig)</div>
       <p>Wenn du magst, zeigt dir die App pro Monat, was dir nach Tarif zusteht und ungefähr auf dem Konto ankommen sollte. Du schaltest das unter <b>Einstellungen</b> und <b>Verdienst</b> ein und trägst dort deine Tagessätze als Dreh-Assistent und als Kamera ein. Danach gibt es neben Aufträge und Statistik den Reiter <b>Verdienst</b>.</p>
       <p>Die App rechnet so wie das ZDF auf der Abrechnung. Jeder Einsatztag bringt den Tagessatz. Dazu kommt Mehrarbeit für alles über 7,7 Stunden am Tag, aufgerundet auf halbe Stunden, mit dem Tagessatz geteilt durch 7,7 und 25 Prozent Zuschlag. Die 7,7 Stunden stehen so im Tarif und gelten auch dann, wenn du unter Arbeitszeit-Regeln ein anderes Soll eingetragen hast. Für Arbeit in der Nacht zwischen 22 und 6 Uhr kommen 25 Prozent dazu, am Sonntag 50 Prozent. Pause und Reisezeit zählen dabei nicht mit, Feiertage rechnet die App noch nicht. Laut Tarif zahlt das ZDF Mehrarbeit und diese Zuschläge nur bei einem Tagessatz bis 336,06 Euro. Liegt dein Tagessatz über 336,06 Euro, gibt es nur den Tagessatz.</p>
-      <p>Steht bei einer Fahrt nur der Beginn oder nur das Ende, wie nach einem Dispo-Import, rechnet die App diese Fahrt mit 30 Minuten. Trag die echten Fahrzeiten ein, dann wird es genauer. Nacht- und Sonntagszuschlag sind noch nicht an einer echten Abrechnung geprüft. Sieh diese Beträge deshalb als Schätzung.</p>
+      <p>Steht bei einer Fahrt nur der Beginn oder nur das Ende, wie nach einem Dispo-Import, rechnet die App diese Fahrt mit 30 Minuten. Trag die echten Fahrzeiten ein, dann wird es genauer. Nacht- und Sonntagszuschlag sind an echten Abrechnungen geprüft. Abweichen kann es an langen Reisetagen. Das ZDF zählt eine Fahrt manchmal als Arbeitszeit und manchmal als Reisezeit. Reisezeit zählt mit der Arbeit höchstens 12 Stunden am Tag und bekommt keine Zuschläge. Die App rechnet jede Fahrt bei der Mehrarbeit wie Arbeitszeit, beim Nacht- und Sonntagszuschlag aber wie Reisezeit. An solchen Tagen kann sie deshalb nach oben oder nach unten abweichen.</p>
       <p>Trägst du deinen Netto-Anteil ein, zeigt die App auch, was ungefähr aufs Konto kommt. Den Anteil findest du auf einer Abrechnung, wenn du die Auszahlung durch die Summe des Vertrags teilst.</p>
       <p class="tip">Das ZDF zahlt nachträglich, meist ein bis zwei Monate später und oft in mehreren Teilbeträgen. Urlaubsentgelt ist nicht enthalten. Nichts davon erscheint im Nachweis.</p></div>
+
+    <div class="hsec"><div class="eb">10 · Vertragstage</div>
+      <p>In deinem Vertrag steht, an wie vielen Tagen im Jahr du eingesetzt werden kannst. Trag diese Zahl unter <b>Einstellungen</b> bei <b>Arbeitstage laut Vertrag</b> ein. Dann zeigt dir die App in der Statistik und oben in den Aufträgen, wie viele Tage du im laufenden Jahr schon geleistet hast, wie viele bereits disponiert sind und wie viele noch frei bleiben.</p>
+      <p>Gezählt wird jeder Tag, der in einem Auftrag als freier Mitarbeiter steht, auch in abgerechneten Aufträgen. Geleistet sind die Tage bis heute, disponiert die Tage danach. Stehen zwei Aufträge am selben Tag, zählt der Tag einmal. Urlaubstage zählt die App nicht mit. Die Kachel „Tage" oben in den Aufträgen zählt dagegen alle Tage der offenen Aufträge über alle Jahre, deshalb weichen die beiden Zahlen oft voneinander ab.</p>
+      <p class="tip">Am 1. Januar beginnt die Zählung von vorn. Liegst du über der Zahl aus dem Vertrag, steht das rot in der Statistik.</p></div>
 
     <button class="btn" id="helpBack" style="margin-top:6px">Verstanden</button>`);
   document.getElementById("helpBack").onclick=openSettings;
@@ -1427,15 +1496,35 @@ function parsePersons(t){
   });
   return order.map(n=>({name:persons[n].name,funktion:persons[n].funktion,days:persons[n].days.sort((x,y)=>(x.datum+x.einsatz).localeCompare(y.datum+y.einsatz))}));
 }
+/* Welche Person der Dispo bin ich? (V4.2, Review A8) Nachname = Teil vor dem Komma, jedes seiner Wörter muss als ganzes
+   Wort im eigenen Namen stehen (Komma, Groß-/Kleinschreibung und Unicode-Form egal). So passt auch ein abgeschnittenes "Muster, Eri".
+   Haben beide Seiten einen Vornamen, muss er passen: als Anfang in beide Richtungen ("Eri", "Erika", "E." zu "Erika"),
+   verglichen nur mit den eigenen Wörtern außerhalb des Nachnamens. Widerspricht er, ist es ein Kollege gleichen Namens.
+   Mehrere Treffer: nur einer mit passendem Vornamen gewinnt. Sonst -1, nie ein Rückfall auf Person 0. */
+function personMatch(persons,meinName){
+  const w=s=>clean(String(s||"").normalize("NFC").replace(/,/g," ")).toLowerCase().split(" ").filter(Boolean);
+  const mein=w(meinName);if(!mein.length||!persons||!persons.length)return -1;
+  const hit=[];
+  persons.forEach((p,i)=>{const teile=String(p&&p.name||"").split(",");const nach=w(teile[0]);
+    if(!nach.length||!nach.every(x=>mein.includes(x)))return;
+    const vor=(w(teile[1])[0]||"").replace(/\.+$/,""),rest=mein.map(x=>x.replace(/\.+$/,"")).filter(x=>x&&!nach.includes(x));
+    const ok=!vor||!rest.length?null:rest.some(x=>x.startsWith(vor)||vor.startsWith(x));
+    if(ok!==false)hit.push({i,ok});});
+  if(hit.length===1)return hit[0].i;
+  const vh=hit.filter(h=>h.ok);
+  return vh.length===1?vh[0].i:-1;
+}
 function parseZDF(raw){const t=clean(raw);const meta=parseMeta(t);meta.persons=parsePersons(t);return meta;}
 
 let impData,impSel;
 function confirmImport(p,fname){
   impData=p;const persons=p.persons||[];
-  /* Vorauswahl anhand "Dein Name" (Nachname) – macht die App kollegen-tauglich */
-  const meNachname=clean(S.absender).split(/\s+/).pop()||"";
-  impSel=meNachname?persons.findIndex(x=>x.name.toLowerCase().includes(meNachname.toLowerCase())):-1;
-  if(impSel<0)impSel=persons.length?0:-1;
+  /* Vorauswahl nur über den gespeicherten Namen (V4.2, A8). Kein Rückfall auf die erste Person: deren Einsatzzeiten sehen
+     plausibel aus, Name und Reisezeiten wären aber die eines Kollegen. */
+  const meinName=clean(S.absender);
+  const treffer=personMatch(persons,meinName);impSel=treffer;
+  const pHinweis=treffer>=0?"Vorauswahl nach deinem Namen.":(!meinName?"Tipp an, wer du bist. Mit deinem Namen in den Einstellungen wählt die App dich selbst aus."
+    :`Die App findet ${esc(meinName)} auf dieser Dispo nicht eindeutig. Tipp an, wer du bist.`);
   let impTrip=null,tripTouched=false;
   const defTrip=()=>"ein";
   openSheet(`<h3>Import bestätigen</h3>
@@ -1445,7 +1534,7 @@ function confirmImport(p,fname){
     <div class="two"><div class="field"><label>Kostenträger</label><input type="text" id="i_kt" value="${esc(p.kostentraeger||"")}"></div><div class="field"><label>Produktionsort</label><input type="text" class="txt" id="i_ort" value="${esc(p.produktionsort||"")}"></div></div>
     ${persons.length?`<div class="section-h" style="margin:18px 0 8px"><h3>Personen im PDF</h3></div>
     <div class="chips" id="i_persons">${persons.map((x,i)=>`<button type="button" data-i="${i}">${esc(x.name)} · ${x.days.length} ${x.days.length===1?"Tag":"Tage"}</button>`).join("")}</div>
-    <p class="note">Vorauswahl folgt „Dein Name" aus den Einstellungen.</p>
+    <p class="note">${pHinweis}</p>
     <div class="field" style="margin-top:12px"><label>Beschäftigung</label><div class="toggles" id="i_status"><button data-s="frei">Freier Mitarbeiter</button><button data-s="fest">Fest angestellt</button></div>
       <p class="note">Freie: Der Nachweis verlängert das Einsatzende um den Pausenabzug von FLINK. Fest Angestellte: Zeiten unverändert.</p></div>
     ${S.verdienstOn?`<div class="field"><label>Funktion (für Verdienst)</label><div class="toggles" id="i_fk"><button data-f="assistent">Dreh-Assistent</button><button data-f="kamera">Kamera</button></div><p class="note" id="i_fknote"></p></div>`:""}
@@ -1463,29 +1552,31 @@ function confirmImport(p,fname){
     dl.innerHTML=days.length?days.map(d=>{
       const c=dayCalc({einsatz:d.einsatz,ende:d.ende,pause:pauseVorgabe(d.einsatz,d.ende)});
       return `<div class="irow"><div class="d">${fmtDayC(d.datum)}<small>EZ ${d.einsatz||"?"}–${d.ende||"?"}</small></div><div class="o ${otClass(c.ot)}">${fmtSigned(c.ot)}</div></div>`;
-    }).join(""):'<p class="note">Keine Tage erkannt.</p>';
-    const nm=document.getElementById("i_name");if(nm&&sel)nm.value=sel.name;
+    }).join(""):(persons.length&&!sel?'<p class="note">Wähl zuerst aus, wer du bist.</p>':'<p class="note">Keine Tage erkannt.</p>');
+    /* Bei Treffer der gespeicherte Name statt der oft abgeschnittenen Fassung aus dem PDF ("Muster, Eri"). */
+    const nm=document.getElementById("i_name");if(nm&&sel)nm.value=impSel===treffer&&meinName?meinName:sel.name;
     if(!tripTouched)impTrip=defTrip();
     document.querySelectorAll("#i_trip button").forEach(b=>b.classList.toggle("on",b.dataset.t===impTrip));
-    const di=document.getElementById("doImport");if(di)di.textContent=days.length?`Importieren · ${days.length} ${days.length===1?"Tag":"Tage"}`:"Importieren";
+    const di=document.getElementById("doImport");if(di){di.disabled=persons.length>0&&!sel;
+      di.textContent=days.length?`Importieren · ${days.length} ${days.length===1?"Tag":"Tage"}`:"Importieren";}
   }
   let impFk=null,fkTouched=false;
   const paintFk=()=>{const sel=persons[impSel];if(!fkTouched)impFk=(sel&&sel.funktion)||S.funktion||"assistent";
     document.querySelectorAll("#i_fk button").forEach(b=>b.classList.toggle("on",b.dataset.f===impFk));
     const fn=document.getElementById("i_fknote");
-    if(fn)fn.textContent=sel&&sel.funktion?"Aus der Dispo erkannt, bitte prüfen.":"In der Dispo nicht gefunden, Vorgabe aus den Einstellungen.";};
+    if(fn)fn.textContent=!sel?"Folgt der Person, die du oben antippst.":sel.funktion?"Aus der Dispo erkannt, bitte prüfen.":"In der Dispo nicht gefunden, Vorgabe aus den Einstellungen.";};
   let impStatus=S.status||"frei";
   const paintImpStatus=()=>document.querySelectorAll("#i_status button").forEach(b=>b.classList.toggle("on",b.dataset.s===impStatus));
   document.querySelectorAll("#i_status button").forEach(b=>b.onclick=()=>{impStatus=b.dataset.s;paintImpStatus();});
   paintImpStatus();
-  if(persons.length){document.querySelectorAll("#i_persons button").forEach(b=>b.onclick=()=>{impSel=+b.dataset.i;fkTouched=false;paint();paintFk();});}
+  if(persons.length){document.querySelectorAll("#i_persons button").forEach(b=>b.onclick=()=>{if(impSel>=0)fkTouched=false;impSel=+b.dataset.i;paint();paintFk();});}
   document.querySelectorAll("#i_fk button").forEach(b=>b.onclick=()=>{impFk=b.dataset.f;fkTouched=true;paintFk();});
   paintFk();
   document.querySelectorAll("#i_trip button").forEach(b=>b.onclick=()=>{impTrip=b.dataset.t;tripTouched=true;document.querySelectorAll("#i_trip button").forEach(x=>x.classList.toggle("on",x.dataset.t===impTrip));});
   paint();
   document.getElementById("cancelImport").onclick=closeSheet;
   document.getElementById("doImport").onclick=()=>{
-    const sel=persons[impSel];
+    const sel=persons[impSel];if(persons.length&&!sel)return;
     const src=(sel?sel.days:[]).slice().sort((a,b)=>((a.datum||"")+(a.einsatz||"")).localeCompare((b.datum||"")+(b.einsatz||"")));
     const mehr=impTrip==="mehr";const last=src.length-1;
     const days=src.map((d,i)=>({id:uid(),datum:d.datum,einsatz:d.einsatz,
@@ -1514,9 +1605,13 @@ if("serviceWorker" in navigator&&(location.protocol==="https:"||location.hostnam
 applyTheme();
 render();
 /* Was-ist-neu einmalig nach einem Update. Nicht bei frischen Installationen –
-   wer die App zum ersten Mal öffnet, soll kein Changelog sehen, sondern die App. */
-if(DB.orders.length&&S.seenVersion!==APP_VERSION)setTimeout(openWhatsNew,400);
-else if(!S.seenVersion){S.seenVersion=APP_VERSION;persist();}
+   wer die App zum ersten Mal öffnet, soll kein Changelog sehen, sondern die App.
+   Fehlt der Name, fragt die App zuerst danach (V4.2), Was ist neu folgt danach. */
+const wnFaellig=DB.orders.length>0&&S.seenVersion!==APP_VERSION;
+if(!wnFaellig&&!S.seenVersion){S.seenVersion=APP_VERSION;persist();}
+/* Hat der Nutzer in den ersten 400 ms schon selbst ein Sheet geöffnet, wartet die Frage bis zum nächsten Start. */
+if(!clean(S.absender))setTimeout(()=>{if(!scrim.classList.contains("on"))openNameFrage(()=>{if(wnFaellig)openWhatsNew();else closeSheet();});},400);
+else if(wnFaellig)setTimeout(openWhatsNew,400);
 </script>
 </body>
 </html>
