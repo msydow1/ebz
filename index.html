@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="Zeiterfassung">
 <meta name="theme-color" content="#15171A">
 <title>Zeiterfassung</title>
-<!-- Zeiterfassung V4.0.0 · Design "Amber Editorial" -->
+<!-- Zeiterfassung V4.1.0 · Design "Amber Editorial" -->
 <!-- impeccable-disable single-font -- Nutzer wählte beim V1.2-Redesign bewusst "Inter durchgängig" (eine Familie, tabular-nums für Zeiten) -->
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -45,6 +45,8 @@ body.light .bar{background:rgba(245,244,241,.85)}
 /* KPI-Kacheln */
 .kpis{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:0 0 14px}
 .kpis.two{grid-template-columns:1fr 1fr}
+.kpis.verd .kpi{display:flex;flex-direction:column;justify-content:space-between}
+.kpis.verd .kpi .n{font-size:19px;white-space:nowrap}
 .kpi{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:13px 12px;min-width:0}
 .kpi .l{font-size:9px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted)}
 .kpi .n{font-weight:800;font-size:22px;margin-top:3px;color:var(--text-strong)}
@@ -185,7 +187,7 @@ body.light .btn.danger{border-color:rgba(194,78,59,.4)}
 .toggles{display:flex;background:var(--field);border-radius:10px;padding:4px;gap:4px}
 .toggles button{flex:1;padding:10px 4px;border-radius:7px;border:none;background:transparent;color:var(--muted);font-family:inherit;font-size:12px;font-weight:700;font-variant-numeric:tabular-nums}
 .toggles button.on{background:var(--accent);color:var(--on-accent)}
-.toggles button.on[data-p="0"],.toggles button.on[data-u="0"],.toggles button.on[data-a="0"]{background:var(--surface);color:var(--text-strong)}
+.toggles button.on[data-p="0"],.toggles button.on[data-u="0"],.toggles button.on[data-a="0"],.toggles button.on[data-v="0"]{background:var(--surface);color:var(--text-strong)}
 /* Calc-Kachel */
 .calc{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin:4px 0 12px}
 .calc .clbl{font-size:9px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
@@ -194,6 +196,7 @@ body.light .btn.danger{border-color:rgba(194,78,59,.4)}
 .calc .c .l{font-size:9px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--muted)}
 .calc .c .n{font-weight:700;font-size:16px;margin-top:2px;color:var(--text-strong)}
 .calc .c .n.big{font-size:17px;font-weight:800}
+.calc .tarifz{font-size:12px;font-weight:600;color:var(--silver)}
 /* Tagegeld-Box */
 .tgbox{border-radius:12px;padding:13px 15px;margin:2px 0 4px;background:var(--surface);border:1px solid var(--line)}
 .tgbox .t{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-size:13px;font-weight:700;color:var(--muted)}
@@ -266,7 +269,7 @@ body.light .btn.danger{border-color:rgba(194,78,59,.4)}
   <div class="view" id="view"></div>
   <div class="foot">
     <div class="foot-note">Daten bleiben nur auf diesem Gerät · alle Angaben ohne Gewähr</div>
-    <div class="foot-v">Zeiterfassung <b>V4.0.0</b></div>
+    <div class="foot-v">Zeiterfassung <b>V4.1.0</b></div>
   </div>
 </div>
 <input type="file" id="pdfInput" accept="application/pdf" class="hidden">
@@ -288,14 +291,21 @@ const S=DB.settings;
    eine Altversion noch einmal (z. B. aus dem Cache), holt 4.0 den Wert beim naechsten Start zurueck. */
 S.sollMin??=462; if(S.sollMin===450&&S.sollEigen!==450)S.sollMin=462; S.standardPause??=30; S.abwesenheitMin??=480; S.email??=""; S.absender??=""; S.empfaenger??=""; S.theme??="dark";
 S.status??="frei"; S.flink30??=390; S.flink45??=585;  /* FLINK-Schwellen: 6:30 und 9:45 */
+/* Verdienst nach Tarif (V4.1, freiwillig): standardmäßig aus, Tagessätze leer, weil jeder andere Sätze hat. */
+S.verdienstOn??=false; S.satzAssist??=null; S.satzKamera??=null; S.nettoQuote??=null; S.funktion??="assistent";
+/* Aus einem fremden oder beschädigten Backup nur echte Zahlen übernehmen, alles andere gilt als leer. */
+["satzAssist","satzKamera","nettoQuote"].forEach(k=>{if(typeof S[k]!=="number"||!isFinite(S[k]))S[k]=null;});
 S.anschreiben??=""; S.gruss??="";  /* leer = Standardtext, siehe mailOrder */
 
 /* ===== Was ist neu =====
    Wird einmal nach jedem Update gezeigt: Vergleich S.seenVersion gegen APP_VERSION.
    Nicht bei frischen Installationen (keine Aufträge) – ein neuer Kollege soll kein
    Changelog sehen, bevor er die App überhaupt kennt. Neue Einträge oben anfügen. */
-const APP_VERSION="4.0.0";
+const APP_VERSION="4.1.0";
 const WHATSNEW=[
+  {v:"4.1", t:"Verdienst nach Tarif, freiwillig", items:[
+    ["Sieh, was dir zusteht","Wenn du magst, zeigt dir die App jetzt pro Monat, was dir nach Tarif zusteht und ungefähr aufs Konto kommen sollte. Die Option ist aus. Du schaltest sie unter Einstellungen und Verdienst ein und trägst dort deine Tagessätze ein. Wie gerechnet wird, steht in der Anleitung unter Punkt 9."]
+  ]},
   {v:"4.0", t:"Neues Logo, Soll nach Tarif und genauere Pausenkorrektur", items:[
     ["Neues Logo und neues App-Symbol","Oben in der App steht jetzt das neue Logo. Die Zeiger stehen auf Dienstbeginn, der Bogen ist die Zeit, die seitdem gelaufen ist. Das Symbol auf dem Home-Bildschirm tauscht das iPhone nicht von selbst aus. Wenn du das neue Symbol haben willst, mach zuerst unter Einstellungen ein Backup, denn beim Löschen vom Home-Bildschirm verschwinden auch die Daten der App. Dann löschst du die App und fügst sie in Safari neu zum Home-Bildschirm hinzu, wie in der Anleitung unter Punkt 7 beschrieben. Öffne sie über das neue Symbol und lies dort das Backup ein. Ohne diesen Schritt läuft alles weiter, nur mit dem alten Symbol."],
     ["Das Soll steht jetzt auf 7:42 Stunden","Seit dem 01.01.2026 gilt im Tarifvertrag für die auf Produktionsdauer Beschäftigten eine Woche von 38,5 Stunden, also 7,7 Stunden am Tag ohne Pause. Stand bei dir noch der alte Standard von 7:30, hat die App ihn auf 7:42 umgestellt. Mit 7:30 zeigte sie pro Tag 12 Minuten zu viel an. Hattest du selbst einen anderen Wert eingetragen, bleibt er stehen. Das Soll gilt für alle Tage in der App, auch für ältere aus 2025. Du siehst und änderst es unter Einstellungen und Arbeitszeit-Regeln."],
@@ -436,6 +446,92 @@ function exportEnde(o,d){
 function pauseDez(min){if(!min)return "—";return (min/60).toFixed(2).replace(/0$/,"").replace(".",",");}
 /* Status des Auftrags: frei (Default aus den Einstellungen) oder fest angestellt. */
 function orderStatus(o){return (o&&o.status)||S.status||"frei";}
+/* === TARIF-BEGIN === Verdienst nach Tarif (V4.1, freiwillig). Reine Rechnung ohne DOM, getestet in tests/tarif.test.mjs.
+   Grundlage: PdTV 6.2 und 9.1-9.7 sowie die echte ZDF-Abrechnung Juli 2026: Stundensatz = Tagessatz / 7,7,
+   Mehrarbeit in halben Stunden, Zuschlag 25 % der Mehrarbeitsvergütung. Mehrarbeit und Zuschläge (Nacht, Sonntag) nur bei
+   Tagessatz bis 336,06 EUR (9.1). Nacht (22-6 Uhr, 25 %) und Sonntag (50 %) auf Arbeitszeit ohne Reise und ohne
+   FLINK-Pause, bei Überschneidung nur der höhere Zuschlag. Feiertage bewusst noch nicht. */
+const TARIF_TAG_MIN=462;/* 7,7 Std am Tag (PdTV 9.2): Schwelle für Mehrarbeit, fest nach Tarif und unabhängig vom eigenen Soll */
+/* Kaufmännisch auf Cent: toPrecision(12) glättet Gleitkomma-Reste wie 2.135*100 = 213.49999999999997. */
+function runde2(x){return Math.round(+(x*100).toPrecision(12))/100;}
+function funktionAus(txt){const t=String(txt||"");if(/assist/i.test(t))return "assistent";if(/kamera|\bKA\b/i.test(t))return "kamera";return null;}
+function orderFunktion(o){return (o&&o.funktion)||S.funktion||"assistent";}
+function orderSatz(o){const v=orderFunktion(o)==="kamera"?S.satzKamera:S.satzAssist;return typeof v==="number"&&v>0?v:null;}
+/* Minuten mit Nacht- bzw. Sonntagszuschlag in der Nachweis-Spanne, dazu die übersprungenen Reiseminuten. Reise zählt
+   nicht (PdTV 9.7). Eine Fahrt mit nur einem Ende (der Import legt anreiseEnde und rueckBeginn leer an) gilt als
+   30 Minuten lang: Anreise ohne Ende = anreise bis anreise+30, Rückreise ohne Beginn = rueck-30 bis rueck.
+   Die Pause ist hier noch nicht abgezogen, das übernimmt tarifTag über die anerkannte Zeit minus Reise. */
+function tarifZuschlagMin(d,endeHm){
+  const b=hm2min(d.einsatz),e=hm2min(endeHm);if(b==null||e==null||!d.datum)return {nacht:0,sonntag:0,reise:0};
+  const len=dur(b,e);const reise=[];
+  const iv=(von,bis)=>{let a=hm2min(von),z=hm2min(bis);if(a==null&&z==null)return;if(z==null)z=(a+30)%1440;if(a==null)a=(z+1410)%1440;
+    /* Beginnt die Fahrt vor dem Einsatzbeginn und reicht in die Spanne hinein, zählt nur der überlappende Teil. */
+    const l=dur(a,z);let s=a-b;if(s<0&&s+l>0){reise.push([0,s+l]);return;}if(s<0)s+=1440;reise.push([s,s+l]);};
+  iv(d.anreise,d.anreiseEnde);iv(d.rueckBeginn,d.rueck);
+  const wd0=new Date(d.datum+"T00:00").getDay();let nacht=0,sonntag=0,rz=0;
+  for(let i=0;i<len;i++){
+    if(reise.some(([s,z])=>i>=s&&i<z)){rz++;continue;}
+    const abs=b+i,tag=Math.floor(abs/1440),mod=abs%1440,wd=(wd0+tag)%7;
+    if(wd===0)sonntag++;else if(mod>=1320||mod<360)nacht++;
+  }
+  return {nacht,sonntag,reise:rz};
+}
+/* Ein Einsatztag nach Tarif. null, wenn die Option aus ist, der Auftrag nicht "frei" ist, der Tagessatz fehlt
+   oder Zeiten fehlen. Anerkannt ist, was FLINK vom Nachweis bucht (Nachweis-Spanne minus FLINK-Pause). */
+function tarifTag(o,d){
+  if(!S.verdienstOn||orderStatus(o)!=="frei")return null;
+  const satzTag=orderSatz(o);if(!satzTag||!d||!d.einsatz||!d.ende)return null;
+  const endeNw=exportEnde(o,d);const spanNw=dur(hm2min(d.einsatz),hm2min(endeNw));if(spanNw==null)return null;
+  const anerkannt=spanNw-flinkPause(spanNw);
+  /* PdTV 9.1: Mehrarbeit, Nacht- und Sonntagszuschlag gibt es nur bei einer Tagesvergütung bis 336,06 EUR. */
+  const tarifOk=satzTag<=336.06;
+  const mehrStd=tarifOk?Math.ceil(Math.max(0,anerkannt-TARIF_TAG_MIN)/30)/2:0;
+  const satz=satzTag/7.7;
+  const mehrEur=runde2(mehrStd*satz),mehrZuschlEur=runde2(mehrEur*0.25);
+  /* Zuschläge nur auf Arbeitsminuten, die FLINK bucht: Die Pause liegt in der Nachweis-Spanne, wird aber nicht bezahlt,
+     und die Reise steckt in "anerkannt", zählt aber nicht als Zuschlagszeit. Also Deckel = anerkannt minus Reise. */
+  const z=tarifZuschlagMin(d,endeNw);
+  const cap=Math.max(0,anerkannt-z.reise);
+  const sonntagMin=tarifOk?Math.min(z.sonntag,cap):0,nachtMin=tarifOk?Math.min(z.nacht,cap-sonntagMin):0;
+  const nachtEur=runde2(nachtMin/60*satz*0.25),sonntagEur=runde2(sonntagMin/60*satz*0.5);
+  return {tagessatz:satzTag,funktion:orderFunktion(o),anerkannt,mehrStd,mehrEur,mehrZuschlEur,nachtMin,nachtEur,
+    sonntagMin,sonntagEur,summe:runde2(satzTag+mehrEur+mehrZuschlEur+nachtEur+sonntagEur)};
+}
+function nettoQuote(){const q=S.nettoQuote;return typeof q==="number"&&q>=1&&q<=100?q:null;}
+/* Monate mit Einsätzen bis heute, neuester zuerst. Geplante Tage in der Zukunft zählen nicht. */
+function verdienstMonate(heute){
+  const bis=heute||isoLocal(new Date());const m={};
+  DB.orders.forEach(o=>o.days.forEach(d=>{
+    if(!d.datum||d.datum>bis)return;const t=tarifTag(o,d);if(!t)return;
+    const k=d.datum.slice(0,7);
+    const x=(m[k]??={monat:k,tage:[],einsaetze:0,honorar:0,mehrStd:0,mehrEur:0,nachtEur:0,sonntagEur:0,brutto:0,konto:null});
+    x.tage.push({o,d,t});x.einsaetze++;x.honorar+=t.tagessatz;x.mehrStd+=t.mehrStd;x.mehrEur+=t.mehrEur+t.mehrZuschlEur;
+    x.nachtEur+=t.nachtEur;x.sonntagEur+=t.sonntagEur;x.brutto+=t.summe;
+  }));
+  const q=nettoQuote();
+  return Object.values(m).sort((a,b)=>b.monat.localeCompare(a.monat)).map(x=>{
+    ["honorar","mehrEur","nachtEur","sonntagEur","brutto"].forEach(k=>x[k]=runde2(x[k]));
+    x.tage.sort((a,b)=>(a.d.datum+(a.d.einsatz||"")).localeCompare(b.d.datum+(b.d.einsatz||"")));
+    x.konto=q?runde2(x.brutto*q/100):null;return x;});
+}
+/* Tage bis heute, die nur wegen eines fehlenden Tagessatzes nicht mitzählen, je Funktion. Grundlage für den Hinweis
+   im Reiter Verdienst. Zählt wie verdienstMonate: Status frei, Einsatzbeginn und -ende eingetragen, nicht in der Zukunft. */
+function verdienstFehlSatz(heute){
+  const bis=heute||isoLocal(new Date());const n={assistent:0,kamera:0};if(!S.verdienstOn)return n;
+  DB.orders.forEach(o=>{if(orderStatus(o)!=="frei"||orderSatz(o))return;const k=orderFunktion(o)==="kamera"?"kamera":"assistent";
+    o.days.forEach(d=>{if(d.datum&&d.datum<=bis&&d.einsatz&&d.ende)n[k]++;});});
+  return n;
+}
+function parseEur(s){const t=String(s??"").trim().replace(/\s|€/g,"");if(!t)return null;
+  const n=parseFloat(t.includes(",")?t.replace(/\./g,"").replace(",","."):t);return isFinite(n)&&n>0?runde2(n):null;}
+/* Netto-Anteil in Prozent: Komma oder Punkt, ohne vorher zu runden. Ein Bruch unter 1 (z. B. 0,5437) gilt als 54,37 %.
+   Gültig nur 1 bis 100, sonst null (dann zeigt die App nur Brutto). */
+function parseQuote(s){const t=String(s??"").trim().replace(/\s|%/g,"");if(!t)return null;
+  let n=parseFloat(t.replace(",","."));if(!isFinite(n))return null;if(n<1)n*=100;n=runde2(n);return n>=1&&n<=100?n:null;}
+function fmtEur(n){return n==null?"–":n.toLocaleString("de-DE",{minimumFractionDigits:2,maximumFractionDigits:2})+" €";}
+function fmtEurRund(n){return n==null?"–":Math.round(n).toLocaleString("de-DE")+" €";}
+function fmtStd(h){return String(h).replace(".",",")+" Std";}
+/* === TARIF-END === */
 const orderOT=o=>o.days.reduce((a,d)=>a+(dayCalc(d).ot||0),0);
 const orderNetto=o=>o.days.reduce((a,d)=>a+(dayCalc(d).netto||0),0);
 const orderTGdays=o=>o.days.reduce((a,d)=>a+(dayCalc(d).tg.state==="ok"?1:0),0);
@@ -488,9 +584,9 @@ function renderBar(){
     paintThemeIcon();
   }
 }
-function tabsHtml(){return `<div class="segs" id="segs"><button data-tab="orders"${state.tab==="orders"?' class="on"':''}>Aufträge</button><button data-tab="stats"${state.tab==="stats"?' class="on"':''}>Statistik</button></div>`;}
+function tabsHtml(){return `<div class="segs" id="segs"><button data-tab="orders"${state.tab==="orders"?' class="on"':''}>Aufträge</button><button data-tab="stats"${state.tab==="stats"?' class="on"':''}>Statistik</button>${S.verdienstOn?`<button data-tab="verdienst"${state.tab==="verdienst"?' class="on"':''}>Verdienst</button>`:""}</div>`;}
 function bindTabs(){view.querySelectorAll("#segs button").forEach(b=>b.onclick=()=>{state.tab=b.dataset.tab;state.orderId=null;window.scrollTo(0,0);render();});}
-function render(){renderBar();if(state.orderId)return renderDetail();if(state.tab==="stats")return renderStats();return renderOrders();}
+function render(){renderBar();if(state.orderId)return renderDetail();if(state.tab==="stats")return renderStats();if(state.tab==="verdienst"&&S.verdienstOn)return renderVerdienst();return renderOrders();}
 
 /* ===== Auftragsliste ===== */
 function renderOrders(){
@@ -662,6 +758,51 @@ function renderStats(){
   view.querySelectorAll("[data-open]").forEach(c=>c.onclick=()=>{state.orderId=c.dataset.open;window.scrollTo(0,0);render();});
 }
 
+/* ===== Verdienst (V4.1, freiwillig) ===== */
+/* Hinweis in ganzen Sätzen, wenn Einsätze nur wegen eines fehlenden Tagessatzes nicht mitzählen (je Funktion). */
+function fehlSatzText(f){
+  const s=[["assistent","Dreh-Assistent"],["kamera","Kamera"]].filter(([k])=>f[k]).map(([k,nm])=>
+    `${f[k]} ${f[k]===1?"Einsatz":"Einsätze"} als ${nm} ${f[k]===1?"zählt":"zählen"} nicht mit, weil der Tagessatz ${nm} fehlt.`);
+  return s.length?s.join(" ")+` Trag ${s.length>1?"sie":"ihn"} in den Einstellungen unter Verdienst ein.`:"";
+}
+function renderVerdienst(){
+  const ms=verdienstMonate(),q=nettoQuote(),fehl=fehlSatzText(verdienstFehlSatz());
+  let h=`<div class="pagehead"><div class="eyebrow">${esc(headEyebrow())}</div><div class="display">Verdienst</div></div>`+tabsHtml();
+  if(!ms.length){
+    const txt=fehl||(!S.satzAssist&&!S.satzKamera?"Trag in den Einstellungen unter Verdienst deine Tagessätze ein."
+      :"Noch keine Einsätze bis heute. Gezählt werden Aufträge als freier Mitarbeiter.");
+    h+=`<div class="empty"><div class="big">€</div><p>${txt}</p></div>`;
+  }else{
+    const m=ms[0];
+    h+=`<div class="hero"><div class="l">${q?"Aufs Konto":"Brutto nach Tarif"} · ${esc(fmtMonth(m.monat))}</div>
+      <div class="n">${q?"ca. "+fmtEurRund(m.konto):fmtEur(m.brutto)}</div>
+      <div class="hsub">${q?"Brutto "+fmtEur(m.brutto)+" · Netto-Anteil "+String(q).replace(".",",")+" %":"Trag einen Netto-Anteil ein, dann steht hier der Betrag fürs Konto."}</div></div>
+    <div class="kpis verd">
+      <div class="kpi"><div class="l">Einsätze</div><div class="n">${m.einsaetze}</div></div>
+      <div class="kpi"><div class="l">Mehrarbeit</div><div class="n">${fmtStd(m.mehrStd)}</div></div>
+      <div class="kpi acc"><div class="l">Über Tagessatz</div><div class="n">${fmtEurRund(m.brutto-m.honorar)}</div></div>
+    </div>
+    ${fehl?`<div class="rnote" style="margin:0 0 14px">${fehl}</div>`:""}
+    <div class="section-h"><h3>Pro Monat</h3></div>`;
+    ms.forEach(x=>{
+      h+=`<div class="srow" data-vm="${esc(x.monat)}" style="cursor:pointer"><div class="nm">${esc(fmtMonth(x.monat))}<small>${x.einsaetze} ${x.einsaetze===1?"Einsatz":"Einsätze"} · Brutto ${fmtEur(x.brutto)}${x.mehrStd?" · "+fmtStd(x.mehrStd)+" Mehrarbeit":""}</small></div><div style="display:flex;align-items:center;gap:10px;flex:none"><span class="v" style="white-space:nowrap">${x.konto!=null?"ca. "+fmtEurRund(x.konto):fmtEur(x.brutto)}</span><span class="chev">›</span></div></div>`;
+    });
+    h+=`<p class="note">Das ZDF zahlt nachträglich, meist ein bis zwei Monate später und oft in mehreren Teilbeträgen. Urlaubsentgelt ist nicht enthalten.${q?" Der Anteil aufs Konto ist geschätzt.":""} Gezählt werden Einsätze als freier Mitarbeiter bis heute.</p>`;
+  }
+  view.innerHTML=h;
+  bindTabs();
+  view.querySelectorAll("[data-vm]").forEach(r=>r.onclick=()=>openVerdienstMonat(r.dataset.vm));
+}
+function openVerdienstMonat(mk){
+  const x=verdienstMonate().find(m=>m.monat===mk);if(!x)return;
+  const rows=x.tage.map(({o,d,t})=>`<div class="srow"><div class="nm">${esc(fmtDayC(d.datum))} · ${t.funktion==="kamera"?"Kamera":"Dreh-Assistent"}<small>${esc(o.titel||"Ohne Titel")} · Tagessatz ${fmtEur(t.tagessatz)}${t.mehrStd?" · Mehrarbeit "+fmtStd(t.mehrStd)+" "+fmtEur(runde2(t.mehrEur+t.mehrZuschlEur)):""}${t.nachtEur?" · Nacht "+fmtEur(t.nachtEur):""}${t.sonntagEur?" · Sonntag "+fmtEur(t.sonntagEur):""}</small></div><div class="v" style="font-size:15px">${fmtEur(t.summe)}</div></div>`).join("");
+  openSheet(`<h3>${esc(fmtMonth(mk))}</h3>
+    <p class="note" style="margin:-8px 0 12px">Brutto ${fmtEur(x.brutto)}${x.konto!=null?" · ca. "+fmtEur(x.konto)+" aufs Konto":""}</p>
+    ${rows}
+    <button class="btn ghost" id="vmClose" style="margin:16px 0 0">Schließen</button>`);
+  document.getElementById("vmClose").onclick=closeSheet;
+}
+
 /* ===== Sheet ===== */
 const scrim=document.getElementById("scrim"),sheet=document.getElementById("sheet");
 let shT=null;
@@ -699,6 +840,7 @@ function editOrder(id){
     <div class="field"><label>Mitarbeiter (für Nachweis)</label><input type="text" class="txt" id="f_mit" value="${esc(o.mitarbeiter||"")}" placeholder="Nachname, Vorname"></div>
     <div class="field"><label>Beschäftigung</label><div class="toggles" id="f_status"><button data-s="frei">Freier Mitarbeiter</button><button data-s="fest">Fest angestellt</button></div>
       <p class="note">Bei freien Mitarbeitern verlängert der Nachweis das Einsatzende, weil FLINK die Ruhepause immer abzieht: über 6:30 Std 30 Min, über 9:45 Std 45 Min, auch wenn du keine oder eine kürzere Pause gemacht hast. Fest Angestellte bekommen die Zeiten unverändert.</p></div>
+    ${S.verdienstOn?`<div class="field"><label>Funktion (für Verdienst)</label><div class="toggles" id="f_fk"><button data-f="assistent">Dreh-Assistent</button><button data-f="kamera">Kamera</button></div></div>`:""}
     <div class="field"><label>Sonder-Equipment (Mehrfachauswahl)</label><div class="chips" id="f_equip">${["Sony Alpha 7S III","Sony FX6","Sony FX3","2. Kamera","Drohne","DJI RS-Gimbal","Slider","Stativ/Head","ND-/Vari-ND-Filter","Timecode-Sync","Funkstrecke","Ton","Licht","Datenmanagement"].map(e=>`<button type="button" data-e="${esc(e)}"${(o.equipment||[]).includes(e)?' class="on"':''}>${esc(e)}</button>`).join("")}</div></div>
     <div class="field"><label>Sonstiges (optional)</label><textarea class="txt" id="f_notiz" rows="3" placeholder="z. B. weitere Hinweise">${esc(o.notiz||"")}</textarea></div>
     <button class="btn" id="saveOrder">Speichern</button><button class="btn ghost" id="cancelOrder" style="margin-bottom:0">Abbrechen</button>
@@ -709,9 +851,13 @@ function editOrder(id){
   const paintStatus=()=>document.querySelectorAll("#f_status button").forEach(b=>b.classList.toggle("on",b.dataset.s===tmpStatus));
   document.querySelectorAll("#f_status button").forEach(b=>b.onclick=()=>{tmpStatus=b.dataset.s;paintStatus();});
   paintStatus();
+  let tmpFk=orderFunktion(id?o:null);
+  const paintFk=()=>document.querySelectorAll("#f_fk button").forEach(b=>b.classList.toggle("on",b.dataset.f===tmpFk));
+  document.querySelectorAll("#f_fk button").forEach(b=>b.onclick=()=>{tmpFk=b.dataset.f;paintFk();});
+  paintFk();
   document.getElementById("saveOrder").onclick=()=>{
     const equipment=[...document.querySelectorAll("#f_equip button.on")].map(b=>b.dataset.e);
-    const data={titel:val("f_titel"),auftragsnr:val("f_anr"),prodNummer:val("f_pnr"),kostentraeger:val("f_kt"),produktionsort:val("f_ort"),mitarbeiter:val("f_mit"),notiz:val("f_notiz"),equipment,status:tmpStatus};
+    const data={titel:val("f_titel"),auftragsnr:val("f_anr"),prodNummer:val("f_pnr"),kostentraeger:val("f_kt"),produktionsort:val("f_ort"),mitarbeiter:val("f_mit"),notiz:val("f_notiz"),equipment,status:tmpStatus,...(S.verdienstOn?{funktion:tmpFk}:{})};
     if(!data.titel){toast("Bitte einen Titel eingeben");return;}
     if(id)Object.assign(o,data);else{const no={id:uid(),...data,days:[]};DB.orders.push(no);state.orderId=no.id;}
     persist();closeSheet();render();toast(id?"Gespeichert":"Auftrag angelegt");};
@@ -799,11 +945,12 @@ function editDay(orderId,dayId){
   function deriveFromEinsatz(){const e=val("d_einsatz");if(!anEd)g("d_anreise").value=e?addMin(e,30):"";if(!aeEd)g("d_anreiseEnde").value=e?addMin(e,60):"";if(!dbEd)g("d_drehbeginn").value=e?addMin(e,60):"";}
   function lastEnd(){return val("d_rueck")||val("d_drehende")||val("d_anreiseEnde")||"";}
   function computeEnde(){if(endeEd)return;const le=lastEnd();g("d_ende").value=le?addMin(le,30):"";}
-  g("d_anreise").oninput=()=>{anEd=true;};
+  g("d_anreise").oninput=()=>{anEd=true;recalc();};
   g("d_anreiseEnde").oninput=()=>{aeEd=true;computeEnde();recalc();};
   g("d_drehbeginn").oninput=()=>{dbEd=true;recalc();};
   g("d_drehende").oninput=()=>{computeEnde();recalc();};
-  g("d_rueckBeginn").oninput=()=>{};
+  g("d_rueckBeginn").oninput=()=>{recalc();};
+  g("d_datum").oninput=g("d_datum").onchange=()=>recalc();
   g("d_rueck").oninput=()=>{computeEnde();recalc();};
   g("d_einsatz").oninput=()=>{deriveFromEinsatz();computeEnde();recalc();};
   g("d_ende").oninput=()=>{endeEd=true;recalc();};
@@ -825,6 +972,9 @@ function editDay(orderId,dayId){
         <div class="c"><div class="l">Soll</div><div class="n">${fmtMin(S.sollMin)}</div></div>
         <div class="c"><div class="l">Überstunden</div><div class="n big ${otClass(c.ot)}">${fmtSigned(c.ot)}</div></div>
       </div>`;
+    /* Verdienst nach Tarif (V4.1): nur wenn die Option an ist, der Auftrag frei ist und ein Tagessatz existiert */
+    const tt=tarifTag(o,{datum:val("d_datum"),einsatz:val("d_einsatz"),ende:val("d_ende"),anreise:val("d_anreise"),anreiseEnde:val("d_anreiseEnde"),rueckBeginn:val("d_rueckBeginn"),rueck:val("d_rueck"),pause:tmpPause});
+    if(tt)g("calc").insertAdjacentHTML("beforeend",`<hr><div class="tarifz">Laut Tarif: Mehrarbeit ${fmtStd(tt.mehrStd)} · ${fmtEur(runde2(tt.mehrEur+tt.mehrZuschlEur))}${tt.nachtEur?" · Nacht "+fmtEur(tt.nachtEur):""}${tt.sonntagEur?" · Sonntag "+fmtEur(tt.sonntagEur):""}</div>`);
     /* FLINK-Hinweis: zeigt, was das ZDF-System abzieht und wie der Nachweis korrigiert wird */
     const fb=g("flinkbox");
     if(fb){
@@ -906,6 +1056,7 @@ function openSettings(){
     </div>
     <div class="section-h"><h3>Regeln</h3></div>
     <button class="setrow" id="rulesBtn"><span>Arbeitszeit-Regeln<small>Soll ${fmtMin(S.sollMin)} · Pause ${S.standardPause} min · Tagegeld ab ${fmtMin(S.abwesenheitMin)}</small></span><span class="chev">›</span></button>
+    <button class="setrow" id="verdBtn"><span>Verdienst<small>${S.verdienstOn?"an · "+([S.satzAssist?"Dreh-Assistent "+esc(fmtEur(S.satzAssist)):"",S.satzKamera?"Kamera "+esc(fmtEur(S.satzKamera)):""].filter(Boolean).join(" · ")||"Tagessätze fehlen"):"aus · freiwillig"}</small></span><span class="chev">›</span></button>
     <div class="section-h"><h3>Export</h3></div>
     <div class="setcard">
       <div class="field"><label>Empfänger-E-Mail (Dispo)</label><input type="email" class="txt" id="s_mail" value="${esc(S.email||"")}" placeholder="empfangsadresse@…"></div>
@@ -927,6 +1078,7 @@ function openSettings(){
   paintSetStatus();
   document.getElementById("saveSet").onclick=()=>{S.email=val("s_mail");S.empfaenger=val("s_empf");S.absender=val("s_name");S.status=setStatus;S.anschreiben=val("s_anschr");S.gruss=val("s_gruss");persist();closeSheet();render();toast("Einstellungen gespeichert");};
   document.getElementById("rulesBtn").onclick=openRules;
+  document.getElementById("verdBtn").onclick=openVerdienstSettings;
   document.getElementById("helpBtn").onclick=openHelp;
   document.getElementById("wnBtn").onclick=()=>openWhatsNew(true);
   document.getElementById("shareApp").onclick=()=>{
@@ -940,6 +1092,35 @@ function openSettings(){
   document.getElementById("bakOut").onclick=exportBackup;
   document.getElementById("bakIn").onclick=()=>document.getElementById("backupInput").click();
   document.getElementById("wipe").onclick=()=>{askConfirm("Wirklich ALLE Aufträge löschen?",()=>{DB.orders=[];persist();closeSheet();state.orderId=null;render();toast("Alle Daten gelöscht");});};
+}
+/* Einstellungen "Verdienst" (V4.1): freiwillig, Tagessätze je Funktion, Netto-Anteil optional. */
+function openVerdienstSettings(){
+  let on=!!S.verdienstOn,fk=S.funktion||"assistent";
+  const zahl=v=>v?String(v).replace(".",","):"";
+  openSheet(`<h3>Verdienst</h3>
+    <p class="note" style="margin:-8px 0 16px">Freiwillig. Zeigt pro Monat, was dir nach Tarif zusteht und ungefähr aufs Konto kommen sollte. Das ist nur für dich und erscheint nie im Nachweis.</p>
+    <div class="field"><label>Verdienst anzeigen</label><div class="toggles" id="v_on"><button data-v="1">An</button><button data-v="0">Aus</button></div></div>
+    <div class="two">
+      <div class="field"><label>Tagessatz Dreh-Assistent</label><input type="text" inputmode="decimal" id="v_assist" value="${esc(zahl(S.satzAssist))}" placeholder="z. B. 261,31"></div>
+      <div class="field"><label>Tagessatz Kamera</label><input type="text" inputmode="decimal" id="v_kamera" value="${esc(zahl(S.satzKamera))}" placeholder="z. B. 303,66"></div>
+    </div>
+    <p class="note">Brutto pro Einsatztag, wie im Vertrag. Mehrarbeit und Zuschläge zahlt das ZDF laut Tarif nur bei einem Tagessatz bis 336,06 €.</p>
+    <div class="field" style="margin-top:12px"><label>Meistens als</label><div class="toggles" id="v_fk"><button data-f="assistent">Dreh-Assistent</button><button data-f="kamera">Kamera</button></div>
+      <p class="note">Vorgabe für Aufträge ohne eigene Funktion. Beim Dispo-Import liest die App die Funktion selbst.</p></div>
+    <div class="field"><label>Netto-Anteil in % (optional)</label><input type="text" inputmode="decimal" id="v_quote" value="${esc(zahl(S.nettoQuote))}" placeholder="z. B. 54">
+      <p class="note">Nimm eine Abrechnung und teile die Auszahlung durch die Summe des Vertrags. Bei vielen Freien liegt das zwischen 50 und 65 %. Leer heißt: nur Brutto.</p></div>
+    <button class="btn" id="v_save">Speichern</button><button class="btn ghost" id="v_back" style="margin-bottom:0">Zurück</button>`);
+  const paint=()=>{
+    document.querySelectorAll("#v_on button").forEach(b=>b.classList.toggle("on",(b.dataset.v==="1")===on));
+    document.querySelectorAll("#v_fk button").forEach(b=>b.classList.toggle("on",b.dataset.f===fk));};
+  document.querySelectorAll("#v_on button").forEach(b=>b.onclick=()=>{on=b.dataset.v==="1";paint();});
+  document.querySelectorAll("#v_fk button").forEach(b=>b.onclick=()=>{fk=b.dataset.f;paint();});
+  paint();
+  document.getElementById("v_back").onclick=openSettings;
+  document.getElementById("v_save").onclick=()=>{
+    S.verdienstOn=on;S.satzAssist=parseEur(val("v_assist"));S.satzKamera=parseEur(val("v_kamera"));S.funktion=fk;S.nettoQuote=parseQuote(val("v_quote"));
+    if(!on&&state.tab==="verdienst")state.tab="orders";
+    persist();render();openSettings();toast("Verdienst gespeichert");};
 }
 function openRules(){
   openSheet(`<h3>Arbeitszeit-Regeln</h3>
@@ -1053,6 +1234,13 @@ function openHelp(){
     <div class="hsec"><div class="eb">8 · An Kollegen weitergeben</div>
       <p>Unter <b>Einstellungen</b> und <b>App weiterempfehlen</b> teilst du den Link. Jeder Kollege bekommt seine eigene, leere App. Daten werden nie geteilt oder vermischt.</p>
       <p>Sag ihm dazu, dass er nach dem Öffnen zwei Dinge erledigen sollte: die App zum Home-Bildschirm hinzufügen und in den Einstellungen seinen Namen eintragen. Der Name sorgt dafür, dass beim Dispo-Import automatisch die richtige Person vorausgewählt wird.</p></div>
+
+    <div class="hsec"><div class="eb">9 · Verdienst (freiwillig)</div>
+      <p>Wenn du magst, zeigt dir die App pro Monat, was dir nach Tarif zusteht und ungefähr auf dem Konto ankommen sollte. Du schaltest das unter <b>Einstellungen</b> und <b>Verdienst</b> ein und trägst dort deine Tagessätze als Dreh-Assistent und als Kamera ein. Danach gibt es neben Aufträge und Statistik den Reiter <b>Verdienst</b>.</p>
+      <p>Die App rechnet so wie das ZDF auf der Abrechnung. Jeder Einsatztag bringt den Tagessatz. Dazu kommt Mehrarbeit für alles über 7,7 Stunden am Tag, aufgerundet auf halbe Stunden, mit dem Tagessatz geteilt durch 7,7 und 25 Prozent Zuschlag. Die 7,7 Stunden stehen so im Tarif und gelten auch dann, wenn du unter Arbeitszeit-Regeln ein anderes Soll eingetragen hast. Für Arbeit in der Nacht zwischen 22 und 6 Uhr kommen 25 Prozent dazu, am Sonntag 50 Prozent. Pause und Reisezeit zählen dabei nicht mit, Feiertage rechnet die App noch nicht. Laut Tarif zahlt das ZDF Mehrarbeit und diese Zuschläge nur bei einem Tagessatz bis 336,06 Euro. Liegt dein Tagessatz über 336,06 Euro, gibt es nur den Tagessatz.</p>
+      <p>Steht bei einer Fahrt nur der Beginn oder nur das Ende, wie nach einem Dispo-Import, rechnet die App diese Fahrt mit 30 Minuten. Trag die echten Fahrzeiten ein, dann wird es genauer. Nacht- und Sonntagszuschlag sind noch nicht an einer echten Abrechnung geprüft. Sieh diese Beträge deshalb als Schätzung.</p>
+      <p>Trägst du deinen Netto-Anteil ein, zeigt die App auch, was ungefähr aufs Konto kommt. Den Anteil findest du auf einer Abrechnung, wenn du die Auszahlung durch die Summe des Vertrags teilst.</p>
+      <p class="tip">Das ZDF zahlt nachträglich, meist ein bis zwei Monate später und oft in mehreren Teilbeträgen. Urlaubsentgelt ist nicht enthalten. Nichts davon erscheint im Nachweis.</p></div>
 
     <button class="btn" id="helpBack" style="margin-top:6px">Verstanden</button>`);
   document.getElementById("helpBack").onclick=openSettings;
@@ -1231,11 +1419,13 @@ function parsePersons(t){
     const einsatz=times[0].padStart(5,"0"),ende=times[times.length-1].padStart(5,"0");
     let anreise="",rueck="";if(times.length>=4){anreise=times[1].padStart(5,"0");rueck=times[2].padStart(5,"0");}
     const nm=cleanName(a.name);
-    if(!persons[nm]){persons[nm]={name:nm,days:[],seen:new Set()};order.push(nm);}
+    /* Funktion steht in der Dispo direkt vor dem Namen, nach der letzten Uhrzeit der Vorzeile (V4.1). */
+    const pre=body.slice(Math.max(0,a.start-160),a.start).replace(/^[\s\S]*(\d{1,2}:\d{2}|---)/,"");
+    if(!persons[nm]){persons[nm]={name:nm,days:[],seen:new Set(),funktion:funktionAus(pre)};order.push(nm);}
     const key=iso+einsatz;
     if(!persons[nm].seen.has(key)){persons[nm].seen.add(key);persons[nm].days.push({datum:iso,einsatz,ende,anreise,rueck});}
   });
-  return order.map(n=>({name:persons[n].name,days:persons[n].days.sort((x,y)=>(x.datum+x.einsatz).localeCompare(y.datum+y.einsatz))}));
+  return order.map(n=>({name:persons[n].name,funktion:persons[n].funktion,days:persons[n].days.sort((x,y)=>(x.datum+x.einsatz).localeCompare(y.datum+y.einsatz))}));
 }
 function parseZDF(raw){const t=clean(raw);const meta=parseMeta(t);meta.persons=parsePersons(t);return meta;}
 
@@ -1258,6 +1448,7 @@ function confirmImport(p,fname){
     <p class="note">Vorauswahl folgt „Dein Name" aus den Einstellungen.</p>
     <div class="field" style="margin-top:12px"><label>Beschäftigung</label><div class="toggles" id="i_status"><button data-s="frei">Freier Mitarbeiter</button><button data-s="fest">Fest angestellt</button></div>
       <p class="note">Freie: Der Nachweis verlängert das Einsatzende um den Pausenabzug von FLINK. Fest Angestellte: Zeiten unverändert.</p></div>
+    ${S.verdienstOn?`<div class="field"><label>Funktion (für Verdienst)</label><div class="toggles" id="i_fk"><button data-f="assistent">Dreh-Assistent</button><button data-f="kamera">Kamera</button></div><p class="note" id="i_fknote"></p></div>`:""}
     <div class="field"><label>Name (für Nachweis)</label><input type="text" class="txt" id="i_name" value=""></div>`:`<p class="note">Keine Personen erkannt – du kannst den Auftrag trotzdem anlegen und Tage manuell erfassen.</p>`}
     <div class="section-h" style="margin:18px 0 8px"><h3>Reiseart</h3></div>
     <div class="toggles" id="i_trip"><button data-t="ein">Einzeltage</button><button data-t="mehr">Mehrtägig</button></div>
@@ -1278,11 +1469,18 @@ function confirmImport(p,fname){
     document.querySelectorAll("#i_trip button").forEach(b=>b.classList.toggle("on",b.dataset.t===impTrip));
     const di=document.getElementById("doImport");if(di)di.textContent=days.length?`Importieren · ${days.length} ${days.length===1?"Tag":"Tage"}`:"Importieren";
   }
+  let impFk=null,fkTouched=false;
+  const paintFk=()=>{const sel=persons[impSel];if(!fkTouched)impFk=(sel&&sel.funktion)||S.funktion||"assistent";
+    document.querySelectorAll("#i_fk button").forEach(b=>b.classList.toggle("on",b.dataset.f===impFk));
+    const fn=document.getElementById("i_fknote");
+    if(fn)fn.textContent=sel&&sel.funktion?"Aus der Dispo erkannt, bitte prüfen.":"In der Dispo nicht gefunden, Vorgabe aus den Einstellungen.";};
   let impStatus=S.status||"frei";
   const paintImpStatus=()=>document.querySelectorAll("#i_status button").forEach(b=>b.classList.toggle("on",b.dataset.s===impStatus));
   document.querySelectorAll("#i_status button").forEach(b=>b.onclick=()=>{impStatus=b.dataset.s;paintImpStatus();});
   paintImpStatus();
-  if(persons.length){document.querySelectorAll("#i_persons button").forEach(b=>b.onclick=()=>{impSel=+b.dataset.i;paint();});}
+  if(persons.length){document.querySelectorAll("#i_persons button").forEach(b=>b.onclick=()=>{impSel=+b.dataset.i;fkTouched=false;paint();paintFk();});}
+  document.querySelectorAll("#i_fk button").forEach(b=>b.onclick=()=>{impFk=b.dataset.f;fkTouched=true;paintFk();});
+  paintFk();
   document.querySelectorAll("#i_trip button").forEach(b=>b.onclick=()=>{impTrip=b.dataset.t;tripTouched=true;document.querySelectorAll("#i_trip button").forEach(x=>x.classList.toggle("on",x.dataset.t===impTrip));});
   paint();
   document.getElementById("cancelImport").onclick=closeSheet;
@@ -1298,7 +1496,10 @@ function confirmImport(p,fname){
       rueckBeginn:"",
       rueck:d.rueck||(((!mehr||i===last)&&d.ende)?addMin(d.ende,-30):""),
       ende:d.ende,pause:pauseVorgabe(d.einsatz,d.ende),uebernachtung:mehr,ausland:false,dispo:{einsatz:d.einsatz,ende:d.ende}}));
-    const no={id:uid(),titel:val("i_titel"),auftragsnr:val("i_anr"),prodNummer:val("i_pnr"),kostentraeger:val("i_kt"),produktionsort:val("i_ort"),mitarbeiter:val("i_name"),status:impStatus,days};
+    /* Funktion nur speichern, wenn erkannt oder bewusst gewählt: mit Verdienst-Option zählt das Segment, sonst nur die
+       Erkennung aus der Dispo. Ohne beides bleibt das Feld weg und der Auftrag folgt der Vorgabe S.funktion. */
+    const fk=S.verdienstOn&&sel?impFk:(sel&&sel.funktion);
+    const no={id:uid(),titel:val("i_titel"),auftragsnr:val("i_anr"),prodNummer:val("i_pnr"),kostentraeger:val("i_kt"),produktionsort:val("i_ort"),mitarbeiter:val("i_name"),status:impStatus,...(fk?{funktion:fk}:{}),days};
     DB.orders.push(no);persist();state.orderId=no.id;state.tab="orders";closeSheet();render();toast(days.length?days.length+" Tag(e) importiert – bitte prüfen!":"Auftrag angelegt");
   };
 }

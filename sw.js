@@ -1,6 +1,6 @@
 /* Zeiterfassung Service Worker – Offline-Cache.
    Navigation: network-first (Updates kommen an), Assets: cache-first. */
-const CACHE = "zeiterfassung-v4.0.0";
+const CACHE = "zeiterfassung-v4.1.0";
 const ASSETS = [
   "./",
   "manifest.json",
@@ -30,7 +30,7 @@ self.addEventListener("install", e => {
 
 self.addEventListener("activate", e => {
   e.waitUntil(
-    // Nur eigene alte Caches loeschen: Cache Storage gilt pro Origin, und auf msydow1.github.io liegt auch Kontor.
+    // Nur eigene alte Caches loeschen: Cache Storage gilt pro Origin, andere Apps auf msydow1.github.io behalten ihre Caches.
     caches.keys().then(keys => Promise.all(keys.filter(k => k.startsWith("zeiterfassung-") && k !== CACHE).map(k => caches.delete(k))))
       .then(() => self.clients.claim())
   );
