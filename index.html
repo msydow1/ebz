@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="Zeiterfassung">
 <meta name="theme-color" content="#15171A">
 <title>Zeiterfassung</title>
-<!-- Zeiterfassung V4.2.0 · Design "Amber Editorial" -->
+<!-- Zeiterfassung V4.3.0 · Design "Amber Editorial" -->
 <!-- impeccable-disable single-font -- Nutzer wählte beim V1.2-Redesign bewusst "Inter durchgängig" (eine Familie, tabular-nums für Zeiten) -->
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -164,6 +164,9 @@ body.light .btn.danger{border-color:rgba(194,78,59,.4)}
 .field input.txt{font-variant-numeric:normal}
 .field input:focus,.field textarea:focus{outline:none;border-color:var(--accent-line);background:var(--surface-2)}
 .field input:disabled{opacity:.4}
+.field select{width:100%;min-width:0;max-width:100%;-webkit-appearance:none;appearance:none;padding:12px 34px 12px 13px;border-radius:10px;border:1px solid var(--line-strong);background-color:var(--field-input);color:var(--text-strong);font-family:inherit;font-size:15px;font-weight:600;background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);background-position:calc(100% - 18px) 52%,calc(100% - 13px) 52%;background-size:5px 5px,5px 5px;background-repeat:no-repeat}
+.field select:focus{outline:none;border-color:var(--accent-line)}
+.field select:disabled{opacity:.4}
 .field input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(.6) sepia(1) saturate(2.2) hue-rotate(348deg);opacity:.9}
 .two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
 /* Timeboxen */
@@ -279,7 +282,7 @@ body.light .btn.danger{border-color:rgba(194,78,59,.4)}
   <div class="view" id="view"></div>
   <div class="foot">
     <div class="foot-note">Daten bleiben nur auf diesem Gerät · alle Angaben ohne Gewähr</div>
-    <div class="foot-v">Zeiterfassung <b>V4.2.0</b></div>
+    <div class="foot-v">Zeiterfassung <b>V4.3.0</b></div>
   </div>
 </div>
 <input type="file" id="pdfInput" accept="application/pdf" class="hidden">
@@ -308,13 +311,20 @@ S.verdienstOn??=false; S.satzAssist??=null; S.satzKamera??=null; S.nettoQuote??=
 /* Arbeitstage laut Vertrag (V4.2): ganze Zahl 1 bis 366, sonst kein Zähler. Schützt vor fremden oder beschädigten Backups. */
 if(!(Number.isInteger(S.vertragstage)&&S.vertragstage>=1&&S.vertragstage<=366))S.vertragstage=null;
 S.anschreiben??=""; S.gruss??="";  /* leer = Standardtext, siehe mailOrder */
+S.feiertagOrt??="DE";  /* Feiertage (V4.3): üblicher Arbeitsort bzw. Dienstort. Unbekannte Werte fängt ortGueltig() beim Lesen ab. */
 
 /* ===== Was ist neu =====
    Wird einmal nach jedem Update gezeigt: Vergleich S.seenVersion gegen APP_VERSION.
    Nicht bei frischen Installationen (keine Aufträge) – ein neuer Kollege soll kein
    Changelog sehen, bevor er die App überhaupt kennt. Neue Einträge oben anfügen. */
-const APP_VERSION="4.2.0";
+const APP_VERSION="4.3.0";
 const WHATSNEW=[
+  {v:"4.3", t:"Feiertage am Arbeitsort", items:[
+    ["Feiertage in 15 Ländern","Die App kennt jetzt die gesetzlichen Feiertage am Arbeitsort: in Deutschland je Bundesland, in der Schweiz je Kanton, dazu Österreich, Italien, Slowenien, Norwegen, Schweden, Finnland, Frankreich, Andorra, Spanien, Polen, Tschechien, die Slowakei und Kroatien. Oster- und Pfingstsonntag zählen immer, so steht es im Tarif."],
+    ["Welcher Ort gilt","Als freier Mitarbeiter zählt der Arbeitsort des Auftrags. Beim Dispo-Import erkennt die App das Land aus dem Produktionsort, zum Beispiel „Kranjska Gora SLO“ oder „Wengen SUI“. Sonst gilt dein üblicher Arbeitsort aus den Einstellungen. Fest Angestellte tragen dort ihren Dienstort ein, er gilt dann für alle Aufträge."],
+    ["Im Nachweis markiert","Ein Feiertag bekommt im PDF ein Sternchen beim Datum, in der Mail den Zusatz „Feiertag“. Unten steht eine Zeile mit allen Feiertagen und ihren Namen. So sieht die Disposition sofort, wo der Feiertagszuschlag fällig ist. Im Tag kannst du einen Feiertag abschalten oder selbst einen eintragen."],
+    ["Feiertagszuschlag im Verdienst","Wer den Verdienst nach Tarif nutzt, sieht jetzt auch den Feiertagszuschlag von 100 Prozent. Trifft er mit Nacht oder Sonntag zusammen, zählt nur der höhere."]
+  ]},
   {v:"4.2", t:"Vertragstage, dein Name und geprüfte Zuschläge", items:[
     ["Vertragstage im Blick","Trag unter Einstellungen ein, wie viele Arbeitstage dein Vertrag im Jahr vorsieht. Dann siehst du in der Statistik und oben in den Aufträgen, wie viele Tage du dieses Jahr schon geleistet hast, wie viele disponiert sind und wie viele noch frei bleiben. Ohne Eintrag ändert sich nichts."],
     ["Die App kennt deinen Namen","Beim Start fragt die App jetzt, wer sie nutzt, bis ein Name gespeichert ist. Beim Dispo-Import wählt sie dich darüber aus, auch wenn dein Name in der Dispo abgeschnitten ist. Findet sie dich nicht, wählt sie niemanden vor, und du tippst an, wer du bist. Vorher hat sie in dem Fall einfach die erste Person genommen, meistens einen Kollegen."],
@@ -463,37 +473,267 @@ function exportEnde(o,d){
 function pauseDez(min){if(!min)return "—";return (min/60).toFixed(2).replace(/0$/,"").replace(".",",");}
 /* Status des Auftrags: frei (Default aus den Einstellungen) oder fest angestellt. */
 function orderStatus(o){return (o&&o.status)||S.status||"frei";}
+/* === FEIERTAGE-BEGIN === Feiertage am Arbeitsort (V4.3). Reine Rechnung ohne DOM, getestet in tests/feiertage.test.mjs gegen
+   tests/feiertage-referenz.json (Python-Bibliothek holidays 0.105, Jahre 2023 bis 2035). Grundlage: PdTV 9.5, 100 % an den am
+   Arbeitsort geltenden gesetzlichen Feiertagen einschließlich Oster- und Pfingstsonntag.
+   Regeln je Ort: [Monat,Tag,Name] fester Tag · ["O",Abstand,Name] Tage ab Ostersonntag · ["W",Monat,Tag,Wochentag,Name] erster
+   Wochentag (0 = So bis 6 = Sa) ab diesem Datum. Optional als letztes Element: ab/bis (Jahre), nicht (Liste von Jahren),
+   keinSo (entfällt am Sonntag), nurWt (nur an diesen Wochentagen), bezugWt [Monat,Tag,[Wochentage]] (entfällt, wenn der
+   Bezugstag auf einen dieser Wochentage fällt), karwoche (fällt der Tag auf Gründonnerstag, gilt er eine Woche später).
+   Regionen erben die Regeln ihres Landes: "DE-BY-A" erbt von "DE-BY", das von "DE".
+   Finnland: Mittsommerabend und Heiligabend wie in der Referenz, dort nach dem Jahresurlaubsgesetz arbeitsfrei. In Schweden sind
+   die Vorabende nur tatsächlich frei (Kategorie de_facto der Referenz) und zählen nicht. */
+const FT_REGELN={
+  DE:[[1,1,"Neujahr"],["O",-2,"Karfreitag"],["O",1,"Ostermontag"],[5,1,"Tag der Arbeit"],["O",39,"Christi Himmelfahrt"],
+    ["O",50,"Pfingstmontag"],[10,3,"Tag der Deutschen Einheit"],[12,25,"1. Weihnachtstag"],[12,26,"2. Weihnachtstag"]],
+  "DE-BW":[[1,6,"Heilige Drei Könige"],["O",60,"Fronleichnam"],[11,1,"Allerheiligen"]],
+  "DE-BY":[[1,6,"Heilige Drei Könige"],["O",60,"Fronleichnam"],[8,15,"Mariä Himmelfahrt"],[11,1,"Allerheiligen"]],
+  "DE-BY-A":[[8,8,"Augsburger Hohes Friedensfest"]],
+  "DE-BE":[[3,8,"Internationaler Frauentag",{ab:2019}],[5,8,"Tag der Befreiung",{ab:2025,bis:2025}],
+    [6,17,"Jahrestag des Volksaufstands 1953",{ab:2028,bis:2028}]],
+  "DE-BB":[["O",0,"Ostersonntag"],["O",49,"Pfingstsonntag"],[10,31,"Reformationstag"]],
+  "DE-HB":[[10,31,"Reformationstag",{ab:2018}]],
+  "DE-HH":[[10,31,"Reformationstag",{ab:2018}]],
+  "DE-HE":[["O",60,"Fronleichnam"]],
+  "DE-MV":[[3,8,"Internationaler Frauentag",{ab:2023}],[10,31,"Reformationstag"]],
+  "DE-NI":[[10,31,"Reformationstag",{ab:2018}]],
+  "DE-NW":[["O",60,"Fronleichnam"],[11,1,"Allerheiligen"]],
+  "DE-RP":[["O",60,"Fronleichnam"],[11,1,"Allerheiligen"]],
+  "DE-SL":[["O",60,"Fronleichnam"],[8,15,"Mariä Himmelfahrt"],[11,1,"Allerheiligen"]],
+  "DE-SN":[[10,31,"Reformationstag"],["W",11,16,3,"Buß- und Bettag"]],
+  "DE-ST":[[1,6,"Heilige Drei Könige"],[10,31,"Reformationstag"]],
+  "DE-SH":[[10,31,"Reformationstag",{ab:2018}]],
+  "DE-TH":[[9,20,"Weltkindertag",{ab:2019}],[10,31,"Reformationstag"]],
+  CH:[[1,1,"Neujahr"],["O",39,"Auffahrt"],[8,1,"Bundesfeiertag"],[12,25,"Weihnachten"]],
+  "CH-AG":[[1,2,"Berchtoldstag"],["O",-2,"Karfreitag"],["O",1,"Ostermontag"],[5,1,"Tag der Arbeit"],["O",50,"Pfingstmontag"],
+    ["O",60,"Fronleichnam"],[8,15,"Mariä Himmelfahrt"],[11,1,"Allerheiligen"],[12,8,"Mariä Empfängnis"],[12,26,"Stephanstag"]],
+  "CH-AI":[["O",-2,"Karfreitag"],["O",1,"Ostermontag"],["O",50,"Pfingstmontag"],["O",60,"Fronleichnam"],[8,15,"Mariä Himmelfahrt"],
+    [11,1,"Allerheiligen"],[12,8,"Mariä Empfängnis"],[12,26,"Stephanstag",{bezugWt:[12,25,[1,5]]}]],
+  "CH-AR":[["O",-2,"Karfreitag"],["O",1,"Ostermontag"],["O",50,"Pfingstmontag"],[12,26,"Stephanstag",{bezugWt:[12,25,[1,5]]}]],
+  "CH-BE":[[1,2,"Berchtoldstag"],["O",-2,"Karfreitag"],["O",1,"Ostermontag"],["O",50,"Pfingstmontag"],[12,26,"Stephanstag"]],
+  "CH-BL":[["O",-2,"Karfreitag"],["O",1,"Ostermontag"],[5,1,"Tag der Arbeit"],["O",50,"Pfingstmontag"],[12,26,"Stephanstag"]],
+  "CH-BS":[["O",-2,"Karfreitag"],["O",1,"Ostermontag"],[5,1,"Tag der Arbeit"],["O",50,"Pfingstmontag"],[12,26,"Stephanstag"]],
+  "CH-FR":[["O",-2,"Karfreitag"]],
+  "CH-GE":[["O",-2,"Karfreitag"],["O",1,"Ostermontag"],["O",50,"Pfingstmontag"],["W",9,5,4,"Genfer Bettag"],
+    [12,31,"Wiederherstellung der Republik"]],
+  "CH-GL":[["O",-2,"Karfreitag"],["O",1,"Ostermontag"],["W",4,1,4,"Näfelser Fahrt",{karwoche:1}],["O",50,"Pfingstmontag"],
+    [11,1,"Allerheiligen"],[12,26,"Stephanstag"]],
+  "CH-GR":[["O",1,"Ostermontag"],["O",50,"Pfingstmontag"],[12,26,"Stephanstag"]],
+  "CH-JU":[[1,2,"Berchtoldstag"],["O",-2,"Karfreitag"],["O",1,"Ostermontag"],[5,1,"Tag der Arbeit"],["O",50,"Pfingstmontag"],
+    ["O",60,"Fronleichnam"],[6,23,"Fest der Unabhängigkeit"],[8,15,"Mariä Himmelfahrt"],[11,1,"Allerheiligen"]],
+  "CH-LU":[[1,2,"Berchtoldstag"],["O",-2,"Karfreitag"],["O",1,"Ostermontag"],["O",50,"Pfingstmontag"],["O",60,"Fronleichnam"],
+    [8,15,"Mariä Himmelfahrt"],[11,1,"Allerheiligen"],[12,8,"Mariä Empfängnis"],[12,26,"Stephanstag"]],
+  "CH-NE":[[1,2,"Berchtoldstag",{nurWt:[1]}],[3,1,"Ausrufung der Republik"],["O",-2,"Karfreitag"],[5,1,"Tag der Arbeit"],
+    ["O",60,"Fronleichnam"],[12,26,"Stephanstag",{nurWt:[1]}]],
+  "CH-NW":[[3,19,"Josefstag"],["O",-2,"Karfreitag"],["O",60,"Fronleichnam"],[8,15,"Mariä Himmelfahrt"],[11,1,"Allerheiligen"],
+    [12,8,"Mariä Empfängnis"]],
+  "CH-OW":[["O",-2,"Karfreitag"],["O",60,"Fronleichnam"],[8,15,"Mariä Himmelfahrt"],[9,25,"Bruder Klaus"],[11,1,"Allerheiligen"],
+    [12,8,"Mariä Empfängnis"]],
+  "CH-SG":[["O",-2,"Karfreitag"],["O",1,"Ostermontag"],["O",50,"Pfingstmontag"],[11,1,"Allerheiligen"],[12,26,"Stephanstag"]],
+  "CH-SH":[["O",-2,"Karfreitag"],["O",1,"Ostermontag"],[5,1,"Tag der Arbeit"],["O",50,"Pfingstmontag"],[12,26,"Stephanstag"]],
+  "CH-SO":[["O",-2,"Karfreitag"]],
+  "CH-SZ":[[1,6,"Heilige Drei Könige"],[3,19,"Josefstag"],["O",-2,"Karfreitag"],["O",1,"Ostermontag"],["O",50,"Pfingstmontag"],
+    ["O",60,"Fronleichnam"],[8,15,"Mariä Himmelfahrt"],[11,1,"Allerheiligen"],[12,8,"Mariä Empfängnis"],[12,26,"Stephanstag"]],
+  "CH-TG":[[1,2,"Berchtoldstag"],["O",-2,"Karfreitag"],["O",1,"Ostermontag"],[5,1,"Tag der Arbeit"],["O",50,"Pfingstmontag"],
+    [12,26,"Stephanstag"]],
+  "CH-TI":[[1,6,"Heilige Drei Könige"],[3,19,"Josefstag"],["O",1,"Ostermontag"],[5,1,"Tag der Arbeit"],["O",50,"Pfingstmontag"],
+    ["O",60,"Fronleichnam"],[6,29,"Peter und Paul"],[8,15,"Mariä Himmelfahrt"],[11,1,"Allerheiligen"],[12,8,"Mariä Empfängnis"],
+    [12,26,"Stephanstag"]],
+  "CH-UR":[[1,6,"Heilige Drei Könige"],[3,19,"Josefstag"],["O",-2,"Karfreitag"],["O",1,"Ostermontag"],["O",50,"Pfingstmontag"],
+    ["O",60,"Fronleichnam"],[8,15,"Mariä Himmelfahrt"],[11,1,"Allerheiligen"],[12,8,"Mariä Empfängnis"],
+    [12,26,"Stephanstag",{bezugWt:[12,25,[1,5]]}]],
+  "CH-VD":[[1,2,"Berchtoldstag"],["O",-2,"Karfreitag"],["O",1,"Ostermontag"],["O",50,"Pfingstmontag"],["W",9,16,1,"Bettagsmontag"]],
+  "CH-VS":[[3,19,"Josefstag"],["O",60,"Fronleichnam"],[8,15,"Mariä Himmelfahrt"],[11,1,"Allerheiligen"],[12,8,"Mariä Empfängnis"]],
+  "CH-ZG":[["O",-2,"Karfreitag"],["O",60,"Fronleichnam"],[8,15,"Mariä Himmelfahrt"],[11,1,"Allerheiligen"],[12,8,"Mariä Empfängnis"]],
+  "CH-ZH":[["O",-2,"Karfreitag"],["O",1,"Ostermontag"],[5,1,"Tag der Arbeit"],["O",50,"Pfingstmontag"],[12,26,"Stephanstag"]],
+  AT:[[1,1,"Neujahr"],[1,6,"Heilige Drei Könige"],["O",1,"Ostermontag"],[5,1,"Staatsfeiertag"],["O",39,"Christi Himmelfahrt"],
+    ["O",50,"Pfingstmontag"],["O",60,"Fronleichnam"],[8,15,"Mariä Himmelfahrt"],[10,26,"Nationalfeiertag"],[11,1,"Allerheiligen"],
+    [12,8,"Mariä Empfängnis"],[12,25,"Christtag"],[12,26,"Stephanstag"]],
+  IT:[[1,1,"Neujahr"],[1,6,"Heilige Drei Könige"],["O",0,"Ostersonntag"],["O",1,"Ostermontag"],[4,25,"Tag der Befreiung"],
+    [5,1,"Tag der Arbeit"],[6,2,"Tag der Republik"],[8,15,"Mariä Himmelfahrt"],[10,4,"Tag des heiligen Franz von Assisi",{ab:2026}],
+    [11,1,"Allerheiligen"],[12,8,"Mariä Empfängnis"],[12,25,"Weihnachten"],[12,26,"Stephanstag"]],
+  SI:[[1,1,"Neujahr"],[1,2,"Neujahr, 2. Tag"],[2,8,"Prešeren-Tag"],["O",0,"Ostersonntag"],["O",1,"Ostermontag"],
+    [4,27,"Tag des Widerstands"],[5,1,"Tag der Arbeit"],[5,2,"Tag der Arbeit, 2. Tag"],["O",49,"Pfingstsonntag"],
+    [6,25,"Tag der Staatlichkeit"],[8,14,"Tag der Solidarität",{ab:2023,bis:2023}],[8,15,"Mariä Himmelfahrt"],[10,31,"Reformationstag"],
+    [11,1,"Allerheiligen"],
+    [12,25,"Weihnachten"],[12,26,"Tag der Unabhängigkeit und Einheit"]],
+  NO:[[1,1,"Neujahr"],["O",-3,"Gründonnerstag"],["O",-2,"Karfreitag"],["O",0,"Ostersonntag"],["O",1,"Ostermontag"],
+    [5,1,"Tag der Arbeit"],["O",39,"Christi Himmelfahrt"],[5,17,"Verfassungstag"],["O",49,"Pfingstsonntag"],["O",50,"Pfingstmontag"],
+    [12,25,"1. Weihnachtstag"],[12,26,"2. Weihnachtstag"]],
+  SE:[[1,1,"Neujahr"],[1,6,"Heilige Drei Könige"],["O",-2,"Karfreitag"],["O",0,"Ostersonntag"],["O",1,"Ostermontag"],
+    [5,1,"Tag der Arbeit"],["O",39,"Christi Himmelfahrt"],["O",49,"Pfingstsonntag"],[6,6,"Nationalfeiertag"],
+    ["W",6,20,6,"Mittsommertag"],["W",10,31,6,"Allerheiligen"],[12,25,"1. Weihnachtstag"],[12,26,"2. Weihnachtstag"]],
+  FI:[[1,1,"Neujahr"],[1,6,"Heilige Drei Könige"],["O",-2,"Karfreitag"],["O",0,"Ostersonntag"],["O",1,"Ostermontag"],
+    [5,1,"Tag der Arbeit"],["O",39,"Christi Himmelfahrt"],["O",49,"Pfingstsonntag"],["W",6,19,5,"Mittsommerabend"],
+    ["W",6,20,6,"Mittsommertag"],["W",10,31,6,"Allerheiligen"],[12,6,"Unabhängigkeitstag"],[12,24,"Heiligabend"],
+    [12,25,"1. Weihnachtstag"],[12,26,"2. Weihnachtstag"]],
+  FR:[[1,1,"Neujahr"],["O",1,"Ostermontag"],[5,1,"Tag der Arbeit"],[5,8,"Tag des Sieges 1945"],["O",39,"Christi Himmelfahrt"],
+    ["O",50,"Pfingstmontag"],[7,14,"Nationalfeiertag"],[8,15,"Mariä Himmelfahrt"],[11,1,"Allerheiligen"],[11,11,"Waffenstillstand 1918"],
+    [12,25,"Weihnachten"]],
+  "FR-AM":[["O",-2,"Karfreitag"],[12,26,"Stephanstag"]],
+  AD:[[1,1,"Neujahr"],[1,6,"Heilige Drei Könige"],["O",-48,"Karnevalsmontag"],[3,14,"Tag der Verfassung"],["O",-2,"Karfreitag"],
+    ["O",1,"Ostermontag"],[5,1,"Tag der Arbeit"],["O",50,"Pfingstmontag"],[8,15,"Mariä Himmelfahrt"],[9,8,"Unsere Liebe Frau von Meritxell"],
+    [11,1,"Allerheiligen"],[12,8,"Mariä Empfängnis"],[12,25,"Weihnachten"],[12,26,"Stephanstag"]],
+  ES:[[1,1,"Neujahr",{keinSo:1}],[1,6,"Heilige Drei Könige",{keinSo:1}],["O",-2,"Karfreitag"],[5,1,"Tag der Arbeit",{keinSo:1}],
+    [8,15,"Mariä Himmelfahrt",{keinSo:1}],[10,12,"Nationalfeiertag",{keinSo:1}],[11,1,"Allerheiligen",{keinSo:1}],
+    [12,6,"Tag der Verfassung",{keinSo:1}],[12,8,"Mariä Empfängnis",{keinSo:1}],[12,25,"Weihnachten",{keinSo:1}]],
+  PL:[[1,1,"Neujahr"],[1,6,"Heilige Drei Könige"],["O",0,"Ostersonntag"],["O",1,"Ostermontag"],[5,1,"Tag der Arbeit"],
+    [5,3,"Verfassungstag"],["O",49,"Pfingstsonntag"],["O",60,"Fronleichnam"],[8,15,"Mariä Himmelfahrt"],[11,1,"Allerheiligen"],
+    [11,11,"Unabhängigkeitstag"],[12,24,"Heiligabend",{ab:2025}],[12,25,"1. Weihnachtstag"],[12,26,"2. Weihnachtstag"]],
+  CZ:[[1,1,"Neujahr"],["O",-2,"Karfreitag"],["O",1,"Ostermontag"],[5,1,"Tag der Arbeit"],[5,8,"Tag des Sieges"],
+    [7,5,"Kyrill und Method"],[7,6,"Jan-Hus-Tag"],[9,28,"Tag der tschechischen Staatlichkeit"],[10,28,"Gründung der Tschechoslowakei"],
+    [11,17,"Tag des Kampfes für Freiheit und Demokratie"],[12,24,"Heiligabend"],[12,25,"1. Weihnachtstag"],[12,26,"2. Weihnachtstag"]],
+  SK:[[1,1,"Neujahr"],[1,6,"Heilige Drei Könige"],["O",-2,"Karfreitag"],["O",1,"Ostermontag"],
+    [5,1,"Tag der Arbeit"],[5,8,"Tag des Sieges über den Faschismus",{nicht:[2026]}],[7,5,"Kyrill und Method"],
+    [8,29,"Slowakischer Nationalaufstand"],[9,1,"Tag der Verfassung",{bis:2023}],[9,15,"Schmerzhafte Muttergottes",{nicht:[2026]}],
+    [11,1,"Allerheiligen"],[11,17,"Tag des Kampfes für Freiheit und Demokratie",{bis:2024}],
+    [12,24,"Heiligabend"],[12,25,"1. Weihnachtstag"],[12,26,"2. Weihnachtstag"]],
+  HR:[[1,1,"Neujahr"],[1,6,"Heilige Drei Könige"],["O",0,"Ostersonntag"],["O",1,"Ostermontag"],[5,1,"Tag der Arbeit"],
+    [5,30,"Tag der Staatlichkeit"],["O",60,"Fronleichnam"],[6,22,"Tag des antifaschistischen Kampfes"],[8,5,"Tag des Sieges"],
+    [8,15,"Mariä Himmelfahrt"],[11,1,"Allerheiligen"],[11,18,"Gedenktag für die Opfer des Heimatkriegs"],[12,25,"Weihnachten"],[12,26,"Stephanstag"]],
+  XX:[]
+};
+/* Auswahlliste und Anzeigename je Ort, in der Reihenfolge der Auswahlfelder. */
+const FT_ORTE=[["DE","Deutschland (nur bundesweit)","Deutschland"],["DE-BW","Baden-Württemberg","Deutschland"],["DE-BY","Bayern","Deutschland"],
+  ["DE-BY-A","Bayern, Stadt Augsburg","Deutschland"],["DE-BE","Berlin","Deutschland"],["DE-BB","Brandenburg","Deutschland"],
+  ["DE-HB","Bremen","Deutschland"],["DE-HH","Hamburg","Deutschland"],["DE-HE","Hessen","Deutschland"],
+  ["DE-MV","Mecklenburg-Vorpommern","Deutschland"],["DE-NI","Niedersachsen","Deutschland"],["DE-NW","Nordrhein-Westfalen","Deutschland"],
+  ["DE-RP","Rheinland-Pfalz","Deutschland"],["DE-SL","Saarland","Deutschland"],["DE-SN","Sachsen","Deutschland"],
+  ["DE-ST","Sachsen-Anhalt","Deutschland"],["DE-SH","Schleswig-Holstein","Deutschland"],["DE-TH","Thüringen","Deutschland"],
+  ["CH","Schweiz (ohne Kanton)","Schweiz"],["CH-AG","Kanton Aargau","Schweiz"],["CH-AI","Kanton Appenzell Innerrhoden","Schweiz"],
+  ["CH-AR","Kanton Appenzell Ausserrhoden","Schweiz"],["CH-BE","Kanton Bern","Schweiz"],["CH-BL","Kanton Basel-Landschaft","Schweiz"],
+  ["CH-BS","Kanton Basel-Stadt","Schweiz"],["CH-FR","Kanton Freiburg","Schweiz"],["CH-GE","Kanton Genf","Schweiz"],
+  ["CH-GL","Kanton Glarus","Schweiz"],["CH-GR","Kanton Graubünden","Schweiz"],["CH-JU","Kanton Jura","Schweiz"],
+  ["CH-LU","Kanton Luzern","Schweiz"],["CH-NE","Kanton Neuenburg","Schweiz"],["CH-NW","Kanton Nidwalden","Schweiz"],
+  ["CH-OW","Kanton Obwalden","Schweiz"],["CH-SG","Kanton St. Gallen","Schweiz"],["CH-SH","Kanton Schaffhausen","Schweiz"],
+  ["CH-SO","Kanton Solothurn","Schweiz"],["CH-SZ","Kanton Schwyz","Schweiz"],["CH-TG","Kanton Thurgau","Schweiz"],
+  ["CH-TI","Kanton Tessin","Schweiz"],["CH-UR","Kanton Uri","Schweiz"],["CH-VD","Kanton Waadt","Schweiz"],["CH-VS","Kanton Wallis","Schweiz"],
+  ["CH-ZG","Kanton Zug","Schweiz"],["CH-ZH","Kanton Zürich","Schweiz"],
+  ["AT","Österreich","Weitere Länder"],["IT","Italien","Weitere Länder"],["SI","Slowenien","Weitere Länder"],["NO","Norwegen","Weitere Länder"],
+  ["SE","Schweden","Weitere Länder"],["FI","Finnland","Weitere Länder"],["FR","Frankreich","Weitere Länder"],
+  ["FR-AM","Frankreich, Elsass-Mosel","Weitere Länder"],["AD","Andorra","Weitere Länder"],["ES","Spanien (nur landesweit)","Weitere Länder"],
+  ["PL","Polen","Weitere Länder"],["CZ","Tschechien","Weitere Länder"],["SK","Slowakei","Weitere Länder"],["HR","Kroatien","Weitere Länder"],
+  ["XX","Anderes Land (von Hand im Tag)","Weitere Länder"]];
+/* Kurzname für den Zusatz im Nachweis, z. B. "Neujahr, 2. Tag (Slowenien)". */
+const FT_KURZ={"DE-BY-A":"Augsburg","FR-AM":"Elsass-Mosel","XX":""};
+function ortGueltig(ort){return Object.prototype.hasOwnProperty.call(FT_REGELN,ort)?ort:"DE";}
+/* Voller Name für Auswahlfelder und Hinweise, z. B. "Bayern" oder "Kanton Wallis". */
+function ortLabel(ort){const e=FT_ORTE.find(x=>x[0]===ortGueltig(ort));return e?e[1]:"";}
+function ortName(ort){const k=ortGueltig(ort);if(k in FT_KURZ)return FT_KURZ[k];const e=FT_ORTE.find(x=>x[0]===k);return e?e[1].replace(/ \(.*\)$/,""):"";}
+/* Gregorianischer Ostersonntag (anonymer Algorithmus nach Meeus/Jones/Butcher). */
+function ostersonntag(j){const a=j%19,b=Math.floor(j/100),c=j%100,d=Math.floor(b/4),e=b%4,f=Math.floor((b+8)/25),g=Math.floor((b-f+1)/3),
+  h=(19*a+b-d-g+15)%30,i=Math.floor(c/4),k=c%4,l=(32+2*e+2*i-h-k)%7,m=Math.floor((a+11*h+22*l)/451),n=h+l-7*m+114;
+  return j+"-"+String(Math.floor(n/31)).padStart(2,"0")+"-"+String(n%31+1).padStart(2,"0");}
+/* Datum plus Tage, in UTC gerechnet (keine Sommerzeit-Sprünge). */
+function plusTage(iso,n){const t=new Date(iso+"T00:00:00Z");if(isNaN(t))return "";t.setUTCDate(t.getUTCDate()+n);return t.toISOString().slice(0,10);}
+function wochentag(iso){return new Date(iso+"T00:00:00Z").getUTCDay();}
+const FT_CACHE={};
+/* Gesetzliche Feiertage eines Orts in einem Jahr: [{datum,name,bund}], nach Datum sortiert. bund = aus den bundesweiten Regeln "DE". */
+function feiertageJahr(ort,jahr){
+  const k=ortGueltig(ort),ck=k+jahr;if(FT_CACHE[ck])return FT_CACHE[ck];
+  const kette=[];for(let x=k;x;x=x.lastIndexOf("-")>0?x.slice(0,x.lastIndexOf("-")):"")kette.unshift(x);
+  const os=ostersonntag(jahr),pad=v=>String(v).padStart(2,"0"),aus={};
+  kette.forEach(teil=>(FT_REGELN[teil]||[]).forEach(r=>{
+    const opt=typeof r[r.length-1]==="object"?r[r.length-1]:{};let iso,name;
+    if(r[0]==="O"){iso=plusTage(os,r[1]);name=r[2];}
+    else if(r[0]==="W"){iso=jahr+"-"+pad(r[1])+"-"+pad(r[2]);iso=plusTage(iso,(r[3]-wochentag(iso)+7)%7);name=r[4];}
+    else{iso=jahr+"-"+pad(r[0])+"-"+pad(r[1]);name=r[2];}
+    if(opt.ab&&jahr<opt.ab||opt.bis&&jahr>opt.bis||opt.nicht&&opt.nicht.includes(jahr))return;
+    const wt=wochentag(iso);
+    if(opt.keinSo&&wt===0||opt.nurWt&&!opt.nurWt.includes(wt))return;
+    if(opt.bezugWt&&opt.bezugWt[2].includes(wochentag(jahr+"-"+pad(opt.bezugWt[0])+"-"+pad(opt.bezugWt[1]))))return;
+    if(opt.karwoche&&iso===plusTage(os,-3))iso=plusTage(iso,7);
+    if(!aus[iso])aus[iso]={datum:iso,name,bund:teil==="DE"};}));
+  /* Eingefroren, damit kein Aufrufer die Liste im Cache verändert. */
+  return FT_CACHE[ck]=Object.freeze(Object.values(aus).sort((a,b)=>a.datum.localeCompare(b.datum)));
+}
+/* Feiertag an diesem Datum und Ort mit Zusatz für den Nachweis, sonst "". Oster- und Pfingstsonntag zählen immer (PdTV 9.5). */
+function feiertagAuto(iso,ort){
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(iso||""))return "";const j=+iso.slice(0,4),k=ortGueltig(ort);if(j<1900)return "";/* halb getippte Jahre wie 0002 */
+  const f=feiertageJahr(k,j).find(x=>x.datum===iso);const os=ostersonntag(j);
+  if(iso===os)return "Ostersonntag";if(iso===plusTage(os,49))return "Pfingstsonntag";
+  if(!f)return "";const z=ortName(k);return f.bund||!z?f.name:f.name+" ("+z+")";
+}
+/* Arbeitsort aus dem Produktionsort der Dispo erraten (V4.3). Liefert einen Ortsschlüssel oder null (nicht erkannt).
+   Reihenfolge: bekannte Orte (Kantone, deutsche Großstädte), Länderkürzel und Präfixe wie "I-Bormio", deutsche Ländernamen,
+   zuletzt eine fünfstellige deutsche Postleitzahl über ihre Leitregion. Nur ein Vorschlag, im Import sichtbar und änderbar. */
+/* Ganze Wörter: davor Textanfang oder kein Buchstabe, danach kein Buchstabe. So ist „Hessen“ nicht Essen, „Pension“ nicht Sion
+   und „Berliner Allee“ nicht Berlin. Ohne Lookbehind, das ältere Safari nicht kennt. Münster fehlt bewusst (Ulmer Münster),
+   die Stadt erkennt die Postleitzahl. */
+const FT_W=s=>new RegExp("(?:^|[^\\p{L}])(?:"+s+")(?!\\p{L})","iu");
+const FT_ORTSLISTE=[
+  [FT_W("wengen|adelboden|grindelwald|gstaad|m[üu]rren|lauterbrunnen|bern"),"CH-BE"],[FT_W("crans|zermatt|saas[- ]fee|verbier|visp|brig|sion|sitten"),"CH-VS"],
+  [FT_W("st\\.? ?moritz|davos|lenzerheide|laax|flims|chur|arosa"),"CH-GR"],[FT_W("engelberg"),"CH-OW"],[FT_W("z[üu]rich"),"CH-ZH"],[FT_W("basel"),"CH-BS"],
+  [FT_W("genf|gen[eè]ve"),"CH-GE"],[FT_W("lausanne|villars"),"CH-VD"],[FT_W("luzern"),"CH-LU"],[FT_W("lugano|ascona|locarno"),"CH-TI"],[FT_W("st\\.? ?gallen"),"CH-SG"],
+  [FT_W("augsburg"),"DE-BY-A"],[FT_W("m[üu]nchen|n[üu]rnberg|allianz arena|ebersberg(?:er)?|garmisch|oberstdorf|berchtesgaden|regensburg|w[üu]rzburg|ingolstadt|rosenheim|ruhpolding"),"DE-BY"],
+  [FT_W("mainz|ludwigshafen|koblenz|kaiserslautern|trier"),"DE-RP"],[FT_W("berlin"),"DE-BE"],[FT_W("hamburg"),"DE-HH"],[FT_W("bremen|bremerhaven"),"DE-HB"],
+  [FT_W("k[öo]ln|d[üu]sseldorf|dortmund|essen|gelsenkirchen|m[öo]nchengladbach|leverkusen|bochum|bonn"),"DE-NW"],
+  [FT_W("frankfurt am main|frankfurt ?\\/ ?m(?:ain)?|frankfurt a\\. ?m\\.?|flughafen frankfurt|frankfurt airport|fraport|flughafen fra|wiesbaden|darmstadt|kassel|offenbach"),"DE-HE"],
+  [FT_W("stuttgart|karlsruhe|freiburg im breisgau|mannheim|heidelberg|sinsheim"),"DE-BW"],
+  [FT_W("leipzig|dresden|chemnitz"),"DE-SN"],[FT_W("hannover|wolfsburg|braunschweig|osnabr[üu]ck"),"DE-NI"],[FT_W("magdeburg|halle \\(saale\\)"),"DE-ST"],
+  [FT_W("erfurt|jena|oberhof"),"DE-TH"],[FT_W("potsdam|cottbus"),"DE-BB"],[FT_W("rostock|schwerin"),"DE-MV"],[FT_W("kiel|l[üu]beck"),"DE-SH"],[FT_W("saarbr[üu]cken"),"DE-SL"]];
+const FT_CODES={SUI:"CH",SCHWEIZ:"CH",ITA:"IT",ITALIEN:"IT",SLO:"SI",SVN:"SI",SLOWENIEN:"SI",NOR:"NO",NORWEGEN:"NO",AUT:"AT","ÖSTERREICH":"AT",
+  SWE:"SE",SCHWEDEN:"SE",FIN:"FI",FINNLAND:"FI",FRA:"FR",FRANKREICH:"FR",AND:"AD",ANDORRA:"AD",ESP:"ES",SPANIEN:"ES",POL:"PL",POLEN:"PL",
+  CZE:"CZ",TSCHECHIEN:"CZ",SVK:"SK",SLOWAKEI:"SK",CRO:"HR",HRV:"HR",KROATIEN:"HR",GER:"DE",DEU:"DE",DEUTSCHLAND:"DE"};
+/* Nur Präfixe, die in echten Dispos vorkommen oder eindeutig sind. "S-", "E-", "D-" usw. fehlen bewusst (S-Bahn, E-Werk). */
+const FT_PRAEFIX={I:"IT",A:"AT",CH:"CH",SLO:"SI",PL:"PL",CZ:"CZ",SK:"SK",HR:"HR",FIN:"FI",AND:"AD",F:"FR",E:"ES",N:"NO",S:"SE"};
+/* Kürzel in Klammern, auch einbuchstabig: „Innsbruck (A)“, „Bormio (I)“. */
+const FT_KLAMMER={A:"AT",I:"IT",CH:"CH",F:"FR",E:"ES",D:"DE",PL:"PL",CZ:"CZ",SK:"SK",HR:"HR",SLO:"SI"};
+/* Postleitzahl-Leitregion (erste zwei Ziffern) -> Bundesland, bei gemischten Regionen die Mehrheit. */
+const FT_PLZ="01SN02SN03BB04SN06ST07TH08SN09SN10BE12BE13BE14BB15BB16BB17MV18MV19MV20HH21HH22HH23SH24SH25SH26NI27NI28HB29NI30NI31NI32NW33NW34HE35HE36HE37NI38NI39ST40NW41NW42NW44NW45NW46NW47NW48NW49NI50NW51NW52NW53NW54RP55RP56RP57NW58NW59NW60HE61HE63HE64HE65HE66SL67RP68BW69BW70BW71BW72BW73BW74BW75BW76BW77BW78BW79BW80BY81BY82BY83BY84BY85BY86BY87BY88BW89BW90BY91BY92BY93BY94BY95BY96BY97BY98TH99TH";
+function ortAusText(text){
+  /* „Fränkische Schweiz“, „Sächsische Schweiz“ usw. sind deutsche Landschaften, nicht die Schweiz. */
+  const t=String(text||"").normalize("NFC").replace(/\p{L}+ische\s+Schweiz/giu,"");if(!t.trim())return null;
+  for(const [re,ort] of FT_ORTSLISTE)if(re.test(t))return ort;
+  /* Präfixe vor Ort oder Postleitzahl („I-Bormio“, „A-6020 Innsbruck“). Einbuchstabige vor Buchstaben nur am Textanfang
+     (nicht „Halle A-Nord“), vor Ziffern überall („F-73150“). „S-Bahn“ und „E-Werk“ fallen so nicht darunter. */
+  const pr=t.match(/(?:^|[\s,(\/])(CH|SLO|PL|CZ|SK|HR|FIN|AND)-(?=\p{Lu}|\d{4})/u)||t.match(/^\s*(I|A)-(?=\p{Lu})/u)
+    ||t.match(/(?:^|[\s,(\/])(I|A|F|E|N|S)-(?=\d{4})/u);if(pr)return FT_PRAEFIX[pr[1]];
+  const kl=t.match(/\((A|I|CH|F|E|D|PL|CZ|SK|HR|SLO)\)/);if(kl)return FT_KLAMMER[kl[1]];
+  for(const w of t.match(/\p{L}+/gu)||[]){const k=w.length<=3?w:w.toUpperCase();if(Object.prototype.hasOwnProperty.call(FT_CODES,k)&&(w.length>3||w===w.toUpperCase()))return FT_CODES[k];}
+  /* Deutsche Postleitzahl, nicht nach einem fremden Präfix wie „I-39100“, aber nach „D-80331“. */
+  const plz=t.match(/(?:^|[^\dA-Za-z-]|D-)(\d{5})(?!\d)/);if(plz){const i=FT_PLZ.indexOf(plz[1].slice(0,2));if(i>=0&&i%4===0)return "DE-"+FT_PLZ.slice(i+2,i+4);}
+  return null;
+}
+/* Welcher Ort gilt (Entscheidung 30.09.2026): fest angestellt immer der Dienstort aus den Einstellungen, frei der Arbeitsort des
+   Auftrags. Fehlt er oder ist er unbekannt, gilt ebenfalls die Einstellung. */
+function feiertagOrt(o){const eigen=orderStatus(o)!=="fest"&&o&&o.feiertagOrt;return ortGueltig(eigen&&ortGueltig(eigen)===eigen?eigen:S.feiertagOrt);}
+/* Feiertag eines Tags: eigener Eintrag im Tag (auch "" = bewusst keiner) vor dem automatischen Wert. */
+function feiertagTag(o,d){return typeof d.feiertag==="string"?d.feiertag.trim():feiertagAuto(d.datum,feiertagOrt(o));}
+/* === FEIERTAGE-END === */
 /* === TARIF-BEGIN === Verdienst nach Tarif (V4.1, freiwillig). Reine Rechnung ohne DOM, getestet in tests/tarif.test.mjs.
    Grundlage: PdTV 6.2 und 9.1-9.7 sowie echte ZDF-Abrechnungen Januar bis Juli 2026: Stundensatz = Tagessatz / 7,7, wie beim
    ZDF auf drei Stellen gerundet (V4.2), Mehrarbeit in halben Stunden, Zuschlag 25 % der Mehrarbeitsvergütung. Mehrarbeit und
-   Zuschläge (Nacht, Sonntag) nur bei Tagessatz bis 336,06 EUR (9.1). Nacht (22-6 Uhr, 25 %) und Sonntag (50 %) auf
+   Zuschläge (Nacht, Sonntag, Feiertag) nur bei Tagessatz bis 336,06 EUR (9.1). Nacht (22-6 Uhr, 25 %) und Sonntag (50 %) auf
    Arbeitszeit ohne Reise und ohne FLINK-Pause, bei Überschneidung nur der höhere Zuschlag, an Abrechnungen geprüft (V4.2).
    Reisezeit zählt bei der Mehrarbeit noch wie Arbeitszeit, ohne Kappung nach 6.7 und ohne Zuschlagsverbot nach 9.7, weil
-   das ZDF Fahrten nicht einheitlich wertet (siehe Protokoll). Feiertage bewusst noch nicht. */
+   das ZDF Fahrten nicht einheitlich wertet (siehe Protokoll). Feiertag 100 % nach dem Arbeitsort, siehe FEIERTAGE-Block (V4.3). */
 const TARIF_TAG_MIN=462;/* 7,7 Std am Tag (PdTV 9.2): Schwelle für Mehrarbeit, fest nach Tarif und unabhängig vom eigenen Soll */
 /* Kaufmännisch auf Cent: toPrecision(12) glättet Gleitkomma-Reste wie 2.135*100 = 213.49999999999997. */
 function runde2(x){return Math.round(+(x*100).toPrecision(12))/100;}
 function funktionAus(txt){const t=String(txt||"");if(/assist/i.test(t))return "assistent";if(/kamera|\bKA\b/i.test(t))return "kamera";return null;}
 function orderFunktion(o){return (o&&o.funktion)||S.funktion||"assistent";}
 function orderSatz(o){const v=orderFunktion(o)==="kamera"?S.satzKamera:S.satzAssist;return typeof v==="number"&&v>0?v:null;}
-/* Minuten mit Nacht- bzw. Sonntagszuschlag in der Nachweis-Spanne, dazu die übersprungenen Reiseminuten. Reise zählt
-   nicht (PdTV 9.7). Eine Fahrt mit nur einem Ende (der Import legt anreiseEnde und rueckBeginn leer an) gilt als
-   30 Minuten lang: Anreise ohne Ende = anreise bis anreise+30, Rückreise ohne Beginn = rueck-30 bis rueck.
+/* Minuten mit Feiertags-, Sonntags- bzw. Nachtzuschlag in der Nachweis-Spanne, dazu die übersprungenen Reiseminuten. Reise
+   zählt nicht (PdTV 9.7). Je Minute gilt nur der höchste Zuschlag: Feiertag vor Sonntag vor Nacht (9.5). ft[0] und ft[1]
+   sagen, ob der Kalendertag des Einsatzes bzw. der Folgetag (Einsatz über Mitternacht) ein Feiertag ist (V4.3).
+   Eine Fahrt mit nur einem Ende (der Import legt anreiseEnde und rueckBeginn leer an) gilt als 30 Minuten lang: Anreise
+   ohne Ende = anreise bis anreise+30, Rückreise ohne Beginn = rueck-30 bis rueck.
    Die Pause ist hier noch nicht abgezogen, das übernimmt tarifTag über die anerkannte Zeit minus Reise. */
-function tarifZuschlagMin(d,endeHm){
-  const b=hm2min(d.einsatz),e=hm2min(endeHm);if(b==null||e==null||!d.datum)return {nacht:0,sonntag:0,reise:0};
+function tarifZuschlagMin(d,endeHm,ft){
+  const b=hm2min(d.einsatz),e=hm2min(endeHm);if(b==null||e==null||!d.datum)return {nacht:0,sonntag:0,feiertag:0,reise:0};
   const len=dur(b,e);const reise=[];
   const iv=(von,bis)=>{let a=hm2min(von),z=hm2min(bis);if(a==null&&z==null)return;if(z==null)z=(a+30)%1440;if(a==null)a=(z+1410)%1440;
     /* Beginnt die Fahrt vor dem Einsatzbeginn und reicht in die Spanne hinein, zählt nur der überlappende Teil. */
     const l=dur(a,z);let s=a-b;if(s<0&&s+l>0){reise.push([0,s+l]);return;}if(s<0)s+=1440;reise.push([s,s+l]);};
   iv(d.anreise,d.anreiseEnde);iv(d.rueckBeginn,d.rueck);
-  const wd0=new Date(d.datum+"T00:00").getDay();let nacht=0,sonntag=0,rz=0;
+  const wd0=new Date(d.datum+"T00:00").getDay();let nacht=0,sonntag=0,feiertag=0,rz=0;
   for(let i=0;i<len;i++){
     if(reise.some(([s,z])=>i>=s&&i<z)){rz++;continue;}
     const abs=b+i,tag=Math.floor(abs/1440),mod=abs%1440,wd=(wd0+tag)%7;
-    if(wd===0)sonntag++;else if(mod>=1320||mod<360)nacht++;
+    if(ft&&ft[tag])feiertag++;else if(wd===0)sonntag++;else if(mod>=1320||mod<360)nacht++;
   }
-  return {nacht,sonntag,reise:rz};
+  return {nacht,sonntag,feiertag,reise:rz};
 }
 /* Ein Einsatztag nach Tarif. null, wenn die Option aus ist, der Auftrag nicht "frei" ist, der Tagessatz fehlt
    oder Zeiten fehlen. Anerkannt ist, was FLINK vom Nachweis bucht (Nachweis-Spanne minus FLINK-Pause). */
@@ -502,7 +742,7 @@ function tarifTag(o,d){
   const satzTag=orderSatz(o);if(!satzTag||!d||!d.einsatz||!d.ende)return null;
   const endeNw=exportEnde(o,d);const spanNw=dur(hm2min(d.einsatz),hm2min(endeNw));if(spanNw==null)return null;
   const anerkannt=spanNw-flinkPause(spanNw);
-  /* PdTV 9.1: Mehrarbeit, Nacht- und Sonntagszuschlag gibt es nur bei einer Tagesvergütung bis 336,06 EUR. */
+  /* PdTV 9.1: Mehrarbeit, Nacht-, Sonntags- und Feiertagszuschlag gibt es nur bei einer Tagesvergütung bis 336,06 EUR. */
   const tarifOk=satzTag<=336.06;
   const mehrStd=tarifOk?Math.ceil(Math.max(0,anerkannt-TARIF_TAG_MIN)/30)/2:0;
   /* Stundensatz wie auf der ZDF-Abrechnung auf drei Stellen gerundet, V4.2. */
@@ -510,12 +750,19 @@ function tarifTag(o,d){
   const mehrEur=runde2(mehrStd*satz),mehrZuschlEur=runde2(mehrEur*0.25);
   /* Zuschläge nur auf Arbeitsminuten, die FLINK bucht: Die Pause liegt in der Nachweis-Spanne, wird aber nicht bezahlt,
      und die Reise steckt in "anerkannt", zählt aber nicht als Zuschlagszeit. Also Deckel = anerkannt minus Reise. */
-  const z=tarifZuschlagMin(d,endeNw);
+  /* Feiertag am Tag selbst und am Folgetag, falls der Einsatz über Mitternacht geht (V4.3). Steht der Folgetag im Auftrag, gilt
+     sein eigener Eintrag (auch abgeschaltet), sonst der automatische Wert. Gezählt wird bis zum Nachweis-Ende wie beim Sonntag,
+     denn das ZDF rechnet vom Nachweis aus, den es bekommt. */
+  const f1=d.datum?plusTage(d.datum,1):"",d1=f1&&((o&&o.days)||[]).find(x=>x.datum===f1);
+  const ft=[!!(d.datum&&feiertagTag(o,d)),!!(f1&&feiertagTag(o,d1||{datum:f1}))];
+  const z=tarifZuschlagMin(d,endeNw,ft);
   const cap=Math.max(0,anerkannt-z.reise);
-  const sonntagMin=tarifOk?Math.min(z.sonntag,cap):0,nachtMin=tarifOk?Math.min(z.nacht,cap-sonntagMin):0;
-  const nachtEur=runde2(nachtMin/60*satz*0.25),sonntagEur=runde2(sonntagMin/60*satz*0.5);
+  /* Deckel in der Reihenfolge des höchsten Zuschlags: Feiertag 100 %, Sonntag 50 %, Nacht 25 % (PdTV 9.5). */
+  const feiertagMin=tarifOk?Math.min(z.feiertag,cap):0,sonntagMin=tarifOk?Math.min(z.sonntag,cap-feiertagMin):0,
+    nachtMin=tarifOk?Math.min(z.nacht,cap-feiertagMin-sonntagMin):0;
+  const nachtEur=runde2(nachtMin/60*satz*0.25),sonntagEur=runde2(sonntagMin/60*satz*0.5),feiertagEur=runde2(feiertagMin/60*satz);
   return {tagessatz:satzTag,funktion:orderFunktion(o),anerkannt,mehrStd,mehrEur,mehrZuschlEur,nachtMin,nachtEur,
-    sonntagMin,sonntagEur,summe:runde2(satzTag+mehrEur+mehrZuschlEur+nachtEur+sonntagEur)};
+    sonntagMin,sonntagEur,feiertagMin,feiertagEur,summe:runde2(satzTag+mehrEur+mehrZuschlEur+nachtEur+sonntagEur+feiertagEur)};
 }
 function nettoQuote(){const q=S.nettoQuote;return typeof q==="number"&&q>=1&&q<=100?q:null;}
 /* Monate mit Einsätzen bis heute, neuester zuerst. Geplante Tage in der Zukunft zählen nicht. */
@@ -524,13 +771,13 @@ function verdienstMonate(heute){
   DB.orders.forEach(o=>o.days.forEach(d=>{
     if(!d.datum||d.datum>bis)return;const t=tarifTag(o,d);if(!t)return;
     const k=d.datum.slice(0,7);
-    const x=(m[k]??={monat:k,tage:[],einsaetze:0,honorar:0,mehrStd:0,mehrEur:0,nachtEur:0,sonntagEur:0,brutto:0,konto:null});
+    const x=(m[k]??={monat:k,tage:[],einsaetze:0,honorar:0,mehrStd:0,mehrEur:0,nachtEur:0,sonntagEur:0,feiertagEur:0,brutto:0,konto:null});
     x.tage.push({o,d,t});x.einsaetze++;x.honorar+=t.tagessatz;x.mehrStd+=t.mehrStd;x.mehrEur+=t.mehrEur+t.mehrZuschlEur;
-    x.nachtEur+=t.nachtEur;x.sonntagEur+=t.sonntagEur;x.brutto+=t.summe;
+    x.nachtEur+=t.nachtEur;x.sonntagEur+=t.sonntagEur;x.feiertagEur+=t.feiertagEur;x.brutto+=t.summe;
   }));
   const q=nettoQuote();
   return Object.values(m).sort((a,b)=>b.monat.localeCompare(a.monat)).map(x=>{
-    ["honorar","mehrEur","nachtEur","sonntagEur","brutto"].forEach(k=>x[k]=runde2(x[k]));
+    ["honorar","mehrEur","nachtEur","sonntagEur","feiertagEur","brutto"].forEach(k=>x[k]=runde2(x[k]));
     x.tage.sort((a,b)=>(a.d.datum+(a.d.einsatz||"")).localeCompare(b.d.datum+(b.d.einsatz||"")));
     x.konto=q?runde2(x.brutto*q/100):null;return x;});
 }
@@ -548,7 +795,7 @@ function parseEur(s){const t=String(s??"").trim().replace(/\s|€/g,"");if(!t)re
    Gültig nur 1 bis 100, sonst null (dann zeigt die App nur Brutto). */
 function parseQuote(s){const t=String(s??"").trim().replace(/\s|%/g,"");if(!t)return null;
   let n=parseFloat(t.replace(",","."));if(!isFinite(n))return null;if(n<1)n*=100;n=runde2(n);return n>=1&&n<=100?n:null;}
-function fmtEur(n){return n==null?"–":n.toLocaleString("de-DE",{minimumFractionDigits:2,maximumFractionDigits:2})+" €";}
+function fmtEur(n){return n==null?"–":n.toLocaleString("de-DE",{minimumFractionDigits:2,maximumFractionDigits:2})+"\u00a0€";}
 function fmtEurRund(n){return n==null?"–":Math.round(n).toLocaleString("de-DE")+" €";}
 function fmtStd(h){return String(h).replace(".",",")+" Std";}
 /* === TARIF-END === */
@@ -719,6 +966,7 @@ function renderDetail(){
     if(d.uebernachtung)chips+=`<span class="chip">Übernachtung</span>`;
     if(d.ausland)chips+=`<span class="chip">Ausland</span>`;
     if(d.grenzHin||d.grenzRueck)chips+=`<span class="chip">Grenze ${d.grenzHin||"–"} / ${d.grenzRueck||"–"}</span>`;
+    const ftn=feiertagTag(o,d);if(ftn)chips+=`<span class="chip">Feiertag · ${esc(ftn)}</span>`;
     h+=`<div class="day" data-day="${d.id}">
       <div class="top"><div class="date">${fmtDayC(d.datum)}</div><div style="display:flex;align-items:center;gap:10px"><span class="ot ${otClass(c.ot)}">${fmtSigned(c.ot)}</span><button class="dayDel" data-del="${d.id}" aria-label="Tag löschen">${ICON_TRASH}</button></div></div>
       <div class="line"><span>EZ ${d.einsatz||"–"}–${d.ende||"–"} · ${azTxt} · Pause ${c.pauseJa?fmtMin(c.pause):"nein"}</span></div>
@@ -843,7 +1091,7 @@ function renderVerdienst(){
 }
 function openVerdienstMonat(mk){
   const x=verdienstMonate().find(m=>m.monat===mk);if(!x)return;
-  const rows=x.tage.map(({o,d,t})=>`<div class="srow"><div class="nm">${esc(fmtDayC(d.datum))} · ${t.funktion==="kamera"?"Kamera":"Dreh-Assistent"}<small>${esc(o.titel||"Ohne Titel")} · Tagessatz ${fmtEur(t.tagessatz)}${t.mehrStd?" · Mehrarbeit "+fmtStd(t.mehrStd)+" "+fmtEur(runde2(t.mehrEur+t.mehrZuschlEur)):""}${t.nachtEur?" · Nacht "+fmtEur(t.nachtEur):""}${t.sonntagEur?" · Sonntag "+fmtEur(t.sonntagEur):""}</small></div><div class="v" style="font-size:15px">${fmtEur(t.summe)}</div></div>`).join("");
+  const rows=x.tage.map(({o,d,t})=>`<div class="srow"><div class="nm">${esc(fmtDayC(d.datum))} · ${t.funktion==="kamera"?"Kamera":"Dreh-Assistent"}<small>${esc(o.titel||"Ohne Titel")} · Tagessatz ${fmtEur(t.tagessatz)}${t.mehrStd?" · Mehrarbeit "+fmtStd(t.mehrStd)+" "+fmtEur(runde2(t.mehrEur+t.mehrZuschlEur)):""}${t.nachtEur?" · Nacht "+fmtEur(t.nachtEur):""}${t.sonntagEur?" · Sonntag "+fmtEur(t.sonntagEur):""}${t.feiertagEur?" · Feiertag "+fmtEur(t.feiertagEur):""}</small></div><div class="v" style="font-size:15px">${fmtEur(t.summe)}</div></div>`).join("");
   openSheet(`<h3>${esc(fmtMonth(mk))}</h3>
     <p class="note" style="margin:-8px 0 12px">Brutto ${fmtEur(x.brutto)}${x.konto!=null?" · ca. "+fmtEur(x.konto)+" aufs Konto":""}</p>
     ${rows}
@@ -888,6 +1136,8 @@ function editOrder(id){
     <div class="field"><label>Mitarbeiter (für Nachweis)</label><input type="text" class="txt" id="f_mit" value="${esc(o.mitarbeiter||"")}" placeholder="Nachname, Vorname"></div>
     <div class="field"><label>Beschäftigung</label><div class="toggles" id="f_status"><button data-s="frei">Freier Mitarbeiter</button><button data-s="fest">Fest angestellt</button></div>
       <p class="note">Bei freien Mitarbeitern verlängert der Nachweis das Einsatzende, weil FLINK die Ruhepause immer abzieht: über 6:30 Std 30 Min, über 9:45 Std 45 Min, auch wenn du keine oder eine kürzere Pause gemacht hast. Fest Angestellte bekommen die Zeiten unverändert.</p></div>
+    <div class="field"><label>Feiertage nach</label><select id="f_ftort">${ftOptionen(o.feiertagOrt||"",["","Wie Einstellungen: "+ortLabel(S.feiertagOrt)])}</select>
+      <p class="note" id="f_ftnote"></p></div>
     ${S.verdienstOn?`<div class="field"><label>Funktion (für Verdienst)</label><div class="toggles" id="f_fk"><button data-f="assistent">Dreh-Assistent</button><button data-f="kamera">Kamera</button></div></div>`:""}
     <div class="field"><label>Sonder-Equipment (Mehrfachauswahl)</label><div class="chips" id="f_equip">${["Sony Alpha 7S III","Sony FX6","Sony FX3","2. Kamera","Drohne","DJI RS-Gimbal","Slider","Stativ/Head","ND-/Vari-ND-Filter","Timecode-Sync","Funkstrecke","Ton","Licht","Datenmanagement"].map(e=>`<button type="button" data-e="${esc(e)}"${(o.equipment||[]).includes(e)?' class="on"':''}>${esc(e)}</button>`).join("")}</div></div>
     <div class="field"><label>Sonstiges (optional)</label><textarea class="txt" id="f_notiz" rows="3" placeholder="z. B. weitere Hinweise">${esc(o.notiz||"")}</textarea></div>
@@ -897,8 +1147,12 @@ function editOrder(id){
   document.querySelectorAll("#f_equip button").forEach(b=>b.onclick=()=>b.classList.toggle("on"));
   let tmpStatus=orderStatus(id?o:null);
   const paintStatus=()=>document.querySelectorAll("#f_status button").forEach(b=>b.classList.toggle("on",b.dataset.s===tmpStatus));
-  document.querySelectorAll("#f_status button").forEach(b=>b.onclick=()=>{tmpStatus=b.dataset.s;paintStatus();});
-  paintStatus();
+  /* Fest angestellt: Es gilt der Dienstort aus den Einstellungen, die Auswahl im Auftrag ist gesperrt (V4.3). */
+  const paintFt=()=>{const fest=tmpStatus==="fest";document.getElementById("f_ftort").disabled=fest;
+    document.getElementById("f_ftnote").textContent=fest?"Fest angestellt: Es gilt dein Dienstort aus den Einstellungen."
+      :"Es zählen die Feiertage am Arbeitsort. Sie werden im Nachweis markiert und unten aufgelistet.";};
+  document.querySelectorAll("#f_status button").forEach(b=>b.onclick=()=>{tmpStatus=b.dataset.s;paintStatus();paintFt();});
+  paintStatus();paintFt();
   let tmpFk=orderFunktion(id?o:null);
   const paintFk=()=>document.querySelectorAll("#f_fk button").forEach(b=>b.classList.toggle("on",b.dataset.f===tmpFk));
   document.querySelectorAll("#f_fk button").forEach(b=>b.onclick=()=>{tmpFk=b.dataset.f;paintFk();});
@@ -907,7 +1161,8 @@ function editOrder(id){
     const equipment=[...document.querySelectorAll("#f_equip button.on")].map(b=>b.dataset.e);
     const data={titel:val("f_titel"),auftragsnr:val("f_anr"),prodNummer:val("f_pnr"),kostentraeger:val("f_kt"),produktionsort:val("f_ort"),mitarbeiter:val("f_mit"),notiz:val("f_notiz"),equipment,status:tmpStatus,...(S.verdienstOn?{funktion:tmpFk}:{})};
     if(!data.titel){toast("Bitte einen Titel eingeben");return;}
-    if(id)Object.assign(o,data);else{const no={id:uid(),...data,days:[]};DB.orders.push(no);state.orderId=no.id;}
+    let ziel=o;if(id)Object.assign(o,data);else{ziel={id:uid(),...data,days:[]};DB.orders.push(ziel);state.orderId=ziel.id;}
+    const fo=val("f_ftort");if(fo)ziel.feiertagOrt=fo;else delete ziel.feiertagOrt;
     persist();closeSheet();render();toast(id?"Gespeichert":"Auftrag angelegt");};
   if(id)document.getElementById("delOrder").onclick=()=>{askConfirm("Diesen Auftrag mit allen Tagen wirklich löschen?",()=>{DB.orders=DB.orders.filter(x=>x.id!==id);persist();state.orderId=null;closeSheet();render();toast("Auftrag gelöscht");});};
 }
@@ -959,6 +1214,8 @@ function editDay(orderId,dayId){
         <p class="note" id="grenznote">Verlassen von Deutschland und Ankunft in Deutschland. Nur für deine Reisekosten-Unterlagen – erscheint nicht im Stundennachweis.</p>
       </div>
     </div>
+    <div class="field" style="margin-top:14px"><label>Feiertag am Arbeitsort</label><input type="text" class="txt" id="d_feiertag" value="${esc(feiertagTag(o,d))}" placeholder="kein Feiertag">
+      <p class="note">${feiertagOrt(o)==="XX"?"Für dieses Land kennt die App nur Oster- und Pfingstsonntag.":"Automatisch nach "+esc(ortLabel(feiertagOrt(o)))+"."} Leeren heißt: kein Feiertag. Für ein Land, das die App nicht kennt, trägst du den Namen selbst ein.</p></div>
     <div id="tgbox"></div>
     <p class="note">„kein Dreh" und „entfällt" lassen den jeweiligen Block leer – gerechnet wird dann nur mit der Einsatzzeit. Einsatzende rechnet sich automatisch aus der letzten Tätigkeit + 30 Min, bis du es selbst tippst.</p>
     <button class="btn" id="saveDay" style="margin-top:14px">Speichern</button>
@@ -998,7 +1255,10 @@ function editDay(orderId,dayId){
   g("d_drehbeginn").oninput=()=>{dbEd=true;recalc();};
   g("d_drehende").oninput=()=>{computeEnde();recalc();};
   g("d_rueckBeginn").oninput=()=>{recalc();};
-  g("d_datum").oninput=g("d_datum").onchange=()=>recalc();
+  /* Feiertag folgt dem Datum, bis er von Hand geändert wird (V4.3). */
+  let ftEd=typeof d.feiertag==="string";
+  g("d_feiertag").oninput=()=>{ftEd=true;recalc();};
+  g("d_datum").oninput=g("d_datum").onchange=()=>{if(!ftEd)g("d_feiertag").value=feiertagAuto(val("d_datum"),feiertagOrt(o));recalc();};
   g("d_rueck").oninput=()=>{computeEnde();recalc();};
   g("d_einsatz").oninput=()=>{deriveFromEinsatz();computeEnde();recalc();};
   g("d_ende").oninput=()=>{endeEd=true;recalc();};
@@ -1021,8 +1281,8 @@ function editDay(orderId,dayId){
         <div class="c"><div class="l">Überstunden</div><div class="n big ${otClass(c.ot)}">${fmtSigned(c.ot)}</div></div>
       </div>`;
     /* Verdienst nach Tarif (V4.1): nur wenn die Option an ist, der Auftrag frei ist und ein Tagessatz existiert */
-    const tt=tarifTag(o,{datum:val("d_datum"),einsatz:val("d_einsatz"),ende:val("d_ende"),anreise:val("d_anreise"),anreiseEnde:val("d_anreiseEnde"),rueckBeginn:val("d_rueckBeginn"),rueck:val("d_rueck"),pause:tmpPause});
-    if(tt)g("calc").insertAdjacentHTML("beforeend",`<hr><div class="tarifz">Laut Tarif: Mehrarbeit ${fmtStd(tt.mehrStd)} · ${fmtEur(runde2(tt.mehrEur+tt.mehrZuschlEur))}${tt.nachtEur?" · Nacht "+fmtEur(tt.nachtEur):""}${tt.sonntagEur?" · Sonntag "+fmtEur(tt.sonntagEur):""}</div>`);
+    const tt=tarifTag(o,{datum:val("d_datum"),einsatz:val("d_einsatz"),ende:val("d_ende"),anreise:val("d_anreise"),anreiseEnde:val("d_anreiseEnde"),rueckBeginn:val("d_rueckBeginn"),rueck:val("d_rueck"),pause:tmpPause,feiertag:clean(val("d_feiertag"))});
+    if(tt)g("calc").insertAdjacentHTML("beforeend",`<hr><div class="tarifz">Laut Tarif: Mehrarbeit ${fmtStd(tt.mehrStd)} · ${fmtEur(runde2(tt.mehrEur+tt.mehrZuschlEur))}${tt.nachtEur?" · Nacht "+fmtEur(tt.nachtEur):""}${tt.sonntagEur?" · Sonntag "+fmtEur(tt.sonntagEur):""}${tt.feiertagEur?" · Feiertag "+fmtEur(tt.feiertagEur):""}</div>`);
     /* FLINK-Hinweis: zeigt, was das ZDF-System abzieht und wie der Nachweis korrigiert wird */
     const fb=g("flinkbox");
     if(fb){
@@ -1077,7 +1337,10 @@ function editDay(orderId,dayId){
   g("saveDay").onclick=()=>{
     const data={datum:val("d_datum"),einsatz:val("d_einsatz"),anreise:val("d_anreise"),anreiseEnde:val("d_anreiseEnde"),drehbeginn:val("d_drehbeginn"),drehende:val("d_drehende"),rueckBeginn:val("d_rueckBeginn"),rueck:val("d_rueck"),ende:val("d_ende"),pause:tmpPause,uebernachtung:tmpUE,ausland:tmpAL,grenzHin:tmpAL?val("d_grenzHin"):"",grenzRueck:tmpAL?val("d_grenzRueck"):""};
     if(!data.datum){toast("Bitte Datum angeben");return;}
-    if(dayId)Object.assign(d,data);else o.days.push({id:uid(),...data,dispo:d.dispo});
+    /* Gleich dem automatischen Wert: kein eigener Eintrag, der Tag folgt weiter dem Arbeitsort. Sonst speichern, auch leer. */
+    const ftWert=clean(val("d_feiertag")),ftAuto=feiertagAuto(data.datum,feiertagOrt(o));
+    let ziel=d;if(dayId)Object.assign(d,data);else{ziel={id:uid(),...data,dispo:d.dispo};o.days.push(ziel);}
+    if(ftWert===ftAuto)delete ziel.feiertag;else ziel.feiertag=ftWert;
     persist();const c=dayCalc(data);closeSheet();render();
     toast(c.tg.state==="ok"?"Gespeichert · Tagegeld möglich":(dayId?"Gespeichert":"Tag hinzugefügt"));
   };
@@ -1088,6 +1351,14 @@ function isoLocal(dt){return dt.getFullYear()+"-"+String(dt.getMonth()+1).padSta
 function guessNextDate(o){if(o.days.length){const last=o.days.map(d=>d.datum).filter(Boolean).sort().pop();if(last){const dt=new Date(last+"T00:00");dt.setDate(dt.getDate()+1);return isoLocal(dt);}}return isoLocal(new Date());}
 
 /* ===== Einstellungen ===== */
+/* Auswahl der Feiertags-Orte, gruppiert nach Deutschland, Schweiz, weitere Länder (V4.3).
+   erste = optionale erste Option [Wert, Text], z. B. ["", "Wie Einstellungen: Bayern"]. */
+function ftOptionen(wahl,erste){
+  let h=erste?`<option value="${esc(erste[0])}"${wahl===erste[0]?" selected":""}>${esc(erste[1])}</option>`:"",gruppe="";
+  FT_ORTE.forEach(([k,name,g])=>{if(g!==gruppe){h+=(gruppe?"</optgroup>":"")+`<optgroup label="${esc(g)}">`;gruppe=g;}
+    h+=`<option value="${k}"${k===wahl?" selected":""}>${esc(name)}</option>`;});
+  return h+"</optgroup>";
+}
 function openSettings(){
   const totDays=DB.orders.reduce((a,o)=>a+o.days.length,0);
   let bakTxt="noch keins";
@@ -1113,6 +1384,8 @@ function openSettings(){
       <div class="field"><label>Beschäftigung (Vorgabe für neue Aufträge)</label><div class="toggles" id="s_status"><button data-s="frei">Freier Mitarbeiter</button><button data-s="fest">Fest angestellt</button></div></div>
       <div class="field"><label>Arbeitstage laut Vertrag (pro Jahr)</label><input type="text" inputmode="numeric" id="s_tage" value="${S.vertragstage||""}" placeholder="leer = kein Zähler">
         <p class="note">Steht in deinem Vertrag. Die App zählt, wie viele davon im laufenden Jahr geleistet und disponiert sind.</p></div>
+      <div class="field"><label>Üblicher Arbeitsort / Dienstort (Feiertage)</label><select id="s_ftort">${ftOptionen(ortGueltig(S.feiertagOrt))}</select>
+        <p class="note">Freie: Vorgabe für Aufträge ohne eigenen Arbeitsort. Fest Angestellte: dein Dienstort, er gilt für alle Aufträge.</p></div>
       <div class="field"><label>Anschreiben der Mail (optional)</label><textarea class="txt" id="s_anschr" rows="4" placeholder="Hallo {name},&#10;&#10;nachfolgend mein Stundennachweis für {produktion}.">${esc(S.anschreiben||"")}</textarea>
         <p class="note">Leer lassen heißt: es bleibt beim Text oben. Platzhalter, die du nutzen kannst: <b>{name}</b> · <b>{produktion}</b> · <b>{auftrag}</b> · <b>{tage}</b></p></div>
       <div class="field" style="margin-bottom:12px"><label>Grußformel (optional)</label><input type="text" class="txt" id="s_gruss" value="${esc(S.gruss||"")}" placeholder="Viele liebe Grüße"></div>
@@ -1127,7 +1400,7 @@ function openSettings(){
   document.querySelectorAll("#s_status button").forEach(b=>b.onclick=()=>{setStatus=b.dataset.s;paintSetStatus();});
   paintSetStatus();
   document.getElementById("saveSet").onclick=()=>{const tg=val("s_tage");if(tg&&parseTage(tg)==null){toast("Arbeitstage: ganze Zahl von 1 bis 366");return;}
-    S.email=val("s_mail");S.empfaenger=val("s_empf");S.absender=val("s_name");S.status=setStatus;S.vertragstage=parseTage(val("s_tage"));S.anschreiben=val("s_anschr");S.gruss=val("s_gruss");persist();closeSheet();render();toast("Einstellungen gespeichert");};
+    S.email=val("s_mail");S.empfaenger=val("s_empf");S.absender=val("s_name");S.status=setStatus;S.vertragstage=parseTage(val("s_tage"));S.feiertagOrt=ortGueltig(val("s_ftort"));S.anschreiben=val("s_anschr");S.gruss=val("s_gruss");persist();closeSheet();render();toast("Einstellungen gespeichert");};
   document.getElementById("rulesBtn").onclick=openRules;
   document.getElementById("verdBtn").onclick=openVerdienstSettings;
   document.getElementById("helpBtn").onclick=openHelp;
@@ -1283,6 +1556,7 @@ function openHelp(){
     <div class="hsec"><div class="eb">5 · Nachweis verschicken</div>
       <p><b>Als PDF</b> erzeugt die fertige Datei und öffnet das Teilen-Menü. Von dort schickst du sie per Mail, legst sie in Dateien ab oder gibst sie per AirDrop weiter.</p>
       <p><b>Als E-Mail</b> öffnet deine Mail-App mit dem Nachweis als Text. Empfängeradresse, Anrede und Grußformel stellst du einmal in den Einstellungen ein, danach steht alles automatisch drin.</p>
+      <p>Feiertage am Arbeitsort sind im Nachweis beim Datum markiert, im PDF mit einem Sternchen, in der Mail mit dem Zusatz „Feiertag“. Unten stehen sie mit ihrem Namen. Mehr dazu unter Punkt 11.</p>
       <p>Ist ein Auftrag erledigt, markierst du ihn mit <b>Abgerechnet</b>. Er wandert dann ausgegraut ans Ende der Liste und ist nicht mehr im Weg.</p></div>
 
     <div class="hsec"><div class="eb">6 · Sicherung, das Wichtigste</div>
@@ -1301,8 +1575,8 @@ function openHelp(){
 
     <div class="hsec"><div class="eb">9 · Verdienst (freiwillig)</div>
       <p>Wenn du magst, zeigt dir die App pro Monat, was dir nach Tarif zusteht und ungefähr auf dem Konto ankommen sollte. Du schaltest das unter <b>Einstellungen</b> und <b>Verdienst</b> ein und trägst dort deine Tagessätze als Dreh-Assistent und als Kamera ein. Danach gibt es neben Aufträge und Statistik den Reiter <b>Verdienst</b>.</p>
-      <p>Die App rechnet so wie das ZDF auf der Abrechnung. Jeder Einsatztag bringt den Tagessatz. Dazu kommt Mehrarbeit für alles über 7,7 Stunden am Tag, aufgerundet auf halbe Stunden, mit dem Tagessatz geteilt durch 7,7 und 25 Prozent Zuschlag. Die 7,7 Stunden stehen so im Tarif und gelten auch dann, wenn du unter Arbeitszeit-Regeln ein anderes Soll eingetragen hast. Für Arbeit in der Nacht zwischen 22 und 6 Uhr kommen 25 Prozent dazu, am Sonntag 50 Prozent. Pause und Reisezeit zählen dabei nicht mit, Feiertage rechnet die App noch nicht. Laut Tarif zahlt das ZDF Mehrarbeit und diese Zuschläge nur bei einem Tagessatz bis 336,06 Euro. Liegt dein Tagessatz über 336,06 Euro, gibt es nur den Tagessatz.</p>
-      <p>Steht bei einer Fahrt nur der Beginn oder nur das Ende, wie nach einem Dispo-Import, rechnet die App diese Fahrt mit 30 Minuten. Trag die echten Fahrzeiten ein, dann wird es genauer. Nacht- und Sonntagszuschlag sind an echten Abrechnungen geprüft. Abweichen kann es an langen Reisetagen. Das ZDF zählt eine Fahrt manchmal als Arbeitszeit und manchmal als Reisezeit. Reisezeit zählt mit der Arbeit höchstens 12 Stunden am Tag und bekommt keine Zuschläge. Die App rechnet jede Fahrt bei der Mehrarbeit wie Arbeitszeit, beim Nacht- und Sonntagszuschlag aber wie Reisezeit. An solchen Tagen kann sie deshalb nach oben oder nach unten abweichen.</p>
+      <p>Die App rechnet so wie das ZDF auf der Abrechnung. Jeder Einsatztag bringt den Tagessatz. Dazu kommt Mehrarbeit für alles über 7,7 Stunden am Tag, aufgerundet auf halbe Stunden, mit dem Tagessatz geteilt durch 7,7 und 25 Prozent Zuschlag. Die 7,7 Stunden stehen so im Tarif und gelten auch dann, wenn du unter Arbeitszeit-Regeln ein anderes Soll eingetragen hast. Für Arbeit in der Nacht zwischen 22 und 6 Uhr kommen 25 Prozent dazu, am Sonntag 50 Prozent. An Feiertagen am Arbeitsort sind es 100 Prozent. Treffen zwei Zuschläge zusammen, zählt nur der höhere. Pause und Reisezeit zählen dabei nicht mit. Laut Tarif zahlt das ZDF Mehrarbeit und diese Zuschläge nur bei einem Tagessatz bis 336,06 Euro. Liegt dein Tagessatz über 336,06 Euro, gibt es nur den Tagessatz.</p>
+      <p>Steht bei einer Fahrt nur der Beginn oder nur das Ende, wie nach einem Dispo-Import, rechnet die App diese Fahrt mit 30 Minuten. Trag die echten Fahrzeiten ein, dann wird es genauer. Nacht- und Sonntagszuschlag sind an echten Abrechnungen geprüft. Abweichen kann es an langen Reisetagen. Das ZDF zählt eine Fahrt manchmal als Arbeitszeit und manchmal als Reisezeit. Reisezeit zählt mit der Arbeit höchstens 12 Stunden am Tag und bekommt keine Zuschläge. Die App rechnet jede Fahrt bei der Mehrarbeit wie Arbeitszeit, bei den Zuschlägen aber wie Reisezeit. An solchen Tagen kann sie deshalb nach oben oder nach unten abweichen.</p>
       <p>Trägst du deinen Netto-Anteil ein, zeigt die App auch, was ungefähr aufs Konto kommt. Den Anteil findest du auf einer Abrechnung, wenn du die Auszahlung durch die Summe des Vertrags teilst.</p>
       <p class="tip">Das ZDF zahlt nachträglich, meist ein bis zwei Monate später und oft in mehreren Teilbeträgen. Urlaubsentgelt ist nicht enthalten. Nichts davon erscheint im Nachweis.</p></div>
 
@@ -1310,6 +1584,12 @@ function openHelp(){
       <p>In deinem Vertrag steht, an wie vielen Tagen im Jahr du eingesetzt werden kannst. Trag diese Zahl unter <b>Einstellungen</b> bei <b>Arbeitstage laut Vertrag</b> ein. Dann zeigt dir die App in der Statistik und oben in den Aufträgen, wie viele Tage du im laufenden Jahr schon geleistet hast, wie viele bereits disponiert sind und wie viele noch frei bleiben.</p>
       <p>Gezählt wird jeder Tag, der in einem Auftrag als freier Mitarbeiter steht, auch in abgerechneten Aufträgen. Geleistet sind die Tage bis heute, disponiert die Tage danach. Stehen zwei Aufträge am selben Tag, zählt der Tag einmal. Urlaubstage zählt die App nicht mit. Die Kachel „Tage" oben in den Aufträgen zählt dagegen alle Tage der offenen Aufträge über alle Jahre, deshalb weichen die beiden Zahlen oft voneinander ab.</p>
       <p class="tip">Am 1. Januar beginnt die Zählung von vorn. Liegst du über der Zahl aus dem Vertrag, steht das rot in der Statistik.</p></div>
+
+    <div class="hsec"><div class="eb">11 · Feiertage</div>
+      <p>Die App kennt die gesetzlichen Feiertage in Deutschland je Bundesland, in der Schweiz je Kanton und in 13 weiteren Ländern. Oster- und Pfingstsonntag zählen immer, weil der Tarif sie ausdrücklich nennt.</p>
+      <p>Als freier Mitarbeiter zählt der Feiertag dort, wo du arbeitest. Beim Dispo-Import erkennt die App das Land aus dem Produktionsort, im Auftrag änderst du es unter <b>Feiertage nach</b>. Erkennt sie nichts, gilt dein üblicher Arbeitsort aus den <b>Einstellungen</b>. Als fest Angestellter gilt immer der Dienstort, den du dort einträgst.</p>
+      <p>Im Tag steht, ob er ein Feiertag ist. Stimmt das nicht, leerst du das Feld. Für ein Land, das die App nicht kennt, trägst du den Namen selbst ein. Regionale Feiertage in Spanien, etwa Gründonnerstag in den meisten Regionen, und Ortsfeiertage in Italien kennt die App nicht, die trägst du ebenfalls selbst ein.</p>
+      <p class="tip">Im PDF bekommt ein Feiertag ein Sternchen beim Datum, in der Mail den Zusatz „Feiertag“. Unten stehen alle Feiertage mit Namen. So sieht die Disposition, wo der Zuschlag fällig ist.</p></div>
 
     <button class="btn" id="helpBack" style="margin-top:6px">Verstanden</button>`);
   document.getElementById("helpBack").onclick=openSettings;
@@ -1342,6 +1622,13 @@ function grenzText(o){
       return fmtDate(d.datum)+" "+p.join(", ");});
   return z.length?"Grenzübertritt: "+z.join(" · "):"";
 }
+/* Feiertage am Arbeitsort für den Nachweis (V4.3): eine Zeile, nur wenn welche im Auftrag liegen.
+   Im PDF steht sie als Fußnote zum Sternchen in der Datumsspalte, in der Mail vor dem Sonder-Equipment. */
+function feiertagText(o){
+  const z=o.days.slice().sort((a,b)=>(a.datum||"").localeCompare(b.datum||""))
+    .map(d=>{const f=feiertagTag(o,d);return f?fmtDate(d.datum)+" "+f:"";}).filter(Boolean);
+  return z.length?"Feiertage am Arbeitsort: "+z.join(" · "):"";
+}
 function mailOrder(o){
   const subj="Zeitnachweis"+(o.prodNummer?" – Produktion "+o.prodNummer:(o.titel?" – "+o.titel:(o.auftragsnr?" – "+o.auftragsnr:"")));
   const prodTxt=o.titel?(o.titel+(o.prodNummer?" ("+o.prodNummer+")":"")):(o.prodNummer?"mit der Prod.-Nr. "+o.prodNummer:(o.auftragsnr||""));
@@ -1362,13 +1649,14 @@ function mailOrder(o){
   const L=[...kopf,""];
   o.days.slice().sort((a,b)=>(a.datum||"").localeCompare(b.datum||"")).forEach(d=>{const c=dayCalc(d);
     const dreh=(d.drehbeginn||d.drehende)?((d.drehbeginn||"—")+"–"+(d.drehende||"—")):"—";
-    L.push(fmtDateLong(d.datum));
+    L.push(fmtDateLong(d.datum)+(feiertagTag(o,d)?" · Feiertag":""));
     L.push("Einsatz: "+(d.einsatz||"—")+"–"+(exportEnde(o,d)||"—"));
     L.push("Dreh: "+dreh);
     L.push("Anreise: "+((d.anreise||d.anreiseEnde)?((d.anreise||"—")+"–"+(d.anreiseEnde||"—")):"—"));
     L.push("Rückreise: "+((d.rueckBeginn||d.rueck)?((d.rueckBeginn||"—")+"–"+(d.rueck||"—")):"—"));
     L.push("Pause: "+pauseDez(c.pause));
     L.push("");});
+  const ftx=feiertagText(o);if(ftx){L.push(ftx);L.push("");}
   const eq=equipText(o);if(eq){L.push("Sonder-Equipment: "+eq);L.push("");}
   const gz=grenzText(o);if(gz){L.push(gz);L.push("");}
   (clean(S.gruss)?platzhalter(S.gruss).split("\n"):["Viele liebe Grüße"]).forEach(z=>L.push(z));L.push(sender);
@@ -1388,7 +1676,7 @@ function pdfOrder(o){
     y+=2;doc.line(M,y,196,y);y+=5;doc.setFont("helvetica","normal");doc.setFontSize(8);
     o.days.slice().sort((a,b)=>(a.datum||"").localeCompare(b.datum||"")).forEach(d=>{const c=dayCalc(d);if(y>270){doc.addPage();y=M;}
       doc.setTextColor(40,35,28);
-      doc.text(fmtDate(d.datum),C.da,y);
+      doc.text(fmtDate(d.datum)+(feiertagTag(o,d)?" *":""),C.da,y);
       doc.text(d.einsatz||"—",C.eb,y);
       doc.text((d.anreise||d.anreiseEnde)?((d.anreise||"—")+"–"+(d.anreiseEnde||"—")):"—",C.an,y);
       doc.text((d.drehbeginn||d.drehende)?((d.drehbeginn||"—")+"–"+(d.drehende||"—")):"—",C.dr,y);
@@ -1396,7 +1684,13 @@ function pdfOrder(o){
       doc.text(exportEnde(o,d)||"—",C.ee,y);
       doc.text(pauseDez(c.pause),C.pa,y);
       y+=6.6;});
-    y+=2;doc.line(M,y,196,y);y+=10;
+    y+=2;doc.line(M,y,196,y);
+    /* Feiertage am Arbeitsort als Fußnote zum Sternchen (V4.3), bricht um wie das Notizfeld. */
+    const ftx=feiertagText(o);
+    if(ftx){y+=5;doc.setFont("helvetica","normal");doc.setFontSize(8);doc.setTextColor(90,82,72);
+      const fz=doc.splitTextToSize("* "+ftx,182);if(y+fz.length*4>285){doc.addPage();y=M;}
+      fz.forEach((zl,i)=>doc.text(zl,M,y+i*4));y+=(fz.length-1)*4;}
+    y+=10;
     if(y>250){doc.addPage();y=M;}
     const created=fmtDE();const sig=initials(o.mitarbeiter||S.absender);const eq=equipText(o);
     doc.setFont("helvetica","bold");doc.setFontSize(8.5);doc.setTextColor(90,82,72);doc.text("Notiz / Sonder-Equipment",M,y);y+=5;
@@ -1519,6 +1813,7 @@ function parseZDF(raw){const t=clean(raw);const meta=parseMeta(t);meta.persons=p
 let impData,impSel;
 function confirmImport(p,fname){
   impData=p;const persons=p.persons||[];
+  const ftErkannt=ortAusText(p.produktionsort)||"";
   /* Vorauswahl nur über den gespeicherten Namen (V4.2, A8). Kein Rückfall auf die erste Person: deren Einsatzzeiten sehen
      plausibel aus, Name und Reisezeiten wären aber die eines Kollegen. */
   const meinName=clean(S.absender);
@@ -1539,6 +1834,8 @@ function confirmImport(p,fname){
       <p class="note">Freie: Der Nachweis verlängert das Einsatzende um den Pausenabzug von FLINK. Fest Angestellte: Zeiten unverändert.</p></div>
     ${S.verdienstOn?`<div class="field"><label>Funktion (für Verdienst)</label><div class="toggles" id="i_fk"><button data-f="assistent">Dreh-Assistent</button><button data-f="kamera">Kamera</button></div><p class="note" id="i_fknote"></p></div>`:""}
     <div class="field"><label>Name (für Nachweis)</label><input type="text" class="txt" id="i_name" value=""></div>`:`<p class="note">Keine Personen erkannt – du kannst den Auftrag trotzdem anlegen und Tage manuell erfassen.</p>`}
+    <div class="field" style="margin-top:14px"><label>Feiertage nach</label><select id="i_ftort">${ftOptionen(ftErkannt,["","Wie Einstellungen: "+ortLabel(S.feiertagOrt)])}</select>
+      <p class="note">${ftErkannt?"Aus dem Produktionsort erkannt, bitte prüfen.":"Im Produktionsort nicht erkannt, es gilt die Einstellung."}</p></div>
     <div class="section-h" style="margin:18px 0 8px"><h3>Reiseart</h3></div>
     <div class="toggles" id="i_trip"><button data-t="ein">Einzeltage</button><button data-t="mehr">Mehrtägig</button></div>
     <div class="rnote"><b>Einzeltage</b> · jeden Tag hin &amp; zurück, ohne Übernachtung – Tagegeld je Tag möglich.<br><b>Mehrtägig</b> · Anreise am ersten, Rückreise am letzten Tag, Übernachtung vorbelegt – dann kein Tagegeld-Anspruch (läuft über die Dienstreise-Abrechnung). Dreh- und Reisezeiten passt du danach je Tag an.</div>
@@ -1590,7 +1887,7 @@ function confirmImport(p,fname){
     /* Funktion nur speichern, wenn erkannt oder bewusst gewählt: mit Verdienst-Option zählt das Segment, sonst nur die
        Erkennung aus der Dispo. Ohne beides bleibt das Feld weg und der Auftrag folgt der Vorgabe S.funktion. */
     const fk=S.verdienstOn&&sel?impFk:(sel&&sel.funktion);
-    const no={id:uid(),titel:val("i_titel"),auftragsnr:val("i_anr"),prodNummer:val("i_pnr"),kostentraeger:val("i_kt"),produktionsort:val("i_ort"),mitarbeiter:val("i_name"),status:impStatus,...(fk?{funktion:fk}:{}),days};
+    const no={id:uid(),titel:val("i_titel"),auftragsnr:val("i_anr"),prodNummer:val("i_pnr"),kostentraeger:val("i_kt"),produktionsort:val("i_ort"),mitarbeiter:val("i_name"),status:impStatus,...(fk?{funktion:fk}:{}),...(val("i_ftort")?{feiertagOrt:val("i_ftort")}:{}),days};
     DB.orders.push(no);persist();state.orderId=no.id;state.tab="orders";closeSheet();render();toast(days.length?days.length+" Tag(e) importiert – bitte prüfen!":"Auftrag angelegt");
   };
 }
