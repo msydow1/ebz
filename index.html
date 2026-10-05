@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="Zeiterfassung">
 <meta name="theme-color" content="#15171A">
 <title>Zeiterfassung</title>
-<!-- Zeiterfassung V4.3.1 · Design "Amber Editorial" -->
+<!-- Zeiterfassung V4.4.0 · Design "Amber Editorial" -->
 <!-- impeccable-disable single-font -- Nutzer wählte beim V1.2-Redesign bewusst "Inter durchgängig" (eine Familie, tabular-nums für Zeiten) -->
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -130,6 +130,7 @@ body.light .btn.danger{border-color:rgba(194,78,59,.4)}
 /* Chips */
 .chip{font-size:10px;font-weight:600;padding:3px 8px;border-radius:7px;background:var(--field);color:var(--muted);border:1px solid var(--line);flex:none}
 .chip.pos{background:var(--pos-soft);border-color:var(--pos-line);color:var(--pos)}
+.chip.nw{background:var(--accent-soft);border-color:var(--accent-line);color:var(--accent)}
 .chips{display:flex;flex-wrap:wrap;gap:8px}
 .chips button{border:1px solid var(--line);background:var(--field);color:var(--muted);font-family:inherit;font-size:12px;font-weight:600;padding:9px 11px;border-radius:8px}
 .chips button.on{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
@@ -187,7 +188,7 @@ body.light .btn.danger{border-color:rgba(194,78,59,.4)}
 /* RZ: Anreise und Rückreise untereinander, damit "09:30" auf 375px voll lesbar bleibt */
 .rzblock+.rzblock{margin-top:12px}
 .rzblock .two{gap:10px}
-.nrow{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px}
+.nrow{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:12px}
 .rlbl{font-size:11px;font-weight:600;color:var(--muted)}
 /* Mini-Segment + entfällt */
 .mseg{display:flex;background:var(--field);border-radius:8px;padding:3px;gap:2px}
@@ -196,11 +197,34 @@ body.light .btn.danger{border-color:rgba(194,78,59,.4)}
 .mseg button.on{background:var(--surface-2);color:var(--text-strong)}
 .offbtn{border:1px solid var(--line);background:var(--field);color:var(--muted);font-family:inherit;font-size:10px;font-weight:700;padding:4px 9px;border-radius:7px}
 .offbtn.on{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
+/* Grenzübertritt (V4.4): ✕ je Feld nur mit Wert, „nicht erfasst“ bei leerem Feld. Die zentrierte Zeit bleibt frei. */
+.gfield{position:relative}
+.gfield .gleer{position:absolute;left:0;right:0;bottom:8px;font-size:13px;font-weight:500;color:var(--faint);pointer-events:none}
+.gfield.voll .gleer{display:none}
+.gfield:not(.voll) input{color:transparent}
+.gclr{position:absolute;right:4px;bottom:7px;width:24px;height:24px;border-radius:12px;border:1px solid var(--line-strong);background:var(--surface-2);color:var(--muted);font-family:inherit;font-size:12px;font-weight:700;padding:0;display:none;align-items:center;justify-content:center;touch-action:manipulation}
+.gfield.voll .gclr{display:flex}
+.gclr::after{content:"";position:absolute;inset:-10px -4px -10px -10px}
+.gclr:active{background:var(--surface-2);color:var(--text-strong)}
 /* Ja/Nein-Segmente */
 .toggles{display:flex;background:var(--field);border-radius:10px;padding:4px;gap:4px}
 .toggles button{flex:1;padding:10px 4px;border-radius:7px;border:none;background:transparent;color:var(--muted);font-family:inherit;font-size:12px;font-weight:700;font-variant-numeric:tabular-nums}
 .toggles button.on{background:var(--accent);color:var(--on-accent)}
-.toggles button.on[data-p="0"],.toggles button.on[data-u="0"],.toggles button.on[data-a="0"],.toggles button.on[data-v="0"]{background:var(--surface);color:var(--text-strong)}
+.toggles button.on[data-p="0"],.toggles button.on[data-a="0"],.toggles button.on[data-v="0"]{background:var(--surface);color:var(--text-strong)}
+/* Tagestyp (V4.4): vier Knöpfe in einer Reihe, „Rückreisetag“ darf nicht umbrechen */
+.typseg button{padding:10px 2px;white-space:nowrap;font-size:11px}
+/* Tippflächen (V4.4): unsichtbar auf mindestens 44 px, die Optik bleibt gleich. Die Fläche ragt nie in ein Nachbarziel:
+   im Mini-Segment nur nach oben, unten und außen, bei den Ja/Nein-Knöpfen höchstens 2 px seitlich. */
+.offbtn,.mseg button,.toggles button,.iconbtn{position:relative;touch-action:manipulation;-webkit-user-select:none;user-select:none}
+.offbtn::after{content:"";position:absolute;inset:-11px -10px}
+.mseg button::after{content:"";position:absolute;inset:-11px 0}
+.mseg button:first-child::after{left:-10px}
+.mseg button:last-child::after{right:-10px}
+.toggles button::after{content:"";position:absolute;inset:-5px -2px}
+.iconbtn::after{content:"";position:absolute;inset:-4px}
+.offbtn:not(.on):active,.mseg button:active,.toggles button:not(.on):active{background:var(--surface-2);color:var(--text-strong)}
+.offbtn.on:active,.toggles button.on:active{filter:brightness(.9)}
+.timebox .note.endehw{color:var(--accent-ink);margin-top:10px}
 /* Calc-Kachel */
 .calc{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin:4px 0 12px}
 .calc .clbl{font-size:9px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
@@ -213,10 +237,16 @@ body.light .btn.danger{border-color:rgba(194,78,59,.4)}
 /* Tagegeld-Box */
 .tgbox{border-radius:12px;padding:13px 15px;margin:2px 0 4px;background:var(--surface);border:1px solid var(--line)}
 .tgbox .t{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-size:13px;font-weight:700;color:var(--muted)}
-.tgbox .t .in{font-size:11px;font-weight:500;color:var(--muted)}
+.tgbox .t .in{font-size:11px;font-weight:500;color:var(--muted);white-space:nowrap}
 .tgbox .why{font-size:11px;font-weight:500;color:var(--silver);margin-top:4px;line-height:1.5}
 .tgbox.ok{background:var(--pos-soft);border-color:var(--pos-line)}
 .tgbox.ok .t{color:var(--pos)}
+/* Nachweis-Kasten (V4.4): Amber statt Tagegeld-Grün, steht direkt nach der Pause */
+.nwwrap{margin:0 0 8px}
+.nwwrap:empty{margin:0}
+.tgbox.nw{background:var(--accent-soft);border-color:var(--accent-line)}
+.tgbox.nw .t{color:var(--text-strong)}
+.tgbox.nw .t .in{color:var(--accent);font-weight:700}
 /* Dispo-Zeile */
 .dispoinfo{font-size:12px;color:var(--silver);background:var(--info-soft);border:1px solid var(--info-line);border-radius:10px;padding:9px 12px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;gap:10px}
 .dispoinfo button{background:var(--info);border:none;color:#fff;font-family:inherit;font-size:11px;font-weight:600;padding:5px 10px;border-radius:7px;flex:none}
@@ -224,7 +254,8 @@ body.light .btn.danger{border-color:rgba(194,78,59,.4)}
 .setrow{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;background:var(--surface);border:none;border-radius:12px;padding:14px 15px;margin-bottom:8px;font-family:inherit;font-size:14px;font-weight:600;color:var(--text-strong);text-align:left}
 .setrow:active{background:var(--surface-2)}
 .setrow>span:first-child{flex:1;min-width:0}
-.setrow small{display:block;font-size:11px;font-weight:500;color:var(--faint);margin-top:2px}
+.setrow small{display:block;font-size:11px;font-weight:500;color:var(--faint);margin-top:2px;overflow-wrap:anywhere}
+.setrow small .warn{color:var(--accent)}
 .setrow .chev{color:var(--line-strong);font-size:15px;flex:none}
 .setcard{background:var(--surface);border-radius:12px;padding:14px 15px;margin-bottom:8px}
 .setcard .stat{font-size:12px;font-weight:500;color:var(--silver);margin-bottom:10px}
@@ -264,6 +295,12 @@ body.light .btn.danger{border-color:rgba(194,78,59,.4)}
 /* Sonstiges */
 .note{font-size:11px;color:var(--faint);line-height:1.5;margin:8px 0 0}
 .note b{color:var(--muted);font-weight:600}
+/* Direkte Wege in die Einstellungen (V4.4): ruhige Textlinks mit 44 px Tippfläche */
+.linkbtn{display:block;margin:0 auto 18px;background:none;border:none;color:var(--accent);font-family:inherit;font-size:12px;font-weight:600;padding:14px 8px;min-height:44px;touch-action:manipulation}
+.linkbtn.left{margin:-8px 0 8px;padding:14px 0;text-align:left}
+.linkbtn:active{opacity:.7}
+.section-h.tap{cursor:pointer;padding:14px 0;margin:10px 0 -10px;touch-action:manipulation}
+.section-h.tap:active{opacity:.7}
 .divider{height:1px;background:var(--line);margin:18px 0}
 .hidden{display:none!important}
 .empty{text-align:center;color:var(--muted);padding:56px 20px}
@@ -282,7 +319,7 @@ body.light .btn.danger{border-color:rgba(194,78,59,.4)}
   <div class="view" id="view"></div>
   <div class="foot">
     <div class="foot-note">Daten bleiben nur auf diesem Gerät · alle Angaben ohne Gewähr</div>
-    <div class="foot-v">Zeiterfassung <b>V4.3.1</b></div>
+    <div class="foot-v">Zeiterfassung <b>V4.4.0</b></div>
   </div>
 </div>
 <input type="file" id="pdfInput" accept="application/pdf" class="hidden">
@@ -317,8 +354,16 @@ S.feiertagOrt??="DE";  /* Feiertage (V4.3): üblicher Arbeitsort bzw. Dienstort.
    Wird einmal nach jedem Update gezeigt: Vergleich S.seenVersion gegen APP_VERSION.
    Nicht bei frischen Installationen (keine Aufträge) – ein neuer Kollege soll kein
    Changelog sehen, bevor er die App überhaupt kennt. Neue Einträge oben anfügen. */
-const APP_VERSION="4.3.1";
+const APP_VERSION="4.4.0";
 const WHATSNEW=[
+  {v:"4.4.0", t:"Einfacher erfassen, klarer verstehen", items:[
+    ["Tagestyp für jeden Tag","Oben im Tag wählst du jetzt Anreisetag, Vor Ort, Rückreisetag oder Eintägig. Ein Tipp setzt die Übernachtung und schaltet die passenden Fahrten ein oder aus. Am ersten Tag einer Reise mit Übernachtung verschwindet die Rückreise also mit einem Tipp. Neue Tage in einem mehrtägigen Auftrag starten als Vor Ort."],
+    ["Grenzübertritt einfacher","Steht ein Tag auf Ausland, trägst du die Grenzzeiten sofort ein, ohne vorher etwas freizuschalten. Jedes Feld hat ein eigenes ✕ zum Leeren. Erkennt die App beim Import einen Ort im Ausland, starten die Tage gleich mit Ausland Ja."],
+    ["Klarere Begriffe","Im Tag heißen die Zeitblöcke jetzt Einsatz, Drehzeit und Reisezeit. Für deine Überstunden zählt nur die Einsatzzeit minus Pause. Drehzeit und Reisezeit stehen im Nachweis und liegen innerhalb der Einsatzzeit."],
+    ["Warum der Nachweis manchmal später endet","FLINK zieht über 9:45 Stunden immer 45 Minuten Pause ab, auch wenn du nur 30 gemacht hast. Damit deine echte Zeit ankommt, endet der Nachweis dann 15 Minuten später. Das siehst du jetzt auf der Tageskarte, zum Beispiel als „Nachweis 19:15 · +15 FLINK“, und im Tag steht direkt nach der Pause, wie FLINK rechnet."],
+    ["Einstellungen neu sortiert","Die Einstellungen sind jetzt eine Übersicht. Dein Name, die Beschäftigung und die Vertragstage stehen unter Du und dein Vertrag. Empfänger und Mail-Text findest du unter Mail an die Disposition, deine Tagessätze unter Verdienst und Tagessätze. Aus der Statistik, dem Verdienst und dem Auftrag kommst du mit einem Tipp direkt an die richtige Stelle."],
+    ["Schalter reagieren zuverlässiger","Die kleinen Schalter wie entfällt und kein Dreh lassen sich leichter treffen. Ein zweiter Tipp macht nichts mehr kaputt: Schaltest du eine Fahrt wieder ein, bevor du speicherst, kommen deine vorherigen Zeiten zurück. Ist am iPhone gerade das Zeitrad offen, schließt der erste Tipp daneben nur das Rad. Tipp danach einfach noch einmal."]
+  ]},
   {v:"4.3.1", t:"Einsatztage richtig gezählt, Tagegeld genauer", items:[
     ["Zähler hängt nicht mehr an der Beschäftigung","Beim Umschalten zwischen frei und fest in den Einstellungen hat der Zähler ältere Aufträge ohne eigene Angabe mal mitgezählt und mal nicht. Jetzt zählt jeder Einsatztag aus deinen Aufträgen, egal ob frei oder fest."],
     ["Für fest Angestellte","Fest Angestellte sehen jetzt in der Statistik und oben in den Aufträgen ihre Einsatztage im laufenden Jahr, geleistet und disponiert. Eine Zahl aus dem Vertrag brauchen sie dafür nicht."],
@@ -478,6 +523,42 @@ function exportEnde(o,d){
 function pauseDez(min){if(!min)return "—";return (min/60).toFixed(2).replace(/0$/,"").replace(".",",");}
 /* Status des Auftrags: frei (Default aus den Einstellungen) oder fest angestellt. */
 function orderStatus(o){return (o&&o.status)||S.status||"frei";}
+/* === BEDIENUNG-BEGIN === Bedien-Runde (V4.4). Reine Funktionen ohne DOM, getestet in tests/bedienung.test.mjs.
+   Kein neues Datenfeld: Tagestyp und Schalter folgen aus den Feldwerten, wie die Reiseart bei orderTrip. */
+function hatAnreise(d){return !!(d&&(d.anreise||d.anreiseEnde));}
+function hatRueckreise(d){return !!(d&&(d.rueckBeginn||d.rueck));}
+/* Tagestyp: ohne Übernachtung "ein" (Eintägig), sonst nach Fahrten "an" (nur hin), "ort" (keine), "rueck" (nur zurück),
+   "eigen" (Übernachtung mit beiden Fahrten am selben Tag, dafür gibt es keinen Knopf). */
+function dayTyp(d){
+  if(!d||!d.uebernachtung)return "ein";
+  const an=hatAnreise(d),rk=hatRueckreise(d);
+  return an&&rk?"eigen":an?"an":rk?"rueck":"ort";
+}
+/* Belegung je Typ: ue = Übernachtung, an/rk = Fahrt findet statt. "eigen" hat keine Belegung. */
+function typFelder(typ){
+  return ({ein:{ue:false,an:true,rk:true},an:{ue:true,an:true,rk:false},ort:{ue:true,an:false,rk:false},rueck:{ue:true,an:false,rk:true}})[typ]||null;
+}
+/* Automatisches Einsatzende: letzte vorhandene Tätigkeit plus 30 Minuten (Rückreise-Ende vor Drehende vor Anreise-Ende).
+   Eine Quelle für das Tages-Sheet und endeGeschuetzt (vorher doppelt als calcAutoEnde und lastEnd, Review C6). */
+function autoEnde(d){const le=(d&&(d.rueck||d.drehende||d.anreiseEnde))||"";return le?addMin(le,30):"";}
+/* Das Ende bleibt beim Typwechsel stehen, wenn es von Hand getippt ist (weicht von autoEnde ab) oder aus der Dispo stammt. */
+function endeGeschuetzt(d){
+  if(!d||!d.ende)return false;
+  if(d.dispo&&d.dispo.ende&&d.ende===d.dispo.ende)return true;
+  return d.ende!==autoEnde(d);
+}
+/* Ausland, wenn der Arbeitsort ein gültiger Ort außerhalb Deutschlands ist. "XX" (anderes Land) zählt als Ausland. */
+function auslandVorgabe(ort){return !!ort&&ortGueltig(ort)===ort&&!/^DE/.test(ort);}
+/* Startwerte eines neuen Tags ohne id und datum. Im mehrtägigen Auftrag "Vor Ort", sonst "Eintägig" wie bisher.
+   Ausland folgt dem Arbeitsort des Auftrags (o.feiertagOrt), nicht der Einstellung und nicht dem Dienstort. */
+function neuerTag(o){
+  const basis={einsatz:"09:00",drehbeginn:"10:00",drehende:"17:00",pause:true,ausland:auslandVorgabe(o&&o.feiertagOrt),grenzHin:"",grenzRueck:"",dispo:{einsatz:"",ende:""}};
+  if(o&&orderTrip(o)==="mehr")return {...basis,anreise:"",anreiseEnde:"",rueckBeginn:"",rueck:"",ende:"17:30",uebernachtung:true};
+  return {...basis,anreise:"09:30",anreiseEnde:"10:00",rueckBeginn:"17:00",rueck:"17:30",ende:"18:00",uebernachtung:false};
+}
+/* Anzahl der Tage, an denen der Nachweis wegen der FLINK-Pausenautomatik später endet (nur bei Status frei). */
+function flinkTage(o){if(!o||orderStatus(o)!=="frei")return 0;return o.days.filter(d=>dayCalc(d).korr>0).length;}
+/* === BEDIENUNG-END === */
 /* === FEIERTAGE-BEGIN === Feiertage am Arbeitsort (V4.3). Reine Rechnung ohne DOM, getestet in tests/feiertage.test.mjs gegen
    tests/feiertage-referenz.json (Python-Bibliothek holidays 0.105, Jahre 2023 bis 2035). Grundlage: PdTV 9.5, 100 % an den am
    Arbeitsort geltenden gesetzlichen Feiertagen einschließlich Oster- und Pfingstsonntag.
@@ -796,7 +877,7 @@ function verdienstFehlSatz(heute){
 }
 function parseEur(s){const t=String(s??"").trim().replace(/\s|€/g,"");if(!t)return null;
   const n=parseFloat(t.includes(",")?t.replace(/\./g,"").replace(",","."):t);return isFinite(n)&&n>0?runde2(n):null;}
-/* Netto-Anteil in Prozent: Komma oder Punkt, ohne vorher zu runden. Ein Bruch unter 1 (z. B. 0,5437) gilt als 54,37 %.
+/* Netto-Anteil in Prozent: Komma oder Punkt, ohne vorher zu runden. Ein Bruch unter 1 (z. B. 0,625) gilt als 62,5 %.
    Gültig nur 1 bis 100, sonst null (dann zeigt die App nur Brutto). */
 function parseQuote(s){const t=String(s??"").trim().replace(/\s|%/g,"");if(!t)return null;
   let n=parseFloat(t.replace(",","."));if(!isFinite(n))return null;if(n<1)n*=100;n=runde2(n);return n>=1&&n<=100?n:null;}
@@ -868,7 +949,7 @@ function renderBar(){
   }else{
     bar.innerHTML=`<div class="brand">${LOGO_SVG}<span class="brand-name">Zeiterfassung</span></div><button class="iconbtn" id="themeBtn" aria-label="Hell/Dunkel"></button><button class="iconbtn" id="navSettings" aria-label="Einstellungen">${ICON_GEAR}</button>`;
     document.getElementById("themeBtn").onclick=()=>{S.theme=(S.theme==="light"?"dark":"light");persist();applyTheme();};
-    document.getElementById("navSettings").onclick=openSettings;
+    document.getElementById("navSettings").onclick=()=>openSettings();
     paintThemeIcon();
   }
 }
@@ -970,26 +1051,31 @@ function renderDetail(){
     if(rd!=null)l2+=` · Rückreise ${fmtMin(rd)}`;
     let chips="";
     if(c.tg.state==="ok")chips+=`<span class="chip pos">Tagegeld</span>`;
-    if(d.uebernachtung)chips+=`<span class="chip">Übernachtung</span>`;
+    /* FLINK-Ausgleich sichtbar (V4.4): nur frei und nur an Tagen, an denen der Nachweis später endet. */
+    if(orderStatus(o)==="frei"&&c.korr>0)chips+=`<span class="chip nw">Nachweis ${exportEnde(o,d)} · +${c.korr} FLINK</span>`;
+    if(d.uebernachtung)chips+=`<span class="chip">${({an:"Anreisetag",ort:"Vor Ort",rueck:"Rückreisetag"})[dayTyp(d)]||"Übernachtung"}</span>`;
     if(d.ausland)chips+=`<span class="chip">Ausland</span>`;
     if(d.grenzHin||d.grenzRueck)chips+=`<span class="chip">Grenze ${d.grenzHin||"–"} / ${d.grenzRueck||"–"}</span>`;
     const ftn=feiertagTag(o,d);if(ftn)chips+=`<span class="chip">Feiertag · ${esc(ftn)}</span>`;
     h+=`<div class="day" data-day="${d.id}">
       <div class="top"><div class="date">${fmtDayC(d.datum)}</div><div style="display:flex;align-items:center;gap:10px"><span class="ot ${otClass(c.ot)}">${fmtSigned(c.ot)}</span><button class="dayDel" data-del="${d.id}" aria-label="Tag löschen">${ICON_TRASH}</button></div></div>
-      <div class="line"><span>EZ ${d.einsatz||"–"}–${d.ende||"–"} · ${azTxt} · Pause ${c.pauseJa?fmtMin(c.pause):"nein"}</span></div>
+      <div class="line"><span>Einsatz ${d.einsatz||"–"}–${d.ende||"–"} · ${azTxt} · Pause ${c.pauseJa?fmtMin(c.pause):"nein"}</span></div>
       <div class="line"><span>${l2}</span>${chips}</div>
     </div>`;
   });
+  const nFl=flinkTage(o);
   h+=`<button class="btn" id="addDay" style="margin-top:16px">Tag hinzufügen</button>
   <div class="divider"></div>
   <div class="btnrow"><button class="btn ghost" id="mailOrder">Als E-Mail</button><button class="btn ghost" id="pdfOrder">Als PDF</button></div>
-  <p class="sub" style="margin-top:0">Export ohne Summen und Tagegeld – 7-Spalten-Tabelle wie gehabt.</p>`;
+  <p class="sub" style="margin-top:0;margin-bottom:0">${nFl>0?`An ${nFl} ${nFl===1?"Tag":"Tagen"} endet der Nachweis später als hier, weil FLINK die Pause pauschal abzieht. Warum, steht im jeweiligen Tag.`:"Export ohne Summen und Tagegeld."}</p>
+  <button class="linkbtn" id="mailSet">Empfänger und Mail-Text ändern ›</button>`;
   view.innerHTML=h;
   document.getElementById("editOrder").onclick=()=>editOrder(o.id);
   document.getElementById("abrToggle").onclick=()=>{o.abgerechnet=!o.abgerechnet;persist();render();toast(o.abgerechnet?"Als abgerechnet markiert":"Auftrag wieder aktiv");};
   document.getElementById("addDay").onclick=()=>editDay(o.id,null);
   document.getElementById("mailOrder").onclick=()=>mailOrder(o);
   document.getElementById("pdfOrder").onclick=()=>pdfOrder(o);
+  document.getElementById("mailSet").onclick=()=>openSettings("mail");
   view.querySelectorAll("#tripSeg button").forEach(b=>b.onclick=()=>{
     const trip=b.dataset.t; if(trip===orderTrip(o))return;
     const n=o.days.length;
@@ -1019,7 +1105,7 @@ function vertragsBlockHtml(){const v=vertragsTage();if(!v)return "";
     <div class="kpi"><div class="l">Disponiert</div><div class="n">${v.disponiert}</div></div>
   </div>`;
   const pct=x=>Math.max(0,Math.min(100,x/v.vertrag*100)),g=pct(v.geleistet),dsp=Math.min(pct(v.disponiert),100-g);
-  return `<div class="section-h"><h3>Vertragstage ${v.jahr}</h3><span class="tot">von ${v.vertrag}</span></div>
+  return `<div class="section-h tap" id="vtHead" role="button" tabindex="0"><h3>Vertragstage ${v.jahr} ›</h3><span class="tot">von ${v.vertrag}</span></div>
   <div class="kpis">
     <div class="kpi"><div class="l">Geleistet</div><div class="n">${v.geleistet}</div></div>
     <div class="kpi"><div class="l">Disponiert</div><div class="n">${v.disponiert}</div></div>
@@ -1042,6 +1128,8 @@ function renderStats(){
     <div class="kpi"><div class="l">Soll / Tag</div><div class="n">${fmtMin(S.sollMin)}</div></div>
   </div>`;
   h+=vertragsBlockHtml();
+  /* Direkter Weg (V4.4): Freie ohne Vertragstage sehen eine ruhige Zeile, bis ein Wert gespeichert ist. */
+  if(S.status!=="fest"&&S.vertragstage==null)h+=`<button class="linkbtn left" id="vtSet">Vertragstage eintragen ›</button>`;
   // Gruppierung nach Monat und Jahr (aus den Tagesdaten)
   const perMonth={},perYear={};
   DB.orders.forEach(o=>o.days.forEach(d=>{
@@ -1065,6 +1153,7 @@ function renderStats(){
   }else h+=`<div class="empty"><div class="big">📊</div><p>Noch keine Daten.</p></div>`;
   view.innerHTML=h;
   bindTabs();
+  ["vtHead","vtSet"].forEach(id=>{const el=document.getElementById(id);if(el){el.onclick=()=>openSettings("vertrag");el.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();openSettings("vertrag");}};}});
   view.querySelectorAll("[data-open]").forEach(c=>c.onclick=()=>{state.orderId=c.dataset.open;window.scrollTo(0,0);render();});
 }
 
@@ -1073,15 +1162,16 @@ function renderStats(){
 function fehlSatzText(f){
   const s=[["assistent","Dreh-Assistent"],["kamera","Kamera"]].filter(([k])=>f[k]).map(([k,nm])=>
     `${f[k]} ${f[k]===1?"Einsatz":"Einsätze"} als ${nm} ${f[k]===1?"zählt":"zählen"} nicht mit, weil der Tagessatz ${nm} fehlt.`);
-  return s.length?s.join(" ")+` Trag ${s.length>1?"sie":"ihn"} in den Einstellungen unter Verdienst ein.`:"";
+  return s.length?s.join(" ")+` Trag ${s.length>1?"sie":"ihn"} unter Einstellungen › Verdienst und Tagessätze ein.`:"";
 }
 function renderVerdienst(){
   const ms=verdienstMonate(),q=nettoQuote(),fehl=fehlSatzText(verdienstFehlSatz());
   let h=`<div class="pagehead"><div class="eyebrow">${esc(headEyebrow())}</div><div class="display">Verdienst</div></div>`+tabsHtml();
   if(!ms.length){
-    const txt=fehl||(!S.satzAssist&&!S.satzKamera?"Trag in den Einstellungen unter Verdienst deine Tagessätze ein."
+    const keinSatz=!S.satzAssist&&!S.satzKamera;
+    const txt=fehl||(keinSatz?"Trag deine Tagessätze ein, dann rechnet die App hier, was dir nach Tarif zusteht."
       :"Noch keine Einsätze bis heute. Gezählt werden Aufträge als freier Mitarbeiter.");
-    h+=`<div class="empty"><div class="big">€</div><p>${txt}</p></div>`;
+    h+=`<div class="empty"><div class="big">€</div><p>${txt}</p>${fehl||keinSatz?'<button class="btn ghost" id="satzSet" style="max-width:260px;margin:14px auto 0">Tagessätze eintragen</button>':""}</div>`;
   }else{
     const m=ms[0];
     h+=`<div class="hero"><div class="l">${q?"Aufs Konto":"Brutto nach Tarif"} · ${esc(fmtMonth(m.monat))}</div>
@@ -1092,7 +1182,7 @@ function renderVerdienst(){
       <div class="kpi"><div class="l">Mehrarbeit</div><div class="n">${fmtStd(m.mehrStd)}</div></div>
       <div class="kpi acc"><div class="l">Über Tagessatz</div><div class="n">${fmtEurRund(m.brutto-m.honorar)}</div></div>
     </div>
-    ${fehl?`<div class="rnote" style="margin:0 0 14px">${fehl}</div>`:""}
+    ${fehl?`<div class="rnote" style="margin:0 0 6px">${fehl}</div><button class="linkbtn left" id="satzSet" style="margin:0 0 8px">Tagessätze eintragen ›</button>`:""}
     <div class="section-h"><h3>Pro Monat</h3></div>`;
     ms.forEach(x=>{
       h+=`<div class="srow" data-vm="${esc(x.monat)}" style="cursor:pointer"><div class="nm">${esc(fmtMonth(x.monat))}<small>${x.einsaetze} ${x.einsaetze===1?"Einsatz":"Einsätze"} · Brutto ${fmtEur(x.brutto)}${x.mehrStd?" · "+fmtStd(x.mehrStd)+" Mehrarbeit":""}</small></div><div style="display:flex;align-items:center;gap:10px;flex:none"><span class="v" style="white-space:nowrap">${x.konto!=null?"ca. "+fmtEurRund(x.konto):fmtEur(x.brutto)}</span><span class="chev">›</span></div></div>`;
@@ -1101,6 +1191,7 @@ function renderVerdienst(){
   }
   view.innerHTML=h;
   bindTabs();
+  const ss=document.getElementById("satzSet");if(ss)ss.onclick=()=>openSettings("verdienst");
   view.querySelectorAll("[data-vm]").forEach(r=>r.onclick=()=>openVerdienstMonat(r.dataset.vm));
 }
 function openVerdienstMonat(mk){
@@ -1116,9 +1207,16 @@ function openVerdienstMonat(mk){
 /* ===== Sheet ===== */
 const scrim=document.getElementById("scrim"),sheet=document.getElementById("sheet");
 let shT=null;
-function openSheet(html){clearTimeout(shT);scrim.classList.remove("out");sheet.classList.remove("out");sheet.innerHTML='<div class="grip"></div>'+html;scrim.classList.add("on");sheet.scrollTop=0;document.body.style.overflow="hidden";}
+/* Wächter (V4.4, nur Unterseiten der Einstellungen): merkt die Feldwerte beim Öffnen. Schließen, Wischen und „Zurück“
+   fragen nach, wenn sich etwas geändert hat. openSheet setzt ihn bei jedem neuen Sheet zurück. */
+let sheetGuard=null;
+function wacheSetzen(ids,extra){const start=ids.map(val).join("\u0001");sheetGuard=()=>ids.map(val).join("\u0001")!==start||!!(extra&&extra());}
+function verwerfenFragen(weiter){askConfirm("Du hast hier etwas geändert und noch nicht gespeichert. Änderungen verwerfen?",()=>{sheetGuard=null;weiter();},"Verwerfen");}
+function zurueckZurUebersicht(){if(sheetGuard&&sheetGuard())verwerfenFragen(()=>openSettings());else openSettings();}
+function openSheet(html){clearTimeout(shT);sheetGuard=null;scrim.classList.remove("out");sheet.classList.remove("out");sheet.innerHTML='<div class="grip"></div>'+html;scrim.classList.add("on");sheet.scrollTop=0;document.body.style.overflow="hidden";}
 function closeSheet(){
   if(!scrim.classList.contains("on")||scrim.classList.contains("out"))return;
+  if(sheetGuard&&sheetGuard()){verwerfenFragen(closeSheet);return;}
   scrim.classList.add("out");
   if(!sheet.style.transform)sheet.classList.add("out");/* Swipe hat das Sheet schon rausgeschoben */
   shT=setTimeout(()=>{scrim.classList.remove("on","out");sheet.classList.remove("out");sheet.style.transform="";sheet.style.transition="";document.body.style.overflow="";},200);
@@ -1130,12 +1228,15 @@ sheet.addEventListener("touchstart",e=>{swY=e.touches[0].clientY;swActive=sheet.
 sheet.addEventListener("touchmove",e=>{
   if(swY==null||!swActive)return;
   const dy=e.touches[0].clientY-swY;
-  if(dy>0&&sheet.scrollTop<=0){sheet.style.transition="none";sheet.style.transform="translateY("+dy+"px)";e.preventDefault();}
+  /* Erst ab 10 px nach unten (V4.4): Ein Tipp mit leichtem Zittern bleibt ein Tipp und lässt das Sheet nicht zucken. */
+  if(dy>10&&sheet.scrollTop<=0){sheet.style.transition="none";sheet.style.transform="translateY("+(dy-10)+"px)";e.preventDefault();}
+  else if(sheet.style.transform)sheet.style.transform="";
 },{passive:false});
 sheet.addEventListener("touchend",e=>{
   if(swY==null)return;
   const dy=e.changedTouches[0].clientY-swY;swY=null;
-  if(swActive&&dy>110){sheet.style.transition="transform .22s ease";sheet.style.transform="translateY(100%)";setTimeout(closeSheet,210);}
+  if(swActive&&dy>110&&sheetGuard&&sheetGuard()){sheet.style.transition="transform .22s ease";sheet.style.transform="";setTimeout(()=>{sheet.style.transition="";},240);verwerfenFragen(closeSheet);}
+  else if(swActive&&dy>110){sheet.style.transition="transform .22s ease";sheet.style.transform="translateY(100%)";setTimeout(closeSheet,210);}
   else{sheet.style.transition="transform .22s ease";sheet.style.transform="";setTimeout(()=>{sheet.style.transition="";},240);}
   swActive=false;
 });
@@ -1163,7 +1264,7 @@ function editOrder(id){
   const paintStatus=()=>document.querySelectorAll("#f_status button").forEach(b=>b.classList.toggle("on",b.dataset.s===tmpStatus));
   /* Fest angestellt: Es gilt der Dienstort aus den Einstellungen, die Auswahl im Auftrag ist gesperrt (V4.3). */
   const paintFt=()=>{const fest=tmpStatus==="fest";document.getElementById("f_ftort").disabled=fest;
-    document.getElementById("f_ftnote").textContent=fest?"Fest angestellt: Es gilt dein Dienstort aus den Einstellungen."
+    document.getElementById("f_ftnote").textContent=fest?"Fest angestellt: Es gilt dein Dienstort aus Einstellungen › Du und dein Vertrag."
       :"Es zählen die Feiertage am Arbeitsort. Sie werden im Nachweis markiert und unten aufgelistet.";};
   document.querySelectorAll("#f_status button").forEach(b=>b.onclick=()=>{tmpStatus=b.dataset.s;paintStatus();paintFt();});
   paintStatus();paintFt();
@@ -1185,85 +1286,95 @@ function editOrder(id){
 let tmpPause,tmpUE,tmpAL;
 function editDay(orderId,dayId){
   const o=DB.orders.find(x=>x.id===orderId);
-  const d=dayId?o.days.find(x=>x.id===dayId):{datum:guessNextDate(o),einsatz:"09:00",anreise:"09:30",anreiseEnde:"10:00",drehbeginn:"10:00",drehende:"17:00",rueckBeginn:"17:00",rueck:"17:30",ende:"18:00",pause:true,uebernachtung:false,ausland:false,grenzHin:"",grenzRueck:"",dispo:{einsatz:"",ende:""}};
+  const d=dayId?o.days.find(x=>x.id===dayId):{datum:guessNextDate(o),...neuerTag(o)};
   tmpPause=d.pause!==false; tmpUE=!!d.uebernachtung; tmpAL=!!d.ausland;
   const dsp=d.dispo||{}; const hasDispo=dsp.einsatz||dsp.ende;
   openSheet(`<h3>${dayId?"Tag bearbeiten":"Tag erfassen"}</h3>
     <div class="field"><label>Datum</label><input type="date" id="d_datum" value="${d.datum||""}"></div>
     ${hasDispo?`<div class="dispoinfo"><span>Laut Dispo: ${dsp.einsatz||"?"}–${dsp.ende||"?"}</span><button id="useDispo">übernehmen</button></div>`:""}
-    <div class="timebox acc"><div class="tl"><span>EZ · Einsatzzeit</span><span class="hint">Basis der Überstunden</span></div>
+    <div class="field"><label>Tagestyp</label><div class="toggles typseg" id="typSeg"><button type="button" data-typ="an">Anreisetag</button><button type="button" data-typ="ort">Vor Ort</button><button type="button" data-typ="rueck">Rückreisetag</button><button type="button" data-typ="ein">Eintägig</button></div><p class="note" id="typNote"></p></div>
+    <div class="timebox acc"><div class="tl"><span>Einsatz</span><span class="hint">zählt für Überstunden und Nachweis</span></div>
       <div class="two">
         <div class="tfield"><span class="tlbl">von</span><input type="time" id="d_einsatz" value="${d.einsatz||""}"></div>
         <div class="tfield"><span class="tlbl">bis</span><input type="time" id="d_ende" value="${d.ende||""}"></div>
       </div>
+      <p class="note endehw hidden" id="endeHw"></p>
     </div>
-    <div class="timebox"><div class="tl"><span>AZ · Arbeitszeit (Dreh)</span><span class="mseg" id="azSeg"><button type="button" data-az="1">kein Dreh</button><button type="button" data-az="0">Dreh</button></span></div>
+    <div class="timebox"><div class="tl"><span>Drehzeit</span><span class="mseg" id="azSeg"><button type="button" data-az="1">kein Dreh</button><button type="button" data-az="0">Dreh</button></span></div>
       <div class="two" id="azFields">
         <div class="tfield"><span class="tlbl">von</span><input type="time" id="d_drehbeginn" value="${d.drehbeginn||""}"></div>
         <div class="tfield"><span class="tlbl">bis</span><input type="time" id="d_drehende" value="${d.drehende||""}"></div>
       </div>
+      <p class="note" id="azNote">Steht im Nachweis, zählt nicht extra. Sie liegt in der Einsatzzeit.</p>
     </div>
-    <div class="timebox"><div class="tl"><span>RZ · Reisezeit</span></div>
+    <div class="timebox"><div class="tl"><span>Reisezeit</span><span class="hint">liegt in der Einsatzzeit</span></div>
       <div class="rzblock"><div class="nrow"><span class="rlbl">Anreise</span><button type="button" class="offbtn" id="anNone">entfällt</button></div>
         <div class="two"><div class="tfield"><span class="tlbl">von</span><input type="time" id="d_anreise" value="${d.anreise||""}"></div><div class="tfield"><span class="tlbl">bis</span><input type="time" id="d_anreiseEnde" value="${d.anreiseEnde||""}"></div></div></div>
       <div class="rzblock"><div class="nrow"><span class="rlbl">Rückreise</span><button type="button" class="offbtn" id="rkNone">entfällt</button></div>
         <div class="two"><div class="tfield"><span class="tlbl">von</span><input type="time" id="d_rueckBeginn" value="${d.rueckBeginn||""}"></div><div class="tfield"><span class="tlbl">bis</span><input type="time" id="d_rueck" value="${d.rueck||""}"></div></div></div>
     </div>
     <div class="field"><label>Pause genommen?</label><div class="toggles" id="pausebtns"><button data-p="1">Ja · ${fmtMin(S.standardPause)}</button><button data-p="0">Nein</button></div></div>
+    <div id="flinkbox" class="nwwrap"></div>
     <div class="calc" id="calc"></div>
-    <div class="section-h" style="margin:18px 0 8px"><h3>Nachweis für FLINK</h3></div>
-    <div id="flinkbox"></div>
     <div class="section-h" style="margin:18px 0 8px"><h3>Dienstreise</h3></div>
-    <div class="two">
-      <div class="field"><label>Übernachtung?</label><div class="toggles" id="uebtns"><button data-u="1">Ja</button><button data-u="0">Nein</button></div></div>
-      <div class="field"><label>Ausland?</label><div class="toggles" id="albtns"><button data-a="1">Ja</button><button data-a="0">Nein</button></div></div>
-    </div>
+    <div class="field"><label>Ausland?</label><div class="toggles" id="albtns"><button data-a="1">Ja</button><button data-a="0">Nein</button></div></div>
     <div id="grenzwrap" class="hidden">
       <div class="timebox" id="grenzbox">
-        <div class="tl trow"><span>Grenzübertritt</span><button type="button" class="offbtn" id="grenzOn">dokumentieren</button></div>
-        <div class="two" id="grenzFields">
-          <div class="tfield"><span class="tlbl">Grenze hin</span><input type="time" id="d_grenzHin" value="${d.grenzHin||""}"></div>
-          <div class="tfield"><span class="tlbl">Grenze zurück</span><input type="time" id="d_grenzRueck" value="${d.grenzRueck||""}"></div>
+        <div class="tl"><span>Grenzübertritt</span></div>
+        <div class="two">
+          <div class="tfield gfield"><span class="tlbl">hin</span><input type="time" id="d_grenzHin" value="${d.grenzHin||""}"><span class="gleer">nicht erfasst</span><button type="button" class="gclr" id="clrGrenzHin" aria-label="Grenze hin leeren">✕</button></div>
+          <div class="tfield gfield"><span class="tlbl">zurück</span><input type="time" id="d_grenzRueck" value="${d.grenzRueck||""}"><span class="gleer">nicht erfasst</span><button type="button" class="gclr" id="clrGrenzRueck" aria-label="Grenze zurück leeren">✕</button></div>
         </div>
-        <p class="note" id="grenznote">Verlassen von Deutschland und Ankunft in Deutschland. Nur für deine Reisekosten-Unterlagen – erscheint nicht im Stundennachweis.</p>
+        <p class="note">Deutschland verlassen und wieder angekommen. Steht unten im Notizfeld von PDF und Mail, nicht in der Zeitentabelle.</p>
       </div>
     </div>
     <div class="field" style="margin-top:14px"><label>Feiertag am Arbeitsort</label><input type="text" class="txt" id="d_feiertag" value="${esc(feiertagTag(o,d))}" placeholder="kein Feiertag">
       <p class="note">${feiertagOrt(o)==="XX"?"Für dieses Land kennt die App nur Oster- und Pfingstsonntag.":"Automatisch nach "+esc(ortLabel(feiertagOrt(o)))+"."} Leeren heißt: kein Feiertag. Für ein Land, das die App nicht kennt, trägst du den Namen selbst ein.</p></div>
     <div id="tgbox"></div>
-    <p class="note">„kein Dreh" und „entfällt" lassen den jeweiligen Block leer – gerechnet wird dann nur mit der Einsatzzeit. Einsatzende rechnet sich automatisch aus der letzten Tätigkeit + 30 Min, bis du es selbst tippst.</p>
+    <p class="note">Überstunden rechnet die App nur aus der Einsatzzeit minus Pause. Dreh- und Reisezeit stehen im Nachweis und schlagen das Einsatzende vor: letzte Tätigkeit plus 30 Minuten, bis du es selbst tippst.</p>
     <button class="btn" id="saveDay" style="margin-top:14px">Speichern</button>
     <div class="btnrow">${dayId?'<button class="btn danger" id="delDay" style="margin-bottom:0">Tag löschen</button>':''}<button class="btn ghost" id="cancelDay" style="margin-bottom:0">Abbrechen</button></div>`);
   const g=id=>document.getElementById(id);
   function paintPause(){document.querySelectorAll("#pausebtns button").forEach(b=>b.classList.toggle("on",(b.dataset.p==="1")===tmpPause));}
   document.querySelectorAll("#pausebtns button").forEach(b=>b.onclick=()=>{tmpPause=b.dataset.p==="1";paintPause();recalc();});
-  function paintUE(){document.querySelectorAll("#uebtns button").forEach(b=>b.classList.toggle("on",(b.dataset.u==="1")===tmpUE));}
-  document.querySelectorAll("#uebtns button").forEach(b=>b.onclick=()=>{tmpUE=b.dataset.u==="1";paintUE();recalc();});
+  /* Tagestyp (V4.4): folgt live dem Formular (tmpUE und Leere der Reisefelder), kein eigenes Datenfeld.
+     Ein Tipp setzt Übernachtung und schaltet die Fahrten über dieselben Wege wie „entfällt“. Tipp auf den aktiven Typ: nichts. */
+  const TYP_NOTE={ein:"Ohne Übernachtung. Hin- und Rückfahrt am selben Tag.",an:"Mit Übernachtung. Anreise ja, Rückreise entfällt.",ort:"Mit Übernachtung, ohne Fahrt.",rueck:"Mit Übernachtung. Anreise entfällt, Rückreise ja.",eigen:"Eigene Angaben: Übernachtung mit Hin- und Rückfahrt am selben Tag."};
+  function formTyp(){return dayTyp({uebernachtung:tmpUE,anreise:val("d_anreise"),anreiseEnde:val("d_anreiseEnde"),rueckBeginn:val("d_rueckBeginn"),rueck:val("d_rueck")});}
+  function paintTyp(){const t=formTyp();document.querySelectorAll("#typSeg button").forEach(b=>b.classList.toggle("on",b.dataset.typ===t));const beide=(val("d_anreise")||val("d_anreiseEnde"))&&(val("d_rueckBeginn")||val("d_rueck"));g("typNote").textContent=t==="ein"&&!beide?"Ohne Übernachtung.":TYP_NOTE[t];}
+  document.querySelectorAll("#typSeg button").forEach(b=>b.onclick=()=>{
+    const t=b.dataset.typ;if(t===formTyp())return;
+    const f=typFelder(t),vorher=val("d_ende");
+    const an=!!(val("d_anreise")||val("d_anreiseEnde")),rk=!!(val("d_rueckBeginn")||val("d_rueck"));
+    tmpUE=f.ue;
+    if(f.an!==an||(!f.an&&!anNoneBtn.classList.contains("on")))applyAN(!f.an);
+    if(f.rk!==rk||(!f.rk&&!rkNoneBtn.classList.contains("on")))applyRK(!f.rk);
+    endeAnpassen(vorher);recalc();});
   function paintAL(){document.querySelectorAll("#albtns button").forEach(b=>b.classList.toggle("on",(b.dataset.a==="1")===tmpAL));
     /* Grenzuebertritt nur bei Auslandsreisen anbieten */
     g("grenzwrap").classList.toggle("hidden",!tmpAL);}
   document.querySelectorAll("#albtns button").forEach(b=>b.onclick=()=>{tmpAL=b.dataset.a==="1";paintAL();recalc();});
 
-  /* Grenzuebertritt: standardmaessig inaktiv und leer, per Schalter scharf.
-     Zustand wird aus der Leere der Felder abgeleitet - kein eigenes Datenfeld. */
-  let tmpGrenz=!!(d.grenzHin||d.grenzRueck);
-  function paintGrenz(){
-    g("grenzOn").classList.toggle("on",tmpGrenz);
-    g("d_grenzHin").disabled=!tmpGrenz; g("d_grenzRueck").disabled=!tmpGrenz;
-    g("grenzbox").classList.toggle("acc",tmpGrenz);
-    g("grenznote").textContent=tmpGrenz
-      ? "Verlassen von Deutschland und Ankunft in Deutschland. Nur für deine Reisekosten-Unterlagen – erscheint nicht im Stundennachweis."
-      : "Nicht dokumentiert. Antippen, wenn du den Grenzübertritt festhalten willst.";
-  }
-  g("grenzOn").onclick=()=>{tmpGrenz=!tmpGrenz;if(!tmpGrenz){g("d_grenzHin").value="";g("d_grenzRueck").value="";}paintGrenz();};
-  let anEd=!!(d.anreise&&d.anreise!==addMin(d.einsatz,30));
-  let aeEd=!!(d.anreiseEnde&&d.anreiseEnde!==addMin(d.einsatz,60));
+  /* Grenzübertritt (V4.4): bei Ausland sofort eintragbar, jedes Feld mit eigenem ✕, „nicht erfasst“ bei leerem Feld.
+     Kein Sperrschalter, kein eigenes Datenfeld. Amber, sobald ein Wert steht. */
+  function paintGrenz(){let eins=false;
+    ["d_grenzHin","d_grenzRueck"].forEach(id=>{const voll=!!val(id);g(id).parentNode.classList.toggle("voll",voll);if(voll)eins=true;});
+    g("grenzbox").classList.toggle("acc",eins);}
+  ["d_grenzHin","d_grenzRueck"].forEach(id=>{g(id).oninput=g(id).onchange=paintGrenz;});
+  g("clrGrenzHin").onclick=()=>{g("d_grenzHin").value="";paintGrenz();};
+  g("clrGrenzRueck").onclick=()=>{g("d_grenzRueck").value="";paintGrenz();};
+  /* Halbe Fahrt aus dem Import (nur ein Ende gefüllt): Das leere Ende gilt als bewusst leer (V4.4). Sonst füllte
+     deriveFromEinsatz es beim Ändern des Einsatzbeginns mit einsatz+60, und es entstand z. B. „08:00–07:00“. */
+  let anEd=!!(d.anreise&&d.anreise!==addMin(d.einsatz,30))||(!d.anreise&&!!d.anreiseEnde);
+  let aeEd=!!(d.anreiseEnde&&d.anreiseEnde!==addMin(d.einsatz,60))||(!d.anreiseEnde&&!!d.anreise);
   let dbEd=!!(d.drehbeginn&&d.drehbeginn!==addMin(d.einsatz,60));
-  function calcAutoEnde(dd){const le=dd.rueck||dd.drehende||dd.anreiseEnde||"";return le?addMin(le,30):"";}
-  let endeEd=!!(d.ende&&d.ende!==calcAutoEnde(d));
+  /* Getipptes Ende und Ende aus der Dispo bleiben stehen (V4.4), sonst rechnet es sich automatisch. */
+  let endeEd=endeGeschuetzt(d);
   function deriveFromEinsatz(){const e=val("d_einsatz");if(!anEd)g("d_anreise").value=e?addMin(e,30):"";if(!aeEd)g("d_anreiseEnde").value=e?addMin(e,60):"";if(!dbEd)g("d_drehbeginn").value=e?addMin(e,60):"";}
-  function lastEnd(){return val("d_rueck")||val("d_drehende")||val("d_anreiseEnde")||"";}
-  function computeEnde(){if(endeEd)return;const le=lastEnd();g("d_ende").value=le?addMin(le,30):"";}
+  function computeEnde(){if(endeEd)return;g("d_ende").value=autoEnde({rueck:val("d_rueck"),drehende:val("d_drehende"),anreiseEnde:val("d_anreiseEnde")});}
+  /* Nach Typwechsel, „entfällt“ oder „kein Dreh“: Ende neu rechnen und eine Änderung sichtbar machen (V4.4). */
+  function endeAnpassen(vorher){computeEnde();const jetzt=val("d_ende");
+    if(!endeEd&&jetzt!==vorher){g("endeHw").textContent=`Einsatzende automatisch angepasst: ${vorher||"–"} → ${jetzt||"–"}`;g("endeHw").classList.remove("hidden");}}
   g("d_anreise").oninput=()=>{anEd=true;recalc();};
   g("d_anreiseEnde").oninput=()=>{aeEd=true;computeEnde();recalc();};
   g("d_drehbeginn").oninput=()=>{dbEd=true;recalc();};
@@ -1276,44 +1387,49 @@ function editDay(orderId,dayId){
   g("d_rueck").oninput=()=>{computeEnde();recalc();};
   g("d_einsatz").oninput=()=>{deriveFromEinsatz();computeEnde();recalc();};
   g("d_ende").oninput=()=>{endeEd=true;recalc();};
+  /* Wer selbst eine Zeit tippt, braucht den Hinweis auf die automatische Anpassung nicht mehr. */
+  sheet.querySelectorAll(".tfield input").forEach(i=>i.addEventListener("input",()=>g("endeHw").classList.add("hidden")));
   /* "Uebernehmen" setzt NUR die Einsatzzeit. Frueher hat es zusaetzlich die
      "kein Dreh"- und "entfaellt"-Schalter aufgehoben und Reisezeiten erfunden -
      an einem Uebernachtungstag landete so eine Rueckreise im Nachweis.
      deriveFromEinsatz respektiert die Edit-Flags, getippte Felder bleiben stehen. */
-  if(hasDispo)g("useDispo").onclick=()=>{g("d_einsatz").value=dsp.einsatz||"";g("d_ende").value=dsp.ende||"";endeEd=true;deriveFromEinsatz();recalc();};
+  /* Das Ende ändert sich hier ohne input-Ereignis, also den Hinweis auf die automatische Anpassung selbst ausblenden (V4.4). */
+  if(hasDispo)g("useDispo").onclick=()=>{g("d_einsatz").value=dsp.einsatz||"";g("d_ende").value=dsp.ende||"";endeEd=true;g("endeHw").classList.add("hidden");deriveFromEinsatz();recalc();};
   function recalc(){
+    paintTyp();
     const c=dayCalc({einsatz:val("d_einsatz"),ende:val("d_ende"),drehbeginn:val("d_drehbeginn"),drehende:val("d_drehende"),pause:tmpPause,uebernachtung:tmpUE,ausland:tmpAL});
     g("calc").innerHTML=`<div class="clbl">Rechnung</div>
       <div class="r">
-        <div class="c"><div class="l">EZ</div><div class="n">${fmtMin(c.span)}</div></div>
-        <div class="c"><div class="l">Dreh</div><div class="n">${fmtMin(c.az)}</div></div>
+        <div class="c"><div class="l">Einsatz</div><div class="n">${fmtMin(c.span)}</div></div>
         <div class="c"><div class="l">− Pause</div><div class="n">${fmtMin(c.pause)}</div></div>
+        <div class="c"><div class="l">Netto</div><div class="n">${fmtMin(c.netto)}</div></div>
       </div><hr>
       <div class="r">
-        <div class="c"><div class="l">Netto</div><div class="n">${fmtMin(c.netto)}</div></div>
         <div class="c"><div class="l">Soll</div><div class="n">${fmtMin(S.sollMin)}</div></div>
         <div class="c"><div class="l">Überstunden</div><div class="n big ${otClass(c.ot)}">${fmtSigned(c.ot)}</div></div>
       </div>`;
     /* Verdienst nach Tarif (V4.1): nur wenn die Option an ist, der Auftrag frei ist und ein Tagessatz existiert */
     const tt=tarifTag(o,{datum:val("d_datum"),einsatz:val("d_einsatz"),ende:val("d_ende"),anreise:val("d_anreise"),anreiseEnde:val("d_anreiseEnde"),rueckBeginn:val("d_rueckBeginn"),rueck:val("d_rueck"),pause:tmpPause,feiertag:clean(val("d_feiertag"))});
     if(tt)g("calc").insertAdjacentHTML("beforeend",`<hr><div class="tarifz">Laut Tarif: Mehrarbeit ${fmtStd(tt.mehrStd)} · ${fmtEur(runde2(tt.mehrEur+tt.mehrZuschlEur))}${tt.nachtEur?" · Nacht "+fmtEur(tt.nachtEur):""}${tt.sonntagEur?" · Sonntag "+fmtEur(tt.sonntagEur):""}${tt.feiertagEur?" · Feiertag "+fmtEur(tt.feiertagEur):""}</div>`);
-    /* FLINK-Hinweis: zeigt, was das ZDF-System abzieht und wie der Nachweis korrigiert wird */
+    /* „So steht es im Nachweis“ (V4.4): wie der Nachweis aussieht und, bei Freien mit Ausgleich, was FLINK am Ende bucht.
+       Die Rechnung selbst (korr, flinkNw, exportEnde) bleibt unverändert. */
     const fb=g("flinkbox");
     if(fb){
       const frei=orderStatus(o)==="frei";
       const mm=n=>n+" Min";
       if(c.span==null){fb.innerHTML="";}
-      else if(!frei){fb.innerHTML=`<div class="tgbox"><div class="t"><span>FLINK zieht ${mm(c.flink)} ab</span><span class="in">fest angestellt</span></div><div class="why">Der Nachweis zeigt deine Zeiten unverändert.</div></div>`;}
+      else if(!frei){fb.innerHTML=`<div class="tgbox"><div class="t"><span>So steht es im Nachweis: wie eingetragen</span><span class="in">fest angestellt</span></div><div class="why">FLINK zieht ${mm(c.flink)} ab. Für fest Angestellte stimmt das, der Nachweis zeigt deine Zeiten unverändert.</div></div>`;}
       else if(c.korr>0){
         const schwelle=c.flink===45?S.flink45:S.flink30;
         const sprung=c.flinkNw>c.flink
-          ? ` Eine Verlängerung um ${mm(c.flink-c.pause)} würde den Nachweis aber über ${fmtMin(S.flink45)} Std schieben, und dort zieht FLINK ${mm(c.flinkNw)} ab.`
+          ? ` Eine Verlängerung um ${mm(c.flink-c.pause)} würde den Nachweis über ${fmtMin(S.flink45)} Std schieben, und dort zieht FLINK ${mm(c.flinkNw)} ab.`
           : "";
         const wieso=(c.pause>0
-          ? `Über ${fmtMin(schwelle)} Std zieht FLINK ${mm(c.flink)} ab, du machst ${mm(c.pause)}.`
-          : `Über ${fmtMin(schwelle)} Std zieht FLINK ${mm(c.flink)} ab, auch wenn du keine Pause gemacht hast.`)+sprung;
-        fb.innerHTML=`<div class="tgbox ok"><div class="t"><span>Nachweis endet ${addMin(val("d_ende"),c.korr)}</span><span class="in">statt ${val("d_ende")}</span></div><div class="why">${wieso} Die ${mm(c.korr)} Differenz kommt hinten drauf, damit deine echte Arbeitszeit ankommt.</div></div>`;}
-      else{fb.innerHTML=`<div class="tgbox"><div class="t"><span>Nachweis unverändert</span><span class="in">FLINK ${mm(c.flink)}</span></div><div class="why">${c.flink>0&&c.flink===c.pause?"Deine Pause und der FLINK-Abzug sind gleich – die Pause steckt in der Arbeitszeit, kein Eingriff nötig.":(c.flink===0?"Bis "+fmtMin(S.flink30)+" Std zieht FLINK keine Pause ab.":"Keine Korrektur nötig.")}</div></div>`;}
+          ? `Über ${fmtMin(schwelle)} Std zieht FLINK immer ${mm(c.flink)} Pause ab, du machst ${mm(c.pause)}.`
+          : `Über ${fmtMin(schwelle)} Std zieht FLINK ${mm(c.flink)} Pause ab, auch wenn du keine Pause gemacht hast.`)+sprung;
+        const nwSpan=c.span+c.korr;
+        fb.innerHTML=`<div class="tgbox nw"><div class="t"><span>So steht es im Nachweis: ${addMin(val("d_ende"),c.korr)}</span><span class="in">+${mm(c.korr)}</span></div><div class="why">${wieso} Deshalb endet der Nachweis ${mm(c.korr)} später. FLINK bucht dann ${fmtMin(nwSpan)} minus ${mm(c.flinkNw)}, also ${fmtMin(nwSpan-c.flinkNw)}. Das ist genau deine Nettozeit.</div></div>`;}
+      else{fb.innerHTML=`<div class="tgbox"><div class="t"><span>So steht es im Nachweis: wie eingetragen</span><span class="in">FLINK ${mm(c.flink)}</span></div><div class="why">${c.flink>0&&c.flink===c.pause?"Deine Pause und der FLINK-Abzug sind gleich, die Pause steckt in der Arbeitszeit. Kein Ausgleich nötig.":(c.flink===0?"Bis "+fmtMin(S.flink30)+" Std zieht FLINK keine Pause ab.":"Kein Ausgleich nötig.")}</div></div>`;}
     }
     const box=g("tgbox");const t=c.tg;
     if(t.state==="ok"){box.innerHTML=`<div class="tgbox ok"><div class="t"><span>Tagegeld: 14,00 €</span><span class="in">nur intern</span></div><div class="why">Abwesenheit ${fmtMin(c.absence)} h · über der Schwelle von ${fmtMin(S.abwesenheitMin)} h, eintägig, Inland. Bitte selbst beantragen, binnen sechs Monaten. Stellt die Produktion Essen, kürzt das ZDF: Frühstück 5,60 €, Mittag- und Abendessen je 11,20 €.</div></div>`;}
@@ -1326,26 +1442,42 @@ function editDay(orderId,dayId){
     }
   }
   const anNoneBtn=g("anNone"),rkNoneBtn=g("rkNone");
-  function paintAZ(none){document.querySelectorAll("#azSeg button").forEach(b=>b.classList.toggle("on",(b.dataset.az==="1")===none));g("azFields").classList.toggle("hidden",none);}
+  function paintAZ(none){document.querySelectorAll("#azSeg button").forEach(b=>b.classList.toggle("on",(b.dataset.az==="1")===none));g("azFields").classList.toggle("hidden",none);g("azNote").classList.toggle("hidden",none);}
+  /* Gedächtnis im offenen Sheet (V4.4): Was ein Schalter oder Tagestyp leert, kommt beim Wiedereinschalten zurück,
+     samt Edit-Merkern. Nur ohne gemerkte Werte gelten die Startwerte. Gespeichert wird weiter nur der Feldwert.
+     Danach rechnet deriveFromEinsatz nicht getippte Werte von der aktuellen Einsatzzeit neu, getippte bleiben stehen.
+     Die Rückreise hat keinen Edit-Merker und folgt auch sonst weder Einsatz noch Drehende, sie kommt unverändert zurück. */
+  const keep={};
   function applyAZ(none){paintAZ(none);g("d_drehbeginn").disabled=none;g("d_drehende").disabled=none;
-    if(none){g("d_drehbeginn").value="";g("d_drehende").value="";dbEd=true;}
+    if(none){if(val("d_drehbeginn")||val("d_drehende"))keep.az={v:[val("d_drehbeginn"),val("d_drehende")],ed:dbEd};g("d_drehbeginn").value="";g("d_drehende").value="";dbEd=true;}
+    else if(keep.az){const e=val("d_einsatz"),[v0,v1]=keep.az.v;dbEd=keep.az.ed;g("d_drehbeginn").value=v0&&!dbEd&&e?addMin(e,60):v0;g("d_drehende").value=v1;}
     else{const e=val("d_einsatz");dbEd=false;g("d_drehbeginn").value=e?addMin(e,60):"";g("d_drehende").value=e?addMin(e,480):"";}}
   function applyAN(none){anNoneBtn.classList.toggle("on",none);g("d_anreise").disabled=none;g("d_anreiseEnde").disabled=none;
-    if(none){g("d_anreise").value="";g("d_anreiseEnde").value="";anEd=true;aeEd=true;}
+    if(none){if(val("d_anreise")||val("d_anreiseEnde"))keep.an={v:[val("d_anreise"),val("d_anreiseEnde")],ed:[anEd,aeEd]};g("d_anreise").value="";g("d_anreiseEnde").value="";anEd=true;aeEd=true;}
+    else if(keep.an){const e=val("d_einsatz"),[v0,v1]=keep.an.v;anEd=keep.an.ed[0];aeEd=keep.an.ed[1];
+      /* Nur ein automatischer Wert mit Inhalt folgt dem aktuellen Einsatzbeginn. Ein leeres Feld (halbe Fahrt aus dem Import) bleibt leer. */
+      g("d_anreise").value=v0&&!anEd&&e?addMin(e,30):v0;g("d_anreiseEnde").value=v1&&!aeEd&&e?addMin(e,60):v1;}
     else{const e=val("d_einsatz");anEd=false;aeEd=false;g("d_anreise").value=e?addMin(e,30):"";g("d_anreiseEnde").value=e?addMin(e,60):"";}}
+  /* Eine gemerkte Rückreise passt nur, wenn sie nicht vor dem aktuellen Drehende beginnt. Sonst wurde der Dreh inzwischen verlängert,
+     und die Startwerte ab Drehende sind richtig. Verglichen wird relativ zum Einsatzbeginn, damit es auch über Mitternacht stimmt. */
+  function rkPasst(rk){const e=hm2min(val("d_einsatz")),de=hm2min(val("d_drehende")),rb=hm2min(rk[0]||rk[1]);
+    return e==null||de==null||rb==null||dur(e,rb)>=dur(e,de);}
   function applyRK(none){rkNoneBtn.classList.toggle("on",none);g("d_rueckBeginn").disabled=none;g("d_rueck").disabled=none;
-    if(none){g("d_rueckBeginn").value="";g("d_rueck").value="";}
+    if(none){if(val("d_rueckBeginn")||val("d_rueck"))keep.rk=[val("d_rueckBeginn"),val("d_rueck")];g("d_rueckBeginn").value="";g("d_rueck").value="";}
+    else if(keep.rk&&rkPasst(keep.rk)){g("d_rueckBeginn").value=keep.rk[0];g("d_rueck").value=keep.rk[1];}
     else{const rb=val("d_drehende")||addMin(val("d_einsatz"),480);g("d_rueckBeginn").value=rb;g("d_rueck").value=rb?addMin(rb,30):"";}}
-  document.querySelectorAll("#azSeg button").forEach(b=>b.onclick=()=>{applyAZ(b.dataset.az==="1");computeEnde();recalc();});
-  anNoneBtn.onclick=()=>{const none=!anNoneBtn.classList.contains("on");applyAN(none);computeEnde();recalc();};
-  rkNoneBtn.onclick=()=>{const none=!rkNoneBtn.classList.contains("on");applyRK(none);computeEnde();recalc();};
+  /* Tipp auf das schon aktive Segment tut nichts (V4.4). Vorher überschrieb „Dreh“ bei aktivem „Dreh“ getippte Zeiten. */
+  document.querySelectorAll("#azSeg button").forEach(b=>b.onclick=()=>{const none=b.dataset.az==="1";if(none===g("azFields").classList.contains("hidden"))return;const vorher=val("d_ende");applyAZ(none);endeAnpassen(vorher);recalc();});
+  anNoneBtn.onclick=()=>{const vorher=val("d_ende");applyAN(!anNoneBtn.classList.contains("on"));endeAnpassen(vorher);recalc();};
+  rkNoneBtn.onclick=()=>{const vorher=val("d_ende");applyRK(!rkNoneBtn.classList.contains("on"));endeAnpassen(vorher);recalc();};
   function initNone(){
-    const azN=!!dayId&&!d.drehbeginn&&!d.drehende, anN=!!dayId&&!d.anreise&&!d.anreiseEnde, rkN=!!dayId&&!d.rueckBeginn&&!d.rueck;
+    /* Gilt seit V4.4 auch für neue Tage: Ein Vor-Ort-Tag startet mit „entfällt“, sonst füllt deriveFromEinsatz die Anreise wieder. */
+    const azN=!d.drehbeginn&&!d.drehende, anN=!d.anreise&&!d.anreiseEnde, rkN=!d.rueckBeginn&&!d.rueck;
     paintAZ(azN);g("d_drehbeginn").disabled=azN;g("d_drehende").disabled=azN;if(azN)dbEd=true;
     anNoneBtn.classList.toggle("on",anN);g("d_anreise").disabled=anN;g("d_anreiseEnde").disabled=anN;if(anN){anEd=true;aeEd=true;}
     rkNoneBtn.classList.toggle("on",rkN);g("d_rueckBeginn").disabled=rkN;g("d_rueck").disabled=rkN;
   }
-  paintPause();paintUE();paintAL();paintGrenz();initNone();recalc();
+  paintPause();paintAL();paintGrenz();initNone();recalc();
   g("cancelDay").onclick=closeSheet;
   if(dayId)g("delDay").onclick=()=>{askConfirm("Diesen Arbeitstag wirklich löschen?",()=>{o.days=o.days.filter(x=>x.id!==dayId);persist();closeSheet();render();toast("Tag gelöscht");});};
   g("saveDay").onclick=()=>{
@@ -1373,50 +1505,43 @@ function ftOptionen(wahl,erste){
     h+=`<option value="${k}"${k===wahl?" selected":""}>${esc(name)}</option>`;});
   return h+"</optgroup>";
 }
-function openSettings(){
+/* Einstellungen (V4.4): Übersicht mit Unterseiten. Jede Zeile zeigt ihren Stand, Fehlendes in Amber.
+   ziel öffnet eine Unterseite direkt (direkte Wege aus Statistik, Verdienst und Auftrag). */
+function openSettings(ziel){
+  if(ziel==="vertrag")return openVertragSettings();
+  if(ziel==="mail")return openMailSettings();
+  if(ziel==="verdienst")return openVerdienstSettings();
+  if(ziel==="regeln")return openRules();
   const totDays=DB.orders.reduce((a,o)=>a+o.days.length,0);
   let bakTxt="noch keins";
   if(S.lastBackup){const dAgo=Math.floor((Date.now()-S.lastBackup)/864e5);bakTxt=dAgo===0?"heute":(dAgo===1?"gestern":"vor "+dAgo+" Tagen");}
+  const name=clean(S.absender),fest=S.status==="fest";
+  const vSub=[name?esc(name):'<span class="warn">Name fehlt</span>',fest?"fest":"frei",(!fest&&S.vertragstage)?S.vertragstage+" Tage":"",esc(ortName(S.feiertagOrt))].filter(Boolean).join(" · ");
+  const mSub=(clean(S.email)?"an "+esc(S.email):'<span class="warn">Empfänger fehlt</span>')+" · "+(clean(S.anschreiben)?"eigener Text":"Standardtext");
+  const satz=[S.satzAssist?"Dreh-Assistent "+esc(fmtEur(S.satzAssist)):"",S.satzKamera?"Kamera "+esc(fmtEur(S.satzKamera)):""].filter(Boolean).join(" · ");
+  const dSub=S.verdienstOn?(satz?"an · "+satz:'<span class="warn">an · Tagessätze fehlen</span>'):"aus · freiwillig";
   openSheet(`<h3>Einstellungen</h3>
-    <div class="section-h" style="margin-top:0"><h3>Hilfe</h3></div>
-    <button class="setrow" id="helpBtn"><span>Anleitung</span><span class="chev">›</span></button>
-    <button class="setrow" id="wnBtn"><span>Was ist neu<small>Version ${APP_VERSION}</small></span><span class="chev">›</span></button>
-    <button class="setrow" id="shareApp"><span>App weiterempfehlen</span><span class="chev">›</span></button>
+    <button class="setrow" id="setVertrag"><span>Du und dein Vertrag<small>${vSub}</small></span><span class="chev">›</span></button>
+    <button class="setrow" id="setMail"><span>Mail an die Disposition<small>${mSub}</small></span><span class="chev">›</span></button>
+    <button class="setrow" id="verdBtn"><span>Verdienst und Tagessätze<small>${dSub}</small></span><span class="chev">›</span></button>
+    <button class="setrow" id="rulesBtn"><span>Rechenregeln<small>Soll ${fmtMin(S.sollMin)} · Pause ${S.standardPause} Min · Tagegeld ab ${fmtMin(S.abwesenheitMin)}</small></span><span class="chev">›</span></button>
     <div class="section-h"><h3>Datensicherung</h3></div>
     <div class="setcard">
       <div class="stat">Letztes Backup: <b id="lastBak">${bakTxt}</b> · ${DB.orders.length} ${DB.orders.length===1?"Auftrag":"Aufträge"}, ${totDays} ${totDays===1?"Tag":"Tage"}</div>
       <div class="btnrow"><button class="btn ghost" id="bakOut" style="margin:0">Backup teilen</button><button class="btn ghost" id="bakIn" style="margin:0">Backup einlesen</button></div>
     </div>
-    <div class="section-h"><h3>Regeln</h3></div>
-    <button class="setrow" id="rulesBtn"><span>Arbeitszeit-Regeln<small>Soll ${fmtMin(S.sollMin)} · Pause ${S.standardPause} min · Tagegeld ab ${fmtMin(S.abwesenheitMin)}</small></span><span class="chev">›</span></button>
-    <button class="setrow" id="verdBtn"><span>Verdienst<small>${S.verdienstOn?"an · "+([S.satzAssist?"Dreh-Assistent "+esc(fmtEur(S.satzAssist)):"",S.satzKamera?"Kamera "+esc(fmtEur(S.satzKamera)):""].filter(Boolean).join(" · ")||"Tagessätze fehlen"):"aus · freiwillig"}</small></span><span class="chev">›</span></button>
-    <div class="section-h"><h3>Export</h3></div>
-    <div class="setcard">
-      <div class="field"><label>Empfänger-E-Mail (Dispo)</label><input type="email" class="txt" id="s_mail" value="${esc(S.email||"")}" placeholder="empfangsadresse@…"></div>
-      <div class="field"><label>Empfänger-Name (Anrede in der Mail)</label><input type="text" class="txt" id="s_empf" value="${esc(S.empfaenger||"")}" placeholder="Name"></div>
-      <div class="field"><label>Dein Name (für Nachweise)</label><input type="text" class="txt" id="s_name" value="${esc(S.absender||"")}" placeholder="Vorname Nachname"></div>
-      <div class="field"><label>Beschäftigung (Vorgabe für neue Aufträge)</label><div class="toggles" id="s_status"><button data-s="frei">Freier Mitarbeiter</button><button data-s="fest">Fest angestellt</button></div></div>
-      <div class="field"><label>Arbeitstage laut Vertrag (pro Jahr)</label><input type="text" inputmode="numeric" id="s_tage" value="${S.vertragstage||""}" placeholder="leer = ohne Vertragstage">
-        <p class="note">Die Zahl gilt für freie Mitarbeiter und steht in deinem Vertrag. Die App zählt, wie viele davon im laufenden Jahr geleistet und disponiert sind. Fest Angestellte sehen ihre Einsatztage ohne diese Zahl.</p></div>
-      <div class="field"><label>Üblicher Arbeitsort / Dienstort (Feiertage)</label><select id="s_ftort">${ftOptionen(ortGueltig(S.feiertagOrt))}</select>
-        <p class="note">Freie: Vorgabe für Aufträge ohne eigenen Arbeitsort. Fest Angestellte: dein Dienstort, er gilt für alle Aufträge.</p></div>
-      <div class="field"><label>Anschreiben der Mail (optional)</label><textarea class="txt" id="s_anschr" rows="4" placeholder="Hallo {name},&#10;&#10;nachfolgend mein Stundennachweis für {produktion}.">${esc(S.anschreiben||"")}</textarea>
-        <p class="note">Leer lassen heißt: es bleibt beim Text oben. Platzhalter, die du nutzen kannst: <b>{name}</b> · <b>{produktion}</b> · <b>{auftrag}</b> · <b>{tage}</b></p></div>
-      <div class="field" style="margin-bottom:12px"><label>Grußformel (optional)</label><input type="text" class="txt" id="s_gruss" value="${esc(S.gruss||"")}" placeholder="Viele liebe Grüße"></div>
-      <button class="btn" id="saveSet" style="margin:0;padding:12px;font-size:13px">Speichern</button>
-    </div>
+    <div class="section-h"><h3>Hilfe</h3></div>
+    <button class="setrow" id="helpBtn"><span>Anleitung</span><span class="chev">›</span></button>
+    <button class="setrow" id="wnBtn"><span>Was ist neu<small>Version ${APP_VERSION}</small></span><span class="chev">›</span></button>
+    <button class="setrow" id="shareApp"><span>App weiterempfehlen</span><span class="chev">›</span></button>
     <button class="btn danger" id="wipe" style="margin-top:16px">Alle Daten löschen</button>
     <button class="btn ghost" id="closeSet" style="margin-bottom:0">Schließen</button>
     <p class="note" style="text-align:center">Alles liegt lokal auf dem Gerät – kein Konto, keine Server.</p>`);
   document.getElementById("closeSet").onclick=closeSheet;
-  let setStatus=S.status||"frei";
-  const paintSetStatus=()=>document.querySelectorAll("#s_status button").forEach(b=>b.classList.toggle("on",b.dataset.s===setStatus));
-  document.querySelectorAll("#s_status button").forEach(b=>b.onclick=()=>{setStatus=b.dataset.s;paintSetStatus();});
-  paintSetStatus();
-  document.getElementById("saveSet").onclick=()=>{const tg=val("s_tage");if(tg&&parseTage(tg)==null){toast("Arbeitstage: ganze Zahl von 1 bis 366");return;}
-    S.email=val("s_mail");S.empfaenger=val("s_empf");S.absender=val("s_name");S.status=setStatus;S.vertragstage=parseTage(val("s_tage"));S.feiertagOrt=ortGueltig(val("s_ftort"));S.anschreiben=val("s_anschr");S.gruss=val("s_gruss");persist();closeSheet();render();toast("Einstellungen gespeichert");};
-  document.getElementById("rulesBtn").onclick=openRules;
-  document.getElementById("verdBtn").onclick=openVerdienstSettings;
+  document.getElementById("setVertrag").onclick=()=>openVertragSettings();
+  document.getElementById("setMail").onclick=()=>openMailSettings();
+  document.getElementById("verdBtn").onclick=()=>openVerdienstSettings();
+  document.getElementById("rulesBtn").onclick=()=>openRules();
   document.getElementById("helpBtn").onclick=openHelp;
   document.getElementById("wnBtn").onclick=()=>openWhatsNew(true);
   document.getElementById("shareApp").onclick=()=>{
@@ -1431,11 +1556,48 @@ function openSettings(){
   document.getElementById("bakIn").onclick=()=>document.getElementById("backupInput").click();
   document.getElementById("wipe").onclick=()=>{askConfirm("Wirklich ALLE Aufträge löschen?",()=>{DB.orders=[];persist();closeSheet();state.orderId=null;render();toast("Alle Daten gelöscht");});};
 }
+/* Unterseite „Du und dein Vertrag“ (V4.4): speichert genau absender, status, vertragstage, feiertagOrt. */
+function openVertragSettings(){
+  let setStatus=S.status||"frei";
+  openSheet(`<h3>Du und dein Vertrag</h3>
+    <div class="field"><label>Dein Name</label><input type="text" class="txt" id="s_name" value="${esc(S.absender||"")}" placeholder="Vorname Nachname" autocapitalize="words">
+      <p class="note">Steht auf deinen Nachweisen. Mit ihm findet dich der Dispo-Import.</p></div>
+    <div class="field"><label>Beschäftigung (Vorgabe für neue Aufträge)</label><div class="toggles" id="s_status"><button data-s="frei">Freier Mitarbeiter</button><button data-s="fest">Fest angestellt</button></div></div>
+    <div class="field"><label>Arbeitstage laut Vertrag (pro Jahr)</label><input type="text" inputmode="numeric" id="s_tage" value="${S.vertragstage||""}" placeholder="leer = ohne Vertragstage">
+      <p class="note">Die Zahl gilt für freie Mitarbeiter und steht in deinem Vertrag. Die App zählt, wie viele davon im laufenden Jahr geleistet und disponiert sind. Fest Angestellte sehen ihre Einsatztage ohne diese Zahl.</p></div>
+    <div class="field"><label>Üblicher Arbeitsort / Dienstort (Feiertage)</label><select id="s_ftort">${ftOptionen(ortGueltig(S.feiertagOrt))}</select>
+      <p class="note">Freie: Vorgabe für Aufträge ohne eigenen Arbeitsort. Fest Angestellte: dein Dienstort, er gilt für alle Aufträge.</p></div>
+    <button class="btn" id="s_save">Speichern</button><button class="btn ghost" id="s_back" style="margin-bottom:0">Zurück</button>`);
+  const paintSetStatus=()=>document.querySelectorAll("#s_status button").forEach(b=>b.classList.toggle("on",b.dataset.s===setStatus));
+  document.querySelectorAll("#s_status button").forEach(b=>b.onclick=()=>{setStatus=b.dataset.s;paintSetStatus();});
+  paintSetStatus();
+  wacheSetzen(["s_name","s_tage","s_ftort"],()=>setStatus!==(S.status||"frei"));
+  document.getElementById("s_back").onclick=zurueckZurUebersicht;
+  document.getElementById("s_save").onclick=()=>{const tg=val("s_tage");if(tg&&parseTage(tg)==null){toast("Arbeitstage: ganze Zahl von 1 bis 366");return;}
+    S.absender=val("s_name");S.status=setStatus;S.vertragstage=parseTage(tg);S.feiertagOrt=ortGueltig(val("s_ftort"));
+    persist();render();openSettings();toast("Gespeichert");};
+}
+/* Unterseite „Mail an die Disposition“ (V4.4): speichert genau email, empfaenger, anschreiben, gruss.
+   Der graue Platzhalter ist der echte Standardtext aus mailKopfStandard. */
+function openMailSettings(){
+  const platz=esc(mailKopfStandard("{name}","{produktion}","{tage}").join("\n")).replace(/\n/g,"&#10;");
+  openSheet(`<h3>Mail an die Disposition</h3>
+    <div class="field"><label>Empfänger-E-Mail</label><input type="email" class="txt" id="s_mail" value="${esc(S.email||"")}" placeholder="empfangsadresse@…"></div>
+    <div class="field"><label>Empfänger-Name (Anrede in der Mail)</label><input type="text" class="txt" id="s_empf" value="${esc(S.empfaenger||"")}" placeholder="Name"></div>
+    <div class="field"><label>Mail-Text (optional)</label><textarea class="txt" id="s_anschr" rows="4" placeholder="${platz}">${esc(S.anschreiben||"")}</textarea>
+      <p class="note">Leer lassen heißt: Es gilt der graue Standardtext. Platzhalter, die du nutzen kannst: <b>{name}</b> · <b>{produktion}</b> · <b>{auftrag}</b> · <b>{tage}</b></p></div>
+    <div class="field"><label>Grußformel (optional)</label><input type="text" class="txt" id="s_gruss" value="${esc(S.gruss||"")}" placeholder="Viele liebe Grüße"></div>
+    <button class="btn" id="s_save">Speichern</button><button class="btn ghost" id="s_back" style="margin-bottom:0">Zurück</button>`);
+  wacheSetzen(["s_mail","s_empf","s_anschr","s_gruss"]);
+  document.getElementById("s_back").onclick=zurueckZurUebersicht;
+  document.getElementById("s_save").onclick=()=>{S.email=val("s_mail");S.empfaenger=val("s_empf");S.anschreiben=val("s_anschr");S.gruss=val("s_gruss");
+    persist();render();openSettings();toast("Gespeichert");};
+}
 /* Einstellungen "Verdienst" (V4.1): freiwillig, Tagessätze je Funktion, Netto-Anteil optional. */
 function openVerdienstSettings(){
   let on=!!S.verdienstOn,fk=S.funktion||"assistent";
   const zahl=v=>v?String(v).replace(".",","):"";
-  openSheet(`<h3>Verdienst</h3>
+  openSheet(`<h3>Verdienst und Tagessätze</h3>
     <p class="note" style="margin:-8px 0 16px">Freiwillig. Zeigt pro Monat, was dir nach Tarif zusteht und ungefähr aufs Konto kommen sollte. Das ist nur für dich und erscheint nie im Nachweis.</p>
     <div class="field"><label>Verdienst anzeigen</label><div class="toggles" id="v_on"><button data-v="1">An</button><button data-v="0">Aus</button></div></div>
     <div class="two">
@@ -1454,14 +1616,15 @@ function openVerdienstSettings(){
   document.querySelectorAll("#v_on button").forEach(b=>b.onclick=()=>{on=b.dataset.v==="1";paint();});
   document.querySelectorAll("#v_fk button").forEach(b=>b.onclick=()=>{fk=b.dataset.f;paint();});
   paint();
-  document.getElementById("v_back").onclick=openSettings;
+  wacheSetzen(["v_assist","v_kamera","v_quote"],()=>on!==!!S.verdienstOn||fk!==(S.funktion||"assistent"));
+  document.getElementById("v_back").onclick=zurueckZurUebersicht;
   document.getElementById("v_save").onclick=()=>{
     S.verdienstOn=on;S.satzAssist=parseEur(val("v_assist"));S.satzKamera=parseEur(val("v_kamera"));S.funktion=fk;S.nettoQuote=parseQuote(val("v_quote"));
     if(!on&&state.tab==="verdienst")state.tab="orders";
     persist();render();openSettings();toast("Verdienst gespeichert");};
 }
 function openRules(){
-  openSheet(`<h3>Arbeitszeit-Regeln</h3>
+  openSheet(`<h3>Rechenregeln</h3>
     <p class="note" style="margin:-8px 0 16px">Gilt für alle Tage – bestehende Einträge werden neu berechnet.</p>
     <div class="setcard" style="margin-bottom:14px">
       <div class="stat" style="text-transform:uppercase;letter-spacing:1.2px;font-size:9px;font-weight:600;color:var(--muted)">Soll pro Tag</div>
@@ -1473,7 +1636,9 @@ function openRules(){
     </div>
     <div class="field"><label>Pausenlänge</label><input type="number" id="s_p" min="0" max="240" step="5" value="${S.standardPause}"><p class="note">Minuten, wenn „Pause: Ja".</p></div>
     <div class="field"><label>Tagegeld-Schwelle</label><input type="number" id="s_ab" min="0" max="1440" step="15" value="${S.abwesenheitMin}"><p class="note">Abwesenheit in Minuten · Standard 480 = 8 Std.</p></div>
-    <button class="btn" id="saveRules" style="margin-top:6px">Fertig</button>`);
+    <button class="btn" id="saveRules" style="margin-top:6px">Speichern</button><button class="btn ghost" id="rulesBack" style="margin-bottom:0">Zurück</button>`);
+  wacheSetzen(["s_h","s_m","s_p","s_ab"]);
+  document.getElementById("rulesBack").onclick=zurueckZurUebersicht;
   document.getElementById("saveRules").onclick=()=>{S.sollMin=(parseInt(val("s_h"))||0)*60+(parseInt(val("s_m"))||0);S.sollEigen=S.sollMin;S.standardPause=parseInt(val("s_p"))||0;S.abwesenheitMin=parseInt(val("s_ab"))||480;persist();render();openSettings();toast("Regeln gespeichert");};
 }
 
@@ -1523,7 +1688,7 @@ function openWhatsNew(alle){
    (personMatch) und steht auf den Nachweisen. "weiter" läuft nach Speichern oder Später (Was ist neu oder schließen). */
 function openNameFrage(weiter){
   openSheet(`<h3>Wer nutzt die App?</h3>
-    <p class="note" style="margin:-8px 0 16px">Trag deinen Namen so ein, wie er auf der Dispo steht. Damit wählt dich der Import selbst aus, und er steht auf deinen Nachweisen. Ändern kannst du ihn jederzeit in den Einstellungen.</p>
+    <p class="note" style="margin:-8px 0 16px">Trag deinen Namen so ein, wie er auf der Dispo steht. Damit wählt dich der Import selbst aus, und er steht auf deinen Nachweisen. Ändern kannst du ihn jederzeit unter Einstellungen › Du und dein Vertrag.</p>
     <div class="field"><label>Dein Name</label><input type="text" class="txt" id="n_name" placeholder="Vorname Nachname" autocomplete="name" autocapitalize="words" enterkeyhint="done"></div>
     <button class="btn" id="n_save">Speichern</button><button class="btn ghost" id="n_later" style="margin-bottom:0">Später</button>`);
   document.getElementById("n_save").onclick=()=>{const v=clean(val("n_name"));if(!v){toast("Trag bitte deinen Namen ein");return;}
@@ -1540,26 +1705,32 @@ function openHelp(){
     <div class="hsec"><div class="eb">Der Ablauf in Kurzform</div>
       <p>Du legst einen <b>Auftrag</b> an, das ist ein Dreh oder eine Produktion. In diesen Auftrag trägst du deine <b>Arbeitstage</b> ein. Am Ende schickst du daraus einen Stundennachweis an die Disposition, als PDF oder als E-Mail.</p>
       <p>Alles andere rechnet die App: Überstunden, Pausen und den Hinweis auf mögliches Tagegeld.</p>
-      <p>Die <b>Überstunden</b> misst die App an deinem Tages-Soll. Voreingestellt sind <b>7:42 Stunden ohne Pause</b>. So steht es seit dem 01.01.2026 im Tarifvertrag für die auf Produktionsdauer Beschäftigten: 38,5 Stunden in der Woche, also 7,7 Stunden am Tag. Die Pause kommt obendrauf. Steht in deinem Vertrag etwas anderes, stellst du es unter Einstellungen und Arbeitszeit-Regeln ein.</p></div>
+      <p>Die <b>Überstunden</b> misst die App an deinem Tages-Soll. Voreingestellt sind <b>7:42 Stunden ohne Pause</b>. So steht es seit dem 01.01.2026 im Tarifvertrag für die auf Produktionsdauer Beschäftigten: 38,5 Stunden in der Woche, also 7,7 Stunden am Tag. Die Pause kommt obendrauf. Steht in deinem Vertrag etwas anderes, stellst du es unter Einstellungen › Rechenregeln ein.</p>
+      <p>Die <b>Einstellungen</b> öffnest du über das Zahnrad oben rechts in der Übersicht. Dort stehen dein Name und dein Vertrag, die Mail an die Disposition, Verdienst und Tagessätze und die Rechenregeln.</p></div>
 
     <div class="hsec"><div class="eb">1 · Auftrag anlegen</div>
       <p>Am schnellsten geht es mit der Dispo. Tippe auf <b>PDF importieren</b> und wähle die Datei aus. Die App liest Titel, Auftragsnummer, Produktionsnummer, Ort und die Namen aller eingeteilten Personen heraus und legt dir die Drehtage gleich mit an.</p>
-      <p>Die App sucht dich über deinen Namen aus den Einstellungen und wählt dich vor. Findet sie dich nicht, ist niemand ausgewählt, und du tippst an, wer du bist. Danach prüfst du die <b>Reiseart</b>. Einzeltage heißt, du fährst jeden Tag hin und zurück. Mehrtägig heißt, du übernachtest vor Ort.</p>
+      <p>Die App sucht dich über deinen Namen aus Einstellungen › Du und dein Vertrag und wählt dich vor. Findet sie dich nicht, ist niemand ausgewählt, und du tippst an, wer du bist. Danach prüfst du die <b>Reiseart</b>. Einzeltage heißt, du fährst jeden Tag hin und zurück. Mehrtägig heißt, du übernachtest vor Ort. Den Tagestyp einzelner Tage änderst du danach im Tag.</p>
       <p>Ohne Dispo geht es genauso über <b>Auftrag anlegen</b>. Dann trägst du die Tage von Hand ein.</p>
       <p class="tip">Die Dispo kommt per Mail? Tippe das PDF an, dann auf Teilen und auf In Dateien sichern. Danach findest du es im Import ganz oben unter Zuletzt benutzt.</p></div>
 
     <div class="hsec"><div class="eb">2 · Einen Tag erfassen</div>
+      <p>Oben wählst du den <b>Tagestyp</b>. Eintägig heißt, du fährst am selben Tag hin und zurück. Bei einer Reise mit Übernachtung ist der erste Tag der Anreisetag, die Tage dazwischen sind Vor Ort, und der letzte ist der Rückreisetag. Ein Tipp setzt die Übernachtung und schaltet die passenden Fahrten ein oder aus.</p>
+      <p>Ein Tag hat drei Zeitblöcke. Die <b>Einsatzzeit</b> reicht vom Einsatzbeginn bis zum Einsatzende. Nur sie zählt für deine Überstunden: Einsatzzeit minus Pause, verglichen mit dem Soll. <b>Drehzeit</b> und <b>Reisezeit</b> stehen im Nachweis, weil das Formular sie abfragt. Für die Überstunden zählen sie nicht extra, sie liegen innerhalb der Einsatzzeit.</p>
       <p>Der <b>Einsatzbeginn ist der Ausgangspunkt</b>. Sobald du ihn einträgst, schlägt die App alle übrigen Zeiten vor. Die Vorschläge sind nur Startwerte, du überschreibst sie einfach mit deinen echten Zeiten.</p>
-      <p>Das <b>Einsatzende</b> rechnet sich dabei selbst aus. Es liegt immer 30 Minuten nach deiner letzten Tätigkeit, also nach der Rückreise, sonst nach dem Dreh. Sobald du es einmal selbst eintippst, bleibt dein Wert stehen.</p>
-      <p>Zwei Schalter helfen bei besonderen Tagen. <b>Kein Dreh</b> nimmst du für reine Anreisetage. <b>Entfällt</b> steht bei Anreise und Rückreise getrennt zur Verfügung, für Tage ohne Fahrt.</p></div>
+      <p>Das <b>Einsatzende</b> rechnet sich dabei selbst aus. Es liegt immer 30 Minuten nach deiner letzten Tätigkeit, also nach der Rückreise, sonst nach dem Dreh. Sobald du es einmal selbst eintippst, bleibt dein Wert stehen, ebenso ein Ende aus der Dispo. Ändern ein Tagestyp, entfällt oder kein Dreh das Ende, steht das im Einsatz-Kasten, bis du selbst eine Zeit tippst.</p>
+      <p>Für Sonderfälle gibt es kleine Schalter. <b>Kein Dreh</b> nimmst du für Tage ohne Dreh. <b>Entfällt</b> steht bei Anreise und Rückreise getrennt zur Verfügung. Schaltest du eine Fahrt wieder ein, bevor du speicherst, kommen deine vorherigen Zeiten zurück.</p>
+      <p>Bist du im Ausland unterwegs, stellst du unten <b>Ausland</b> auf Ja. Dann hältst du fest, wann du Deutschland verlassen hast und wann du zurück warst. Mit dem ✕ leerst du ein Feld einzeln. Die Zeiten stehen unten im Notizfeld des Nachweises. Erkennt die App beim Import einen Ort im Ausland, steht Ausland schon auf Ja.</p>
+      <p class="tip">Ist am iPhone gerade das Zeitrad offen, schließt der erste Tipp daneben nur das Rad. Tipp danach einfach noch einmal.</p></div>
 
     <div class="hsec"><div class="eb">3 · Pausen und was FLINK daraus macht</div>
       <p>Das Abrechnungssystem des Senders zieht die gesetzliche Ruhepause <b>immer automatisch</b> ab. Über 6:30 Stunden Anwesenheit sind das 30 Minuten, über 9:45 Stunden 45 Minuten. Daran kann niemand etwas ändern, auch die Disposition nicht.</p>
       <p>Machst du tatsächlich 30 Minuten Pause, gehen dir bei langen Tagen also 15 Minuten verloren. Machst du gar keine, sogar die vollen 30 oder 45.</p>
-      <p>Deshalb verlängert die App auf dem Nachweis dein Einsatzende genau um diese Differenz. Beispiel: Du arbeitest von 09:00 bis 17:30 ohne Pause. Auf dem Nachweis steht <b>09:00 bis 18:00</b>. Das System zieht davon 30 Minuten ab und bucht deine echten 8:30.</p>
+      <p>Deshalb verlängert die App auf dem Nachweis dein Einsatzende genau um diese Differenz. Der häufigste Fall: Du arbeitest von 09:00 bis 19:00 und machst 30 Minuten Pause. Das sind 10 Stunden, also zieht FLINK 45 Minuten ab. Auf dem Nachweis steht deshalb <b>09:00 bis 19:15</b>. FLINK rechnet 10:15 minus 45 Minuten und bucht deine echten 9:30.</p>
+      <p>Ohne Pause gilt dasselbe mit dem vollen Abzug. Arbeitest du von 09:00 bis 17:30 ohne Pause, steht auf dem Nachweis <b>09:00 bis 18:00</b>. Das System zieht davon 30 Minuten ab und bucht deine echten 8:30.</p>
       <p>Eine Besonderheit gibt es kurz vor 9:45 Stunden. Arbeitest du zum Beispiel von 09:00 bis 18:30 ohne Pause, würde eine Verlängerung um 30 Minuten den Nachweis über 9:45 Stunden schieben, und dort zieht das System 45 Minuten ab. Die App rechnet das mit ein und verlängert in diesem Fall gleich um 45 Minuten, auf <b>19:15</b>.</p>
       <p>Beim Dispo-Import legt die App Tage bis 6:30 Stunden <b>ohne Pause</b> an, längere mit Pause. Bis 6:30 Stunden zieht FLINK nichts ab, eine Pause würde dort nur deine Nettozeit kürzen. Hast du doch Pause gemacht, stellst du den Schalter im Tag einfach um.</p>
-      <p>In der App selbst siehst du weiterhin deine tatsächlichen Zeiten. Im Tages-Sheet steht unter <b>Nachweis für FLINK</b> immer, was am Ende auf dem Papier landet.</p>
+      <p>In der App selbst siehst du weiterhin deine tatsächlichen Zeiten. Im Tag steht direkt nach der Pause unter <b>So steht es im Nachweis</b>, was am Ende auf dem Papier landet. Auf der Tageskarte im Auftrag zeigt ein Chip wie „Nachweis 19:15 · +15 FLINK“, an welchen Tagen der Nachweis später endet.</p>
       <p class="tip">Das gilt nur für freie Mitarbeiter. Fest Angestellte bekommen den Nachweis mit den unveränderten Zeiten.</p></div>
 
     <div class="hsec"><div class="eb">4 · Tagegeld</div>
@@ -1570,7 +1741,7 @@ function openHelp(){
 
     <div class="hsec"><div class="eb">5 · Nachweis verschicken</div>
       <p><b>Als PDF</b> erzeugt die fertige Datei und öffnet das Teilen-Menü. Von dort schickst du sie per Mail, legst sie in Dateien ab oder gibst sie per AirDrop weiter.</p>
-      <p><b>Als E-Mail</b> öffnet deine Mail-App mit dem Nachweis als Text. Empfängeradresse, Anrede und Grußformel stellst du einmal in den Einstellungen ein, danach steht alles automatisch drin.</p>
+      <p><b>Als E-Mail</b> öffnet deine Mail-App mit dem Nachweis als Text. Empfängeradresse, Anrede, Mail-Text und Grußformel stellst du einmal unter <b>Einstellungen › Mail an die Disposition</b> ein, danach steht alles automatisch drin. Den Weg dorthin findest du auch im Auftrag unter den Export-Knöpfen.</p>
       <p>Feiertage am Arbeitsort sind im Nachweis beim Datum markiert, im PDF mit einem Sternchen, in der Mail mit dem Zusatz „Feiertag“. Unten stehen sie mit ihrem Namen. Mehr dazu unter Punkt 11.</p>
       <p>Ist ein Auftrag erledigt, markierst du ihn mit <b>Abgerechnet</b>. Er wandert dann ausgegraut ans Ende der Liste und ist nicht mehr im Weg.</p></div>
 
@@ -1589,28 +1760,31 @@ function openHelp(){
       <p>Sag ihm dazu, dass er die App nach dem Öffnen zum Home-Bildschirm hinzufügen sollte. Beim ersten Start fragt die App nach seinem Namen. Der Name sorgt dafür, dass beim Dispo-Import automatisch die richtige Person vorausgewählt wird.</p></div>
 
     <div class="hsec"><div class="eb">9 · Verdienst (freiwillig)</div>
-      <p>Wenn du magst, zeigt dir die App pro Monat, was dir nach Tarif zusteht und ungefähr auf dem Konto ankommen sollte. Du schaltest das unter <b>Einstellungen</b> und <b>Verdienst</b> ein und trägst dort deine Tagessätze als Dreh-Assistent und als Kamera ein. Danach gibt es neben Aufträge und Statistik den Reiter <b>Verdienst</b>.</p>
-      <p>Die App rechnet so wie das ZDF auf der Abrechnung. Jeder Einsatztag bringt den Tagessatz. Dazu kommt Mehrarbeit für alles über 7,7 Stunden am Tag, aufgerundet auf halbe Stunden, mit dem Tagessatz geteilt durch 7,7 und 25 Prozent Zuschlag. Die 7,7 Stunden stehen so im Tarif und gelten auch dann, wenn du unter Arbeitszeit-Regeln ein anderes Soll eingetragen hast. Für Arbeit in der Nacht zwischen 22 und 6 Uhr kommen 25 Prozent dazu, am Sonntag 50 Prozent. An Feiertagen am Arbeitsort sind es 100 Prozent. Treffen zwei Zuschläge zusammen, zählt nur der höhere. Pause und Reisezeit zählen dabei nicht mit. Laut Tarif zahlt das ZDF Mehrarbeit und diese Zuschläge nur bei einem Tagessatz bis 336,06 Euro. Liegt dein Tagessatz über 336,06 Euro, gibt es nur den Tagessatz.</p>
+      <p>Wenn du magst, zeigt dir die App pro Monat, was dir nach Tarif zusteht und ungefähr auf dem Konto ankommen sollte. Du schaltest das unter <b>Einstellungen › Verdienst und Tagessätze</b> ein und trägst dort deine Tagessätze als Dreh-Assistent und als Kamera ein. Danach gibt es neben Aufträge und Statistik den Reiter <b>Verdienst</b>.</p>
+      <p>Die App rechnet so wie das ZDF auf der Abrechnung. Jeder Einsatztag bringt den Tagessatz. Dazu kommt Mehrarbeit für alles über 7,7 Stunden am Tag, aufgerundet auf halbe Stunden, mit dem Tagessatz geteilt durch 7,7 und 25 Prozent Zuschlag. Die 7,7 Stunden stehen so im Tarif und gelten auch dann, wenn du unter Rechenregeln ein anderes Soll eingetragen hast. Für Arbeit in der Nacht zwischen 22 und 6 Uhr kommen 25 Prozent dazu, am Sonntag 50 Prozent. An Feiertagen am Arbeitsort sind es 100 Prozent. Treffen zwei Zuschläge zusammen, zählt nur der höhere. Pause und Reisezeit zählen dabei nicht mit. Laut Tarif zahlt das ZDF Mehrarbeit und diese Zuschläge nur bei einem Tagessatz bis 336,06 Euro. Liegt dein Tagessatz über 336,06 Euro, gibt es nur den Tagessatz.</p>
       <p>Steht bei einer Fahrt nur der Beginn oder nur das Ende, wie nach einem Dispo-Import, rechnet die App diese Fahrt mit 30 Minuten. Trag die echten Fahrzeiten ein, dann wird es genauer. Nacht- und Sonntagszuschlag sind an echten Abrechnungen geprüft. Abweichen kann es an langen Reisetagen. Das ZDF zählt eine Fahrt manchmal als Arbeitszeit und manchmal als Reisezeit. Reisezeit zählt mit der Arbeit höchstens 12 Stunden am Tag und bekommt keine Zuschläge. Die App rechnet jede Fahrt bei der Mehrarbeit wie Arbeitszeit, bei den Zuschlägen aber wie Reisezeit. An solchen Tagen kann sie deshalb nach oben oder nach unten abweichen.</p>
       <p>Trägst du deinen Netto-Anteil ein, zeigt die App auch, was ungefähr aufs Konto kommt. Den Anteil findest du auf einer Abrechnung, wenn du die Auszahlung durch die Summe des Vertrags teilst.</p>
       <p class="tip">Das ZDF zahlt nachträglich, meist ein bis zwei Monate später und oft in mehreren Teilbeträgen. Urlaubsentgelt ist nicht enthalten. Nichts davon erscheint im Nachweis.</p></div>
 
     <div class="hsec"><div class="eb">10 · Vertragstage</div>
-      <p>In deinem Vertrag steht, an wie vielen Tagen im Jahr du eingesetzt werden kannst. Trag diese Zahl unter <b>Einstellungen</b> bei <b>Arbeitstage laut Vertrag</b> ein. Dann zeigt dir die App in der Statistik und oben in den Aufträgen, wie viele Tage du im laufenden Jahr schon geleistet hast, wie viele bereits disponiert sind und wie viele noch frei bleiben.</p>
+      <p>In deinem Vertrag steht, an wie vielen Tagen im Jahr du eingesetzt werden kannst. Trag diese Zahl unter <b>Einstellungen › Du und dein Vertrag</b> bei <b>Arbeitstage laut Vertrag</b> ein. Dann zeigt dir die App in der Statistik und oben in den Aufträgen, wie viele Tage du im laufenden Jahr schon geleistet hast, wie viele bereits disponiert sind und wie viele noch frei bleiben.</p>
       <p>Gezählt wird jeder Tag aus deinen Aufträgen, auch aus abgerechneten, egal ob der Auftrag frei oder fest ist. Geleistet sind die Tage bis heute, disponiert die Tage danach. Stehen zwei Aufträge am selben Tag, zählt der Tag einmal. Urlaubstage zählt die App nicht mit. Die Kachel „Tage“ oben in den Aufträgen zählt dagegen alle Tage der offenen Aufträge über alle Jahre, deshalb weichen die beiden Zahlen oft voneinander ab.</p>
       <p>Bist du fest angestellt, brauchst du keine Vertragstage einzutragen. Die App zeigt dir dann unter <b>Einsatztage</b>, wie viele Tage du im laufenden Jahr geleistet hast und wie viele disponiert sind.</p>
       <p class="tip">Am 1. Januar beginnt die Zählung von vorn. Liegst du über der Zahl aus dem Vertrag, steht das rot in der Statistik.</p></div>
 
     <div class="hsec"><div class="eb">11 · Feiertage</div>
       <p>Die App kennt die gesetzlichen Feiertage in Deutschland je Bundesland, in der Schweiz je Kanton und in 13 weiteren Ländern. Oster- und Pfingstsonntag zählen immer, weil der Tarif sie ausdrücklich nennt.</p>
-      <p>Als freier Mitarbeiter zählt der Feiertag dort, wo du arbeitest. Beim Dispo-Import erkennt die App das Land aus dem Produktionsort, im Auftrag änderst du es unter <b>Feiertage nach</b>. Erkennt sie nichts, gilt dein üblicher Arbeitsort aus den <b>Einstellungen</b>. Als fest Angestellter gilt immer der Dienstort, den du dort einträgst.</p>
+      <p>Als freier Mitarbeiter zählt der Feiertag dort, wo du arbeitest. Beim Dispo-Import erkennt die App das Land aus dem Produktionsort, im Auftrag änderst du es unter <b>Feiertage nach</b>. Erkennt sie nichts, gilt dein üblicher Arbeitsort aus <b>Einstellungen › Du und dein Vertrag</b>. Als fest Angestellter gilt immer der Dienstort, den du dort einträgst.</p>
       <p>Im Tag steht, ob er ein Feiertag ist. Stimmt das nicht, leerst du das Feld. Für ein Land, das die App nicht kennt, trägst du den Namen selbst ein. Regionale Feiertage in Spanien, etwa Gründonnerstag in den meisten Regionen, und Ortsfeiertage in Italien kennt die App nicht, die trägst du ebenfalls selbst ein.</p>
       <p class="tip">Im PDF bekommt ein Feiertag ein Sternchen beim Datum, in der Mail den Zusatz „Feiertag“. Unten stehen alle Feiertage mit Namen. So sieht die Disposition, wo der Zuschlag fällig ist.</p></div>
 
     <button class="btn" id="helpBack" style="margin-top:6px">Verstanden</button>`);
-  document.getElementById("helpBack").onclick=openSettings;
+  document.getElementById("helpBack").onclick=()=>openSettings();
 }
 
+/* Standard-Anschreiben (V4.4): eine Quelle für die Mail und den grauen Platzhalter in den Einstellungen,
+   damit beide nie mehr auseinanderlaufen. tageTxt z. B. „3 Einsatztage“ oder „{tage}“. */
+function mailKopfStandard(name,prodTxt,tageTxt){return ["Hallo "+name+",","","nachfolgend mein Stundennachweis für die Produktion "+prodTxt+" ("+tageTxt+")."];}
 /* ===== Export ===== */
 function orderReportText(o){
   const L=["ZEITNACHWEIS",o.titel||"Ohne Titel"];
@@ -1661,7 +1835,7 @@ function mailOrder(o){
     .replace(/\{tage\}/g,tage+" "+(tage===1?"Einsatztag":"Einsatztage"));
   const kopf=clean(S.anschreiben)
     ? platzhalter(S.anschreiben).split("\n")
-    : ["Hallo "+(S.empfaenger||"[Name]")+",","","nachfolgend mein Stundennachweis für die Produktion "+prodTxt+" ("+tage+" "+(tage===1?"Einsatztag":"Einsatztage")+")."];
+    : mailKopfStandard(S.empfaenger||"[Name]",prodTxt,tage+" "+(tage===1?"Einsatztag":"Einsatztage"));
   const L=[...kopf,""];
   o.days.slice().sort((a,b)=>(a.datum||"").localeCompare(b.datum||"")).forEach(d=>{const c=dayCalc(d);
     const dreh=(d.drehbeginn||d.drehende)?((d.drehbeginn||"—")+"–"+(d.drehende||"—")):"—";
@@ -1834,7 +2008,7 @@ function confirmImport(p,fname){
      plausibel aus, Name und Reisezeiten wären aber die eines Kollegen. */
   const meinName=clean(S.absender);
   const treffer=personMatch(persons,meinName);impSel=treffer;
-  const pHinweis=treffer>=0?"Vorauswahl nach deinem Namen.":(!meinName?"Tipp an, wer du bist. Mit deinem Namen in den Einstellungen wählt die App dich selbst aus."
+  const pHinweis=treffer>=0?"Vorauswahl nach deinem Namen.":(!meinName?"Tipp an, wer du bist. Mit deinem Namen unter Einstellungen › Du und dein Vertrag wählt die App dich selbst aus."
     :`Die App findet ${esc(meinName)} auf dieser Dispo nicht eindeutig. Tipp an, wer du bist.`);
   let impTrip=null,tripTouched=false;
   const defTrip=()=>"ein";
@@ -1851,7 +2025,7 @@ function confirmImport(p,fname){
     ${S.verdienstOn?`<div class="field"><label>Funktion (für Verdienst)</label><div class="toggles" id="i_fk"><button data-f="assistent">Dreh-Assistent</button><button data-f="kamera">Kamera</button></div><p class="note" id="i_fknote"></p></div>`:""}
     <div class="field"><label>Name (für Nachweis)</label><input type="text" class="txt" id="i_name" value=""></div>`:`<p class="note">Keine Personen erkannt – du kannst den Auftrag trotzdem anlegen und Tage manuell erfassen.</p>`}
     <div class="field" style="margin-top:14px"><label>Feiertage nach</label><select id="i_ftort">${ftOptionen(ftErkannt,["","Wie Einstellungen: "+ortLabel(S.feiertagOrt)])}</select>
-      <p class="note">${ftErkannt?"Aus dem Produktionsort erkannt, bitte prüfen.":"Im Produktionsort nicht erkannt, es gilt die Einstellung."}</p></div>
+      <p class="note" id="i_ftnote"></p></div>
     <div class="section-h" style="margin:18px 0 8px"><h3>Reiseart</h3></div>
     <div class="toggles" id="i_trip"><button data-t="ein">Einzeltage</button><button data-t="mehr">Mehrtägig</button></div>
     <div class="rnote"><b>Einzeltage</b> · jeden Tag hin &amp; zurück, ohne Übernachtung – Tagegeld je Tag möglich.<br><b>Mehrtägig</b> · Anreise am ersten, Rückreise am letzten Tag, Übernachtung vorbelegt – das Tagegeld kommt dann automatisch über die Dienstreise-Abrechnung. Dreh- und Reisezeiten passt du danach je Tag an.</div>
@@ -1864,7 +2038,7 @@ function confirmImport(p,fname){
     const dl=document.getElementById("i_days");
     dl.innerHTML=days.length?days.map(d=>{
       const c=dayCalc({einsatz:d.einsatz,ende:d.ende,pause:pauseVorgabe(d.einsatz,d.ende)});
-      return `<div class="irow"><div class="d">${fmtDayC(d.datum)}<small>EZ ${d.einsatz||"?"}–${d.ende||"?"}</small></div><div class="o ${otClass(c.ot)}">${fmtSigned(c.ot)}</div></div>`;
+      return `<div class="irow"><div class="d">${fmtDayC(d.datum)}<small>Einsatz ${d.einsatz||"?"}–${d.ende||"?"}</small></div><div class="o ${otClass(c.ot)}">${fmtSigned(c.ot)}</div></div>`;
     }).join(""):(persons.length&&!sel?'<p class="note">Wähl zuerst aus, wer du bist.</p>':'<p class="note">Keine Tage erkannt.</p>');
     /* Bei Treffer der gespeicherte Name statt der oft abgeschnittenen Fassung aus dem PDF ("Muster, Eri"). */
     const nm=document.getElementById("i_name");if(nm&&sel)nm.value=impSel===treffer&&meinName?meinName:sel.name;
@@ -1877,7 +2051,7 @@ function confirmImport(p,fname){
   const paintFk=()=>{const sel=persons[impSel];if(!fkTouched)impFk=(sel&&sel.funktion)||S.funktion||"assistent";
     document.querySelectorAll("#i_fk button").forEach(b=>b.classList.toggle("on",b.dataset.f===impFk));
     const fn=document.getElementById("i_fknote");
-    if(fn)fn.textContent=!sel?"Folgt der Person, die du oben antippst.":sel.funktion?"Aus der Dispo erkannt, bitte prüfen.":"In der Dispo nicht gefunden, Vorgabe aus den Einstellungen.";};
+    if(fn)fn.textContent=!sel?"Folgt der Person, die du oben antippst.":sel.funktion?"Aus der Dispo erkannt, bitte prüfen.":"In der Dispo nicht gefunden, Vorgabe aus Einstellungen › Verdienst und Tagessätze.";};
   let impStatus=S.status||"frei";
   const paintImpStatus=()=>document.querySelectorAll("#i_status button").forEach(b=>b.classList.toggle("on",b.dataset.s===impStatus));
   document.querySelectorAll("#i_status button").forEach(b=>b.onclick=()=>{impStatus=b.dataset.s;paintImpStatus();});
@@ -1885,6 +2059,11 @@ function confirmImport(p,fname){
   if(persons.length){document.querySelectorAll("#i_persons button").forEach(b=>b.onclick=()=>{if(impSel>=0)fkTouched=false;impSel=+b.dataset.i;paint();paintFk();});}
   document.querySelectorAll("#i_fk button").forEach(b=>b.onclick=()=>{impFk=b.dataset.f;fkTouched=true;paintFk();});
   paintFk();
+  /* Hinweis zum Ort (V4.4): woher die Auswahl kommt und ob die Tage mit Ausland Ja starten. */
+  const paintFtNote=()=>{const v=val("i_ftort");
+    document.getElementById("i_ftnote").textContent=(!v?(ftErkannt?"Es gilt die Einstellung.":"Im Produktionsort nicht erkannt, es gilt die Einstellung."):(v===ftErkannt?"Aus dem Produktionsort erkannt, bitte prüfen.":"Von dir gewählt."))+(auslandVorgabe(v)?" Die Tage starten mit Ausland Ja.":"");};
+  document.getElementById("i_ftort").onchange=paintFtNote;
+  paintFtNote();
   document.querySelectorAll("#i_trip button").forEach(b=>b.onclick=()=>{impTrip=b.dataset.t;tripTouched=true;document.querySelectorAll("#i_trip button").forEach(x=>x.classList.toggle("on",x.dataset.t===impTrip));});
   paint();
   document.getElementById("cancelImport").onclick=closeSheet;
@@ -1892,6 +2071,7 @@ function confirmImport(p,fname){
     const sel=persons[impSel];if(persons.length&&!sel)return;
     const src=(sel?sel.days:[]).slice().sort((a,b)=>((a.datum||"")+(a.einsatz||"")).localeCompare((b.datum||"")+(b.einsatz||"")));
     const mehr=impTrip==="mehr";const last=src.length-1;
+    const imAusland=auslandVorgabe(val("i_ftort"));
     const days=src.map((d,i)=>({id:uid(),datum:d.datum,einsatz:d.einsatz,
       anreise:d.anreise||(((!mehr||i===0)&&d.einsatz)?addMin(d.einsatz,30):""),
       anreiseEnde:"",
@@ -1899,7 +2079,7 @@ function confirmImport(p,fname){
       drehende:d.ende?addMin(d.ende,-60):"",
       rueckBeginn:"",
       rueck:d.rueck||(((!mehr||i===last)&&d.ende)?addMin(d.ende,-30):""),
-      ende:d.ende,pause:pauseVorgabe(d.einsatz,d.ende),uebernachtung:mehr,ausland:false,dispo:{einsatz:d.einsatz,ende:d.ende}}));
+      ende:d.ende,pause:pauseVorgabe(d.einsatz,d.ende),uebernachtung:mehr,ausland:imAusland,dispo:{einsatz:d.einsatz,ende:d.ende}}));
     /* Funktion nur speichern, wenn erkannt oder bewusst gewählt: mit Verdienst-Option zählt das Segment, sonst nur die
        Erkennung aus der Dispo. Ohne beides bleibt das Feld weg und der Auftrag folgt der Vorgabe S.funktion. */
     const fk=S.verdienstOn&&sel?impFk:(sel&&sel.funktion);
