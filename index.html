@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="Zeiterfassung">
 <meta name="theme-color" content="#15171A">
 <title>Zeiterfassung</title>
-<!-- Zeiterfassung V4.4.0 · Design "Amber Editorial" -->
+<!-- Zeiterfassung V4.4.1 · Design "Amber Editorial" -->
 <!-- impeccable-disable single-font -- Nutzer wählte beim V1.2-Redesign bewusst "Inter durchgängig" (eine Familie, tabular-nums für Zeiten) -->
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -75,11 +75,12 @@ body.light .bar{background:rgba(245,244,241,.85)}
 .segs button{flex:1;padding:10px 0;border:none;border-radius:9px;background:transparent;color:var(--muted);font-family:inherit;font-size:13px;font-weight:700}
 .segs button.on{background:var(--accent);color:var(--on-accent)}
 /* Auftragskarten */
-.cards{background:var(--surface);border-radius:14px;overflow:hidden;box-shadow:var(--cardshadow);margin-bottom:10px}
-.cards.done{background:var(--surface-2);box-shadow:none}
-.card{padding:16px;border-bottom:1px solid var(--line);cursor:pointer}
-.card:last-child{border-bottom:none}
+.cards{display:flex;flex-direction:column;gap:10px;margin-bottom:10px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:var(--cardshadow);cursor:pointer}
 .card:active{background:var(--surface-2)}
+.cards.done .card{background:var(--surface-2);box-shadow:none}
+.cards.done .card:active{background:var(--surface)}
+.section-h+.cards{margin-top:8px}
 .card .eyeline{font-size:9px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
 .card .toprow{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
 .card .titel{font-weight:700;font-size:16px;letter-spacing:-.3px;line-height:1.25;color:var(--text-strong);margin:0;min-width:0}
@@ -88,7 +89,10 @@ body.light .bar{background:rgba(245,244,241,.85)}
 .cardgrid .l{font-size:9px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted)}
 .cardgrid .v{font-weight:700;font-size:15px;margin-top:2px;color:var(--text-strong)}
 .cardgrid.big .v{font-size:16px}
-.cardfoot{font-size:11px;font-weight:500;color:var(--faint);margin-top:12px}
+.cardfoot{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:11px;font-weight:500;color:var(--faint);margin-top:12px}
+.cardfoot .open{margin-left:auto;font-size:12px;font-weight:600;color:var(--accent);white-space:nowrap}
+.cards.done .cardfoot{margin-top:10px}
+.cards.done .cardfoot .open{color:var(--muted)}
 .cards.done .titel{color:var(--muted)}
 .cards.done .num{color:var(--faint)!important}
 /* Sektionen + Zeilen */
@@ -126,6 +130,8 @@ body.light .btn.danger{border-color:rgba(194,78,59,.4)}
 .btn.info{background:var(--info);color:#fff;box-shadow:none;border-radius:8px;padding:9px;font-size:12px;margin:0}
 .btnrow{display:flex;gap:10px}
 .btnrow .btn{margin-bottom:10px}
+.topbtns{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));margin:0 0 18px}/* Raster statt flex:1, sonst ist der umrandete Knopf 2 px breiter */
+.topbtns .btn{margin:0;padding:13px 6px;border-radius:12px;white-space:nowrap}
 .sub{font-size:11px;color:var(--faint);text-align:center;margin:2px 0 18px;line-height:1.5}
 /* Chips */
 .chip{font-size:10px;font-weight:600;padding:3px 8px;border-radius:7px;background:var(--field);color:var(--muted);border:1px solid var(--line);flex:none}
@@ -319,7 +325,7 @@ body.light .btn.danger{border-color:rgba(194,78,59,.4)}
   <div class="view" id="view"></div>
   <div class="foot">
     <div class="foot-note">Daten bleiben nur auf diesem Gerät · alle Angaben ohne Gewähr</div>
-    <div class="foot-v">Zeiterfassung <b>V4.4.0</b></div>
+    <div class="foot-v">Zeiterfassung <b>V4.4.1</b></div>
   </div>
 </div>
 <input type="file" id="pdfInput" accept="application/pdf" class="hidden">
@@ -354,8 +360,13 @@ S.feiertagOrt??="DE";  /* Feiertage (V4.3): üblicher Arbeitsort bzw. Dienstort.
    Wird einmal nach jedem Update gezeigt: Vergleich S.seenVersion gegen APP_VERSION.
    Nicht bei frischen Installationen (keine Aufträge) – ein neuer Kollege soll kein
    Changelog sehen, bevor er die App überhaupt kennt. Neue Einträge oben anfügen. */
-const APP_VERSION="4.4.0";
+const APP_VERSION="4.4.1";
 const WHATSNEW=[
+  {v:"4.4.1", t:"Aufträge schneller im Griff", items:[
+    ["Knöpfe oben","PDF importieren und Auftrag anlegen stehen jetzt direkt unter den Reitern. Auch bei vielen Aufträgen musst du dafür nicht mehr bis ans Ende der Liste scrollen."],
+    ["Jeder Auftrag eine eigene Karte","Die Aufträge stehen jetzt einzeln untereinander. Unten rechts zeigt „Öffnen ›“, dass du die Karte antippen kannst. Abgerechnete Aufträge sehen genauso aus, nur gedämpft."],
+    ["Plus zum Tagessatz","Im Verdienst heißt die dritte Kachel jetzt „Plus zum Tagessatz“. Sie zeigt, was im Monat zu deinen Tagessätzen dazukommt: die Mehrarbeit und alle Zuschläge."]
+  ]},
   {v:"4.4.0", t:"Einfacher erfassen, klarer verstehen", items:[
     ["Tagestyp für jeden Tag","Oben im Tag wählst du jetzt Anreisetag, Vor Ort, Rückreisetag oder Eintägig. Ein Tipp setzt die Übernachtung und schaltet die passenden Fahrten ein oder aus. Am ersten Tag einer Reise mit Übernachtung verschwindet die Rückreise also mit einem Tipp. Neue Tage in einem mehrtägigen Auftrag starten als Vor Ort."],
     ["Grenzübertritt einfacher","Steht ein Tag auf Ausland, trägst du die Grenzzeiten sofort ein, ohne vorher etwas freizuschalten. Jedes Feld hat ein eigenes ✕ zum Leeren. Erkennt die App beim Import einen Ort im Ausland, starten die Tage gleich mit Ausland Ja."],
@@ -957,6 +968,14 @@ function tabsHtml(){return `<div class="segs" id="segs"><button data-tab="orders
 function bindTabs(){view.querySelectorAll("#segs button").forEach(b=>b.onclick=()=>{state.tab=b.dataset.tab;state.orderId=null;window.scrollTo(0,0);render();});}
 function render(){renderBar();if(state.orderId)return renderDetail();if(state.tab==="stats")return renderStats();if(state.tab==="verdienst"&&S.verdienstOn)return renderVerdienst();return renderOrders();}
 
+/* Fußzeile der Auftragskarte (V4.4.1): links die Nummern (nur bei offenen Aufträgen), rechts immer „Öffnen ›“.
+   Das ist nur der Hinweis, antippbar bleibt die ganze Karte über data-open. */
+function cardFoot(o,mitNr){
+  const n=mitNr?[o.auftragsnr?"Nr. "+esc(o.auftragsnr):"",o.prodNummer?"Prod. "+esc(o.prodNummer):""].filter(Boolean).join(" · "):"";
+  return `<div class="cardfoot">${n?`<span>${n}</span>`:""}<span class="open">Öffnen ›</span></div>`;}
+/* Betrag der Kachel „Plus zum Tagessatz“ (V4.4.1): mit „+“, wenn er gerundet über 0 liegt. */
+function plusEur(n){return (Math.round(n)>0?"+":"")+fmtEurRund(n);}
+
 /* ===== Auftragsliste ===== */
 function renderOrders(){
   const active=DB.orders.filter(o=>!o.abgerechnet).slice().sort(byDate);
@@ -972,9 +991,9 @@ function renderOrders(){
     <div class="kpi acc"><div class="l">Überstunden</div><div class="n ${otClass(totOT)}">${fmtSigned(totOT)}</div></div>
     <div class="kpi"><div class="l">Tage</div><div class="n">${totDays}</div></div>
     <div class="kpi"><div class="l">Tagegeld</div><div class="n" style="color:${totTG>0?'var(--pos)':'var(--muted)'}">${totTG>0?totTG+"×":"—"}</div></div>
-  </div>`+vertragsZeileHtml()+tabsHtml();
+  </div>`+vertragsZeileHtml()+tabsHtml()+`<div class="btnrow topbtns"><button class="btn" id="importPdf">PDF importieren</button><button class="btn ghost" id="addOrder">Auftrag anlegen</button></div>`;
   if(!DB.orders.length){
-    h+=`<div class="empty"><div class="big">🗂</div><p>Noch kein Auftrag angelegt.<br>Leg einen an oder importiere ein Dispo-PDF.</p></div>`;
+    h+=`<div class="empty"><div class="big">🗂</div><p>Noch kein Auftrag angelegt.<br>Importiere oben ein Dispo-PDF oder leg einen Auftrag an.</p></div>`;
   }else{
     const cardHtml=o=>{
       const ot=orderOT(o),tgd=orderTGdays(o);
@@ -986,19 +1005,16 @@ function renderOrders(){
         <div><div class="l">Netto</div><div class="v">${fmtMin(orderNetto(o))}</div></div>
         <div><div class="l">Tagegeld</div><div class="v" style="color:${tgd>0?'var(--pos)':'var(--muted)'}">${tgd>0?tgd+"×":"—"}</div></div>
       </div>
-      ${(o.auftragsnr||o.prodNummer)?`<div class="cardfoot">${[o.auftragsnr?"Nr. "+esc(o.auftragsnr):"",o.prodNummer?"Prod. "+esc(o.prodNummer):""].filter(Boolean).join(" · ")}</div>`:""}</div>`;};
+      ${cardFoot(o,true)}</div>`;};
     const doneHtml=o=>{
       const ot=orderOT(o);
       return `<div class="card" data-open="${o.id}">
       <div class="eyeline">${esc(rangeOrt(o))}</div>
-      <div class="toprow"><p class="titel">${esc(o.titel||"Ohne Titel")}</p><div class="num">${fmtSigned(ot)}</div></div></div>`;};
+      <div class="toprow"><p class="titel">${esc(o.titel||"Ohne Titel")}</p><div class="num">${fmtSigned(ot)}</div></div>${cardFoot(o,false)}</div>`;};
     if(active.length)h+=`<div class="cards">${active.map(cardHtml).join("")}</div>`;
     else h+=`<div class="empty" style="padding:36px 20px"><div class="big">🗂</div><p>Kein aktiver Auftrag.</p></div>`;
     if(done.length){h+=`<div class="section-h"><h3>Abgerechnet</h3><span class="tot">${done.length}</span></div><div class="cards done">${done.map(doneHtml).join("")}</div>`;}
   }
-  h+=`<button class="btn" id="addOrder" style="margin-top:16px">Auftrag anlegen</button>
-  <button class="btn ghost" id="importPdf">PDF importieren</button>
-  <p class="sub">Dispo-PDF auswählen – Auftragsdaten und Drehtage werden vorgeschlagen, du bestätigst vor dem Import.</p>`;
   view.innerHTML=h;
   bindTabs();
   document.getElementById("addOrder").onclick=()=>editOrder(null);
@@ -1180,7 +1196,7 @@ function renderVerdienst(){
     <div class="kpis verd">
       <div class="kpi"><div class="l">Einsätze</div><div class="n">${m.einsaetze}</div></div>
       <div class="kpi"><div class="l">Mehrarbeit</div><div class="n">${fmtStd(m.mehrStd)}</div></div>
-      <div class="kpi acc"><div class="l">Über Tagessatz</div><div class="n">${fmtEurRund(m.brutto-m.honorar)}</div></div>
+      <div class="kpi acc"><div class="l">Plus zum Tagessatz</div><div class="n">${plusEur(m.brutto-m.honorar)}</div></div>
     </div>
     ${fehl?`<div class="rnote" style="margin:0 0 6px">${fehl}</div><button class="linkbtn left" id="satzSet" style="margin:0 0 8px">Tagessätze eintragen ›</button>`:""}
     <div class="section-h"><h3>Pro Monat</h3></div>`;
@@ -1709,7 +1725,7 @@ function openHelp(){
       <p>Die <b>Einstellungen</b> öffnest du über das Zahnrad oben rechts in der Übersicht. Dort stehen dein Name und dein Vertrag, die Mail an die Disposition, Verdienst und Tagessätze und die Rechenregeln.</p></div>
 
     <div class="hsec"><div class="eb">1 · Auftrag anlegen</div>
-      <p>Am schnellsten geht es mit der Dispo. Tippe auf <b>PDF importieren</b> und wähle die Datei aus. Die App liest Titel, Auftragsnummer, Produktionsnummer, Ort und die Namen aller eingeteilten Personen heraus und legt dir die Drehtage gleich mit an.</p>
+      <p>Am schnellsten geht es mit der Dispo. Tippe oben unter den Reitern auf <b>PDF importieren</b> und wähle die Datei aus. Die App liest Titel, Auftragsnummer, Produktionsnummer, Ort und die Namen aller eingeteilten Personen heraus und legt dir die Drehtage gleich mit an.</p>
       <p>Die App sucht dich über deinen Namen aus Einstellungen › Du und dein Vertrag und wählt dich vor. Findet sie dich nicht, ist niemand ausgewählt, und du tippst an, wer du bist. Danach prüfst du die <b>Reiseart</b>. Einzeltage heißt, du fährst jeden Tag hin und zurück. Mehrtägig heißt, du übernachtest vor Ort. Den Tagestyp einzelner Tage änderst du danach im Tag.</p>
       <p>Ohne Dispo geht es genauso über <b>Auftrag anlegen</b>. Dann trägst du die Tage von Hand ein.</p>
       <p class="tip">Die Dispo kommt per Mail? Tippe das PDF an, dann auf Teilen und auf In Dateien sichern. Danach findest du es im Import ganz oben unter Zuletzt benutzt.</p></div>
@@ -1762,6 +1778,7 @@ function openHelp(){
     <div class="hsec"><div class="eb">9 · Verdienst (freiwillig)</div>
       <p>Wenn du magst, zeigt dir die App pro Monat, was dir nach Tarif zusteht und ungefähr auf dem Konto ankommen sollte. Du schaltest das unter <b>Einstellungen › Verdienst und Tagessätze</b> ein und trägst dort deine Tagessätze als Dreh-Assistent und als Kamera ein. Danach gibt es neben Aufträge und Statistik den Reiter <b>Verdienst</b>.</p>
       <p>Die App rechnet so wie das ZDF auf der Abrechnung. Jeder Einsatztag bringt den Tagessatz. Dazu kommt Mehrarbeit für alles über 7,7 Stunden am Tag, aufgerundet auf halbe Stunden, mit dem Tagessatz geteilt durch 7,7 und 25 Prozent Zuschlag. Die 7,7 Stunden stehen so im Tarif und gelten auch dann, wenn du unter Rechenregeln ein anderes Soll eingetragen hast. Für Arbeit in der Nacht zwischen 22 und 6 Uhr kommen 25 Prozent dazu, am Sonntag 50 Prozent. An Feiertagen am Arbeitsort sind es 100 Prozent. Treffen zwei Zuschläge zusammen, zählt nur der höhere. Pause und Reisezeit zählen dabei nicht mit. Laut Tarif zahlt das ZDF Mehrarbeit und diese Zuschläge nur bei einem Tagessatz bis 336,06 Euro. Liegt dein Tagessatz über 336,06 Euro, gibt es nur den Tagessatz.</p>
+      <p>Die Kachel <b>Plus zum Tagessatz</b> zeigt, was im Monat zu deinen Tagessätzen dazukommt: die Mehrarbeit und alle Zuschläge.</p>
       <p>Steht bei einer Fahrt nur der Beginn oder nur das Ende, wie nach einem Dispo-Import, rechnet die App diese Fahrt mit 30 Minuten. Trag die echten Fahrzeiten ein, dann wird es genauer. Nacht- und Sonntagszuschlag sind an echten Abrechnungen geprüft. Abweichen kann es an langen Reisetagen. Das ZDF zählt eine Fahrt manchmal als Arbeitszeit und manchmal als Reisezeit. Reisezeit zählt mit der Arbeit höchstens 12 Stunden am Tag und bekommt keine Zuschläge. Die App rechnet jede Fahrt bei der Mehrarbeit wie Arbeitszeit, bei den Zuschlägen aber wie Reisezeit. An solchen Tagen kann sie deshalb nach oben oder nach unten abweichen.</p>
       <p>Trägst du deinen Netto-Anteil ein, zeigt die App auch, was ungefähr aufs Konto kommt. Den Anteil findest du auf einer Abrechnung, wenn du die Auszahlung durch die Summe des Vertrags teilst.</p>
       <p class="tip">Das ZDF zahlt nachträglich, meist ein bis zwei Monate später und oft in mehreren Teilbeträgen. Urlaubsentgelt ist nicht enthalten. Nichts davon erscheint im Nachweis.</p></div>
