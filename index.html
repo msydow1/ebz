@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="Zeiterfassung">
 <meta name="theme-color" content="#15171A">
 <title>Zeiterfassung</title>
-<!-- Zeiterfassung V4.4.1 · Design "Amber Editorial" -->
+<!-- Zeiterfassung V4.4.2 · Design "Amber Editorial" -->
 <!-- impeccable-disable single-font -- Nutzer wählte beim V1.2-Redesign bewusst "Inter durchgängig" (eine Familie, tabular-nums für Zeiten) -->
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -277,6 +277,7 @@ body.light .btn.danger{border-color:rgba(194,78,59,.4)}
 .implist .irow{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid var(--line)}
 .implist .irow .d{font-size:14px;font-weight:700;color:var(--text-strong)}
 .implist .irow .d small{display:block;font-size:11px;font-weight:500;color:var(--silver);margin-top:2px}
+.implist .irow .d .chip{margin-left:6px;vertical-align:2px}
 .implist .irow .o{font-weight:800;font-size:15px;flex:none}
 .rnote{border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:11px;line-height:1.6;color:var(--faint);margin-top:8px}
 .rnote b{color:var(--silver);font-weight:600}
@@ -325,7 +326,7 @@ body.light .btn.danger{border-color:rgba(194,78,59,.4)}
   <div class="view" id="view"></div>
   <div class="foot">
     <div class="foot-note">Daten bleiben nur auf diesem Gerät · alle Angaben ohne Gewähr</div>
-    <div class="foot-v">Zeiterfassung <b>V4.4.1</b></div>
+    <div class="foot-v">Zeiterfassung <b>V4.4.2</b></div>
   </div>
 </div>
 <input type="file" id="pdfInput" accept="application/pdf" class="hidden">
@@ -339,7 +340,48 @@ body.light .btn.danger{border-color:rgba(194,78,59,.4)}
 /* ===== Persistenz (Fallback falls localStorage gesperrt) ===== */
 const KEY="zeiterfassung_v2";
 const Store={mem:{},load(){try{const r=localStorage.getItem(KEY);return r?JSON.parse(r):null}catch(e){return this.mem[KEY]||null}},save(o){try{localStorage.setItem(KEY,JSON.stringify(o))}catch(e){this.mem[KEY]=o}}};
-let DB=Store.load()||{orders:[],settings:{}};
+const KEY_PREV="zeiterfassung_v2_prev";  /* V4.4.2: Stand vor dem letzten Einlesen eines Backups, zurückholbar in den Einstellungen */
+/* === DATEN-BEGIN === Datensicherung (V4.4.2, Review A3). Reine Funktionen ohne DOM, getestet in tests/daten.test.mjs. */
+function istObj(x){return !!x&&typeof x==="object"&&!Array.isArray(x);}
+/* Datum TT.MM.JJJJ aus einem Zeitstempel (Ortszeit), leer bei Unsinn. */
+function datumAus(ts){const d=new Date(ts||"");return ts&&!isNaN(d)?String(d.getDate()).padStart(2,"0")+"."+String(d.getMonth()+1).padStart(2,"0")+"."+d.getFullYear():"";}
+/* Beschädigten Stand abfangen: Der Start darf an keinem Eintrag scheitern. Kein Objekt wird leer, orders ohne Array leer, Einträge
+   ohne Objekt fallen weg, ein Auftrag ohne days-Array bekommt eine leere Liste, ein Datum, das kein Text ist, wird leer (Statistik und
+   Vertragstage rechnen mit d.datum.slice), settings ohne Objekt wird leer. */
+function standBereinigen(db){
+  if(!istObj(db))db={};
+  db.orders=Array.isArray(db.orders)?db.orders.filter(istObj):[];
+  db.orders.forEach(o=>{o.days=Array.isArray(o.days)?o.days.filter(istObj):[];o.days.forEach(d=>{if(d.datum!=null&&typeof d.datum!=="string")d.datum="";});});
+  if(!istObj(db.settings))db.settings={};
+  return db;
+}
+/* Ein Tag im Backup: ein Objekt, das Datum fehlt oder ist Text. */
+function tagOk(d){return istObj(d)&&(d.datum==null||typeof d.datum==="string");}
+/* Backup prüfen, bevor es etwas ersetzt. Format {app:"zeiterfassung", exportedAt, data} oder alt {orders, settings}. Geprüft wird
+   nur, was Start und Anzeige brauchen: jeder Auftrag ein Objekt mit days-Array, jeder Tag ein Objekt mit Datum als Text, settings fehlt
+   oder ist ein Objekt. Ergebnis {db, exportedAt} oder null (etwa bei einem Shopify-Export, der auch {"orders":[…]} heißt). */
+function backupPruefen(j){
+  const db=istObj(j)&&j.app==="zeiterfassung"?j.data:j;
+  if(!istObj(db)||!Array.isArray(db.orders))return null;
+  if(!db.orders.every(o=>istObj(o)&&Array.isArray(o.days)&&o.days.every(tagOk)))return null;
+  if(db.settings!=null&&!istObj(db.settings))return null;
+  return {db,exportedAt:istObj(j)&&typeof j.exportedAt==="string"?j.exportedAt:""};
+}
+/* Text der Rückfrage beim Einlesen (zurueck=false) und beim Zurückholen (zurueck=true): Datum, Inhalt mit Zeitraum, jetziger Stand. */
+function backupFrage(neu,datum,alt,zurueck){
+  const zahl=(k,eins,viele)=>k+" "+(k===1?eins:viele);
+  const tt=iso=>iso.slice(8,10)+"."+iso.slice(5,7)+"."+iso.slice(0,4);
+  const inhalt=db=>{const ds=db.orders.flatMap(o=>(o.days||[]).map(d=>d&&d.datum)).filter(x=>typeof x==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(x)).sort();
+    return {a:db.orders.length,t:db.orders.reduce((s,o)=>s+(o.days||[]).length,0),von:ds[0]||"",bis:ds[ds.length-1]||""};};
+  const n=inhalt(neu),a=inhalt(alt),vom=datumAus(datum)?" vom "+datumAus(datum):"";
+  const zeit=n.von?", "+tt(n.von)+(n.bis!==n.von?" bis "+tt(n.bis):""):"";
+  return (zurueck?"Stand"+vom+" zurückholen?":"Backup"+vom+" einlesen?")+
+    " Darin "+zahl(n.a,"Auftrag","Aufträge")+" mit "+zahl(n.t,"Tag","Tagen")+zeit+"."+
+    " Dein jetziger Stand mit "+zahl(a.a,"Auftrag","Aufträgen")+" und "+zahl(a.t,"Tag","Tagen")+" wird ersetzt."+
+    (zurueck?" Du kannst ihn danach wieder zurückholen.":" Du kannst ihn danach in den Einstellungen zurückholen.");
+}
+/* === DATEN-END === */
+let DB=standBereinigen(Store.load());
 const S=DB.settings;
 /* Soll nach Tarif: PdTV Ziffer 6.2 i. V. m. Verguetungs-TV 2024-2026 § 6, seit 01.01.2026 7,7 Std = 462 Min ohne Pause.
    Der alte Standard 450 (7:30) wird auf 462 gehoben, ausser der Nutzer hat 450 bewusst gespeichert (S.sollEigen, gesetzt
@@ -360,8 +402,15 @@ S.feiertagOrt??="DE";  /* Feiertage (V4.3): üblicher Arbeitsort bzw. Dienstort.
    Wird einmal nach jedem Update gezeigt: Vergleich S.seenVersion gegen APP_VERSION.
    Nicht bei frischen Installationen (keine Aufträge) – ein neuer Kollege soll kein
    Changelog sehen, bevor er die App überhaupt kennt. Neue Einträge oben anfügen. */
-const APP_VERSION="4.4.1";
+const APP_VERSION="4.4.2";
 const WHATSNEW=[
+  {v:"4.4.2", t:"Import genauer, Backup sicherer", items:[
+    ["Reisen mit Übernachtung richtig erkannt","Nennt die Dispo für einen Tag eine Fahrt mit Beginn und Ende, wird daraus jetzt eine Fahrt: am Anreisetag hin, am Rückreisetag zurück, auch bei Teil- und Restrückreise. Steht in der Bemerkung ein Tagesplan wie „05.03. Anreise“, liest die App ihn mit und wählt Mehrtägig gleich vor. Die Drehzeit beginnt nach der Ankunft und endet vor der Abfahrt."],
+    ["Vorschau mit Jahr und Tagestyp","Im Import siehst du bei jedem Tag das Jahr und bei Mehrtägig den Tagestyp, bevor du speicherst. Januar-Dispos aus dem Dezember landen nicht mehr im Vorjahr."],
+    ["Alle Personen erkannt","Steht in der Dispo ein Name mit abgekürztem Vornamen, rutschen seine Zeiten nicht mehr in die Zeile davor. Kamera-Assistenten erkennt die App jetzt auch in Leistungsbestätigungen."],
+    ["Hin und zurück","Ein Tag mit Übernachtung und beiden Fahrten heißt auf der Tageskarte jetzt Hin und zurück."],
+    ["Backup sicherer","Die App prüft eine Sicherungsdatei, bevor sie etwas ersetzt, und nennt dir Datum, Aufträge und Tage. Deinen bisherigen Stand legt sie beiseite. Unter Einstellungen › Datensicherung holst du ihn mit einem Tipp zurück."]
+  ]},
   {v:"4.4.1", t:"Aufträge schneller im Griff", items:[
     ["Knöpfe oben","PDF importieren und Auftrag anlegen stehen jetzt direkt unter den Reitern. Auch bei vielen Aufträgen musst du dafür nicht mehr bis ans Ende der Liste scrollen."],
     ["Jeder Auftrag eine eigene Karte","Die Aufträge stehen jetzt einzeln untereinander. Unten rechts zeigt „Öffnen ›“, dass du die Karte antippen kannst. Abgerechnete Aufträge sehen genauso aus, nur gedämpft."],
@@ -468,7 +517,7 @@ function fmtRange(o){const ds=o.days.map(d=>d.datum).filter(Boolean).sort();if(!
   const dd=x=>String(x.getDate()).padStart(2,"0"),mm=x=>String(x.getMonth()+1).padStart(2,"0");
   if(ds[0]===ds[ds.length-1])return dd(a)+"."+mm(a)+"."+a.getFullYear();
   if(a.getMonth()===b.getMonth()&&a.getFullYear()===b.getFullYear())return dd(a)+".–"+dd(b)+"."+mm(b)+"."+b.getFullYear();
-  return dd(a)+"."+mm(a)+". – "+dd(b)+"."+mm(b)+"."+b.getFullYear();}
+  return dd(a)+"."+mm(a)+".–"+dd(b)+"."+mm(b)+"."+b.getFullYear();}
 function rangeOrt(o){const r=fmtRange(o);return [r,o.produktionsort].filter(Boolean).join(" · ")||"Noch keine Tage";}
 function headEyebrow(){const n=new Date();let s=MN[n.getMonth()].toUpperCase()+" "+n.getFullYear();const a=clean(S.absender);if(a)s+=" · "+a.toUpperCase();return s;}
 
@@ -549,6 +598,8 @@ function dayTyp(d){
 function typFelder(typ){
   return ({ein:{ue:false,an:true,rk:true},an:{ue:true,an:true,rk:false},ort:{ue:true,an:false,rk:false},rueck:{ue:true,an:false,rk:true}})[typ]||null;
 }
+/* Chip je Tagestyp für Tageskarte und Import-Vorschau (V4.4.2: "eigen" heißt „Hin und zurück“). Eintägig ohne Chip. */
+function typChip(d){return ({an:"Anreisetag",ort:"Vor Ort",rueck:"Rückreisetag",eigen:"Hin und zurück"})[dayTyp(d)]||"";}
 /* Automatisches Einsatzende: letzte vorhandene Tätigkeit plus 30 Minuten (Rückreise-Ende vor Drehende vor Anreise-Ende).
    Eine Quelle für das Tages-Sheet und endeGeschuetzt (vorher doppelt als calcAutoEnde und lastEnd, Review C6). */
 function autoEnde(d){const le=(d&&(d.rueck||d.drehende||d.anreiseEnde))||"";return le?addMin(le,30):"";}
@@ -1069,7 +1120,7 @@ function renderDetail(){
     if(c.tg.state==="ok")chips+=`<span class="chip pos">Tagegeld</span>`;
     /* FLINK-Ausgleich sichtbar (V4.4): nur frei und nur an Tagen, an denen der Nachweis später endet. */
     if(orderStatus(o)==="frei"&&c.korr>0)chips+=`<span class="chip nw">Nachweis ${exportEnde(o,d)} · +${c.korr} FLINK</span>`;
-    if(d.uebernachtung)chips+=`<span class="chip">${({an:"Anreisetag",ort:"Vor Ort",rueck:"Rückreisetag"})[dayTyp(d)]||"Übernachtung"}</span>`;
+    const typc=typChip(d);if(typc)chips+=`<span class="chip">${typc}</span>`;
     if(d.ausland)chips+=`<span class="chip">Ausland</span>`;
     if(d.grenzHin||d.grenzRueck)chips+=`<span class="chip">Grenze ${d.grenzHin||"–"} / ${d.grenzRueck||"–"}</span>`;
     const ftn=feiertagTag(o,d);if(ftn)chips+=`<span class="chip">Feiertag · ${esc(ftn)}</span>`;
@@ -1451,7 +1502,7 @@ function editDay(orderId,dayId){
     if(t.state==="ok"){box.innerHTML=`<div class="tgbox ok"><div class="t"><span>Tagegeld: 14,00 €</span><span class="in">nur intern</span></div><div class="why">Abwesenheit ${fmtMin(c.absence)} h · über der Schwelle von ${fmtMin(S.abwesenheitMin)} h, eintägig, Inland. Bitte selbst beantragen, binnen sechs Monaten. Stellt die Produktion Essen, kürzt das ZDF: Frühstück 5,60 €, Mittag- und Abendessen je 11,20 €.</div></div>`;}
     else{
       const why=t.state==="ue"?"Mehrtägige Reise mit Übernachtung: Das Tagegeld kommt automatisch über die Dienstreise-Abrechnung, 14 € für An- und Abreisetag, 28 € für volle Tage. Beantragen musst du hier nichts."
-        :t.state==="ausland"?"Auslandsreise: Der Spesensatz ist Ländersache und wird über den Reisedienst abgerechnet – deshalb hier kein Betrag."
+        :t.state==="ausland"?"Auslandsreise: Der Spesensatz ist Ländersache und wird über den Reisedienst abgerechnet. Deshalb steht hier kein Betrag."
         :t.state==="under"?`Abwesenheit ${fmtMin(c.absence)} h liegt unter der Schwelle von ${fmtMin(S.abwesenheitMin)} h.`+(c.absence>=S.abwesenheitMin-60?" Zählt deine Anfahrt von zu Hause dazu, kann es trotzdem reichen: Gerechnet wird ab der Abfahrt von der Wohnung.":"")
         :"Zeiten eintragen.";
       box.innerHTML=`<div class="tgbox"><div class="t"><span>${t.state==="ue"?"Tagegeld über die Reiseabrechnung":"Kein Tagegeld"}</span><span class="in">nur intern</span></div><div class="why">${why}</div></div>`;
@@ -1529,6 +1580,7 @@ function openSettings(ziel){
   if(ziel==="verdienst")return openVerdienstSettings();
   if(ziel==="regeln")return openRules();
   const totDays=DB.orders.reduce((a,o)=>a+o.days.length,0);
+  const prev=prevLaden();
   let bakTxt="noch keins";
   if(S.lastBackup){const dAgo=Math.floor((Date.now()-S.lastBackup)/864e5);bakTxt=dAgo===0?"heute":(dAgo===1?"gestern":"vor "+dAgo+" Tagen");}
   const name=clean(S.absender),fest=S.status==="fest";
@@ -1546,13 +1598,14 @@ function openSettings(ziel){
       <div class="stat">Letztes Backup: <b id="lastBak">${bakTxt}</b> · ${DB.orders.length} ${DB.orders.length===1?"Auftrag":"Aufträge"}, ${totDays} ${totDays===1?"Tag":"Tage"}</div>
       <div class="btnrow"><button class="btn ghost" id="bakOut" style="margin:0">Backup teilen</button><button class="btn ghost" id="bakIn" style="margin:0">Backup einlesen</button></div>
     </div>
+    ${prev?`<button class="setrow" id="bakPrev"><span>Vorherigen Stand zurückholen<small>gesichert am ${datumAus(prev.gesichertAm)||"unbekannt"} · ${prev.db.orders.length} ${prev.db.orders.length===1?"Auftrag":"Aufträge"}</small></span><span class="chev">›</span></button>`:""}
     <div class="section-h"><h3>Hilfe</h3></div>
     <button class="setrow" id="helpBtn"><span>Anleitung</span><span class="chev">›</span></button>
     <button class="setrow" id="wnBtn"><span>Was ist neu<small>Version ${APP_VERSION}</small></span><span class="chev">›</span></button>
     <button class="setrow" id="shareApp"><span>App weiterempfehlen</span><span class="chev">›</span></button>
     <button class="btn danger" id="wipe" style="margin-top:16px">Alle Daten löschen</button>
     <button class="btn ghost" id="closeSet" style="margin-bottom:0">Schließen</button>
-    <p class="note" style="text-align:center">Alles liegt lokal auf dem Gerät – kein Konto, keine Server.</p>`);
+    <p class="note" style="text-align:center">Alles liegt lokal auf dem Gerät. Kein Konto, keine Server.</p>`);
   document.getElementById("closeSet").onclick=closeSheet;
   document.getElementById("setVertrag").onclick=()=>openVertragSettings();
   document.getElementById("setMail").onclick=()=>openMailSettings();
@@ -1562,7 +1615,7 @@ function openSettings(ziel){
   document.getElementById("wnBtn").onclick=()=>openWhatsNew(true);
   document.getElementById("shareApp").onclick=()=>{
     const url="https://msydow1.github.io/ebz/";
-    const text="Schau mal, meine App für die Stundenerfassung – vielleicht auch was für dich. Kostenlos, läuft im Browser, deine Daten bleiben bei dir.";
+    const text="Schau mal, meine App für die Stundenerfassung. Vielleicht auch was für dich. Kostenlos, läuft im Browser, deine Daten bleiben bei dir.";
     const data={title:"Zeiterfassung",text,url};
     if(navigator.share)navigator.share(data).catch(()=>{});
     else if(navigator.clipboard)navigator.clipboard.writeText(text+"\n\n"+url).then(()=>toast("Text + Link kopiert")).catch(()=>toast(url));
@@ -1570,7 +1623,13 @@ function openSettings(ziel){
   };
   document.getElementById("bakOut").onclick=exportBackup;
   document.getElementById("bakIn").onclick=()=>document.getElementById("backupInput").click();
-  document.getElementById("wipe").onclick=()=>{askConfirm("Wirklich ALLE Aufträge löschen?",()=>{DB.orders=[];persist();closeSheet();state.orderId=null;render();toast("Alle Daten gelöscht");});};
+  const bp=document.getElementById("bakPrev");
+  if(bp)bp.onclick=()=>{const pv=prevLaden();if(!pv)return;
+    askConfirm(backupFrage(pv.db,pv.gesichertAm,DB,true),()=>{
+      if(!prevSichern(DB)){toast("Der jetzige Stand ließ sich nicht sichern. Nichts zurückgeholt.");return;}
+      DB=standBereinigen(pv.db);persist();location.reload();
+    },"Zurückholen","go");};
+  document.getElementById("wipe").onclick=()=>{askConfirm("Wirklich ALLE Aufträge löschen?"+(prev?" Auch der gesicherte Stand vom letzten Einlesen wird gelöscht.":""),()=>{DB.orders=[];persist();prevLoeschen();closeSheet();state.orderId=null;render();toast("Alle Daten gelöscht");});};
 }
 /* Unterseite „Du und dein Vertrag“ (V4.4): speichert genau absender, status, vertragstage, feiertagOrt. */
 function openVertragSettings(){
@@ -1641,7 +1700,7 @@ function openVerdienstSettings(){
 }
 function openRules(){
   openSheet(`<h3>Rechenregeln</h3>
-    <p class="note" style="margin:-8px 0 16px">Gilt für alle Tage – bestehende Einträge werden neu berechnet.</p>
+    <p class="note" style="margin:-8px 0 16px">Gilt für alle Tage. Bestehende Einträge werden neu berechnet.</p>
     <div class="setcard" style="margin-bottom:14px">
       <div class="stat" style="text-transform:uppercase;letter-spacing:1.2px;font-size:9px;font-weight:600;color:var(--muted)">Soll pro Tag</div>
       <div class="two">
@@ -1670,17 +1729,23 @@ function exportBackup(){
 }
 function dlBlob(blob,fname){const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=fname;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),3000);toast("Datei gespeichert");}
 
+/* Stand vor dem Einlesen (V4.4.2, Review A3): eine Kopie unter KEY_PREV, in den Einstellungen zurückholbar. */
+function prevSichern(db){try{localStorage.setItem(KEY_PREV,JSON.stringify({gesichertAm:new Date().toISOString(),data:db}));return true;}catch(e){return false;}}
+function prevLaden(){try{const x=JSON.parse(localStorage.getItem(KEY_PREV)||"null");const b=istObj(x)?backupPruefen({app:"zeiterfassung",data:x.data}):null;return b?{gesichertAm:x.gesichertAm||"",db:b.db}:null;}catch(e){return null;}}
+function prevLoeschen(){try{localStorage.removeItem(KEY_PREV);}catch(e){}}
 document.getElementById("backupInput").addEventListener("change",e=>{
   const f=e.target.files[0];e.target.value="";if(!f)return;
   const r=new FileReader();
-  r.onload=()=>{try{
-    const j=JSON.parse(r.result);
-    const db=j&&j.app==="zeiterfassung"&&j.data&&Array.isArray(j.data.orders)?j.data:(j&&Array.isArray(j.orders)?j:null);
-    if(!db){toast("Keine gültige Backup-Datei");return;}
-    askConfirm("Backup mit "+db.orders.length+" Auftrag/Aufträgen einlesen? Ersetzt den aktuellen Stand ("+DB.orders.length+" Aufträge).",()=>{
-      DB=db;DB.settings??={};persist();location.reload();
+  r.onerror=()=>toast("Datei nicht lesbar. Liegt sie in iCloud, lade sie zuerst in der Dateien-App.");
+  r.onload=()=>{
+    let j=null;try{j=JSON.parse(r.result);}catch(err){}
+    const b=backupPruefen(j);
+    if(!b){toast("Keine gültige Backup-Datei");return;}
+    askConfirm(backupFrage(b.db,b.exportedAt,DB,false),()=>{
+      if(!prevSichern(DB)){toast("Der jetzige Stand ließ sich nicht sichern. Nichts eingelesen.");return;}
+      DB=standBereinigen(b.db);persist();location.reload();
     },"Einlesen");
-  }catch(err){console.error(err);toast("Backup konnte nicht gelesen werden");}};
+  };
   r.readAsText(f);
 });
 
@@ -1726,7 +1791,7 @@ function openHelp(){
 
     <div class="hsec"><div class="eb">1 · Auftrag anlegen</div>
       <p>Am schnellsten geht es mit der Dispo. Tippe oben unter den Reitern auf <b>PDF importieren</b> und wähle die Datei aus. Die App liest Titel, Auftragsnummer, Produktionsnummer, Ort und die Namen aller eingeteilten Personen heraus und legt dir die Drehtage gleich mit an.</p>
-      <p>Die App sucht dich über deinen Namen aus Einstellungen › Du und dein Vertrag und wählt dich vor. Findet sie dich nicht, ist niemand ausgewählt, und du tippst an, wer du bist. Danach prüfst du die <b>Reiseart</b>. Einzeltage heißt, du fährst jeden Tag hin und zurück. Mehrtägig heißt, du übernachtest vor Ort. Den Tagestyp einzelner Tage änderst du danach im Tag.</p>
+      <p>Die App sucht dich über deinen Namen aus Einstellungen › Du und dein Vertrag und wählt dich vor. Findet sie dich nicht, ist niemand ausgewählt, und du tippst an, wer du bist. Danach prüfst du die <b>Reiseart</b>. Einzeltage heißt, du fährst jeden Tag hin und zurück. Mehrtägig heißt, du übernachtest vor Ort. Nennt die Dispo einen An- oder Rückreisetag, ist Mehrtägig schon vorgewählt. Die Vorschau zeigt dir jeden Tag mit Jahr und bei Mehrtägig mit Tagestyp. Den Tagestyp einzelner Tage änderst du danach im Tag.</p>
       <p>Ohne Dispo geht es genauso über <b>Auftrag anlegen</b>. Dann trägst du die Tage von Hand ein.</p>
       <p class="tip">Die Dispo kommt per Mail? Tippe das PDF an, dann auf Teilen und auf In Dateien sichern. Danach findest du es im Import ganz oben unter Zuletzt benutzt.</p></div>
 
@@ -1837,7 +1902,7 @@ function feiertagText(o){
   return z.length?"Feiertage am Arbeitsort: "+z.join(" · "):"";
 }
 function mailOrder(o){
-  const subj="Zeitnachweis"+(o.prodNummer?" – Produktion "+o.prodNummer:(o.titel?" – "+o.titel:(o.auftragsnr?" – "+o.auftragsnr:"")));
+  const subj="Zeitnachweis"+(o.prodNummer?" · Produktion "+o.prodNummer:(o.titel?" · "+o.titel:(o.auftragsnr?" · "+o.auftragsnr:"")));
   const prodTxt=o.titel?(o.titel+(o.prodNummer?" ("+o.prodNummer+")":"")):(o.prodNummer?"mit der Prod.-Nr. "+o.prodNummer:(o.auftragsnr||""));
   const sender=flipName(o.mitarbeiter||S.absender)||"[Dein Name]";
   /* Anschreiben und Gruss sind in den Einstellungen frei formulierbar.
@@ -1916,7 +1981,7 @@ function pdfOrder(o){
       navigator.share({files:[file]}).then(()=>toast("PDF geteilt")).catch(err=>{
         if(err&&err.name!=="AbortError"){doc.save(fname);toast("PDF erstellt");}});
     }else{doc.save(fname);toast("PDF erstellt");}
-  }catch(e){console.error(e);toast("PDF-Fehler – ggf. online sein");}
+  }catch(e){console.error(e);toast("PDF ließ sich nicht erstellen. Versuch es noch einmal, am besten mit Internet.");}
 }
 
 /* ===== PDF Import ===== */
@@ -1925,22 +1990,31 @@ document.getElementById("pdfInput").addEventListener("change",async e=>{
   if(typeof pdfjsLib==="undefined"){toast("PDF-Bibliothek nicht geladen (online sein)");return;}
   toast("PDF wird gelesen…");
   try{pdfjsLib.GlobalWorkerOptions.workerSrc="vendor/pdf.worker.min.js";
-    const buf=await file.arrayBuffer();const pdf=await pdfjsLib.getDocument({data:buf}).promise;let text="",hints=null;
-    for(let p=1;p<=pdf.numPages;p++){const pg=await pdf.getPage(p);const tc=await pg.getTextContent();
-      const lines=[];tc.items.forEach(it=>{if(typeof it.str!=="string"||it.str===""||!it.transform)return;const x=it.transform[4],y=it.transform[5];let ln=lines.find(l=>Math.abs(l.y-y)<=4);if(!ln){ln={y,parts:[]};lines.push(ln);}ln.parts.push({x,w:it.width||0,s:it.str});});
-      lines.sort((a,b)=>b.y-a.y);
-      /* Teile nur bei echter Lücke (>1pt) mit Leerzeichen verbinden – PDFs zerlegen
-         Wörter/Nummern oft in berührende Stücke ("A"+"2748455", "455"+"11333") */
-      const pageText=lines.map(l=>{const ps=l.parts.sort((a,b)=>a.x-b.x);let s="",end=null;ps.forEach(p=>{if(end!==null&&p.x-end>1)s+=" ";s+=p.s;end=p.x+p.w;});return s;}).join(" ");
-      text+=(pageText||tc.items.map(i=>i.str).join(" "))+" ";
-      if(p===1)hints=labelHints(tc.items);}
-    const meta=parseZDF(text);
-    if(hints){if(hints.titel)meta.titel=hints.titel;if(hints.ort)meta.produktionsort=hints.ort;}
-    confirmImport(meta,file.name);
+    const buf=await file.arrayBuffer();const pdf=await pdfjsLib.getDocument({data:buf}).promise;
+    confirmImport(await dispoLesen(pdf),file.name);
   }catch(err){console.error(err);toast("PDF konnte nicht gelesen werden");}
 });
+/* Dispo lesen (ab V4.4.2 eigene Funktion): Das Prüfwerkzeug tests/import-pruefung.mjs geht genau diesen Weg. */
+async function dispoLesen(pdf){
+  let text="",hints=null;
+  for(let p=1;p<=pdf.numPages;p++){const pg=await pdf.getPage(p);const tc=await pg.getTextContent();
+    text+=seitenText(tc.items)+" ";
+    if(p===1)hints=labelHints(tc.items);}
+  const meta=parseZDF(text);
+  if(hints){if(hints.titel)meta.titel=hints.titel;if(hints.ort)meta.produktionsort=hints.ort;}
+  return meta;
+}
+/* Text einer Seite positionsbasiert: Items nach y gruppieren, je Zeile nach x sortieren. */
+function seitenText(items){
+  const lines=[];items.forEach(it=>{if(typeof it.str!=="string"||it.str===""||!it.transform)return;const x=it.transform[4],y=it.transform[5];let ln=lines.find(l=>Math.abs(l.y-y)<=4);if(!ln){ln={y,parts:[]};lines.push(ln);}ln.parts.push({x,w:it.width||0,s:it.str});});
+  lines.sort((a,b)=>b.y-a.y);
+  /* Teile nur bei echter Lücke (>1pt) mit Leerzeichen verbinden – PDFs zerlegen
+     Wörter/Nummern oft in berührende Stücke ("A"+"2748455", "455"+"11333") */
+  const pageText=lines.map(l=>{const ps=l.parts.sort((a,b)=>a.x-b.x);let s="",end=null;ps.forEach(p=>{if(end!==null&&p.x-end>1)s+=" ";s+=p.s;end=p.x+p.w;});return s;}).join(" ");
+  return pageText||items.map(i=>i.str).join(" ");
+}
 function clean(s){return String(s||"").replace(/\s+/g," ").trim();}
-function cleanName(n){return clean(n).replace(/\s*\.{2,3}\s*$/,"").replace(/\s+,/,",").trim();}
+function cleanName(n){return clean(n).replace(/\s*(?:\.{2,3}|…)\s*$/,"").replace(/\s+,/,",").replace(/,\s*$/,"").trim();}
 /* Spaltenwerte direkt unter den Formular-Labels lesen (Seite 1).
    Titel/Produktionsort stehen im ZDF-Formular exakt unter ihrer Beschriftung –
    zuverlässiger als jede Fließtext-Heuristik (17/25 Ort-Fehlschläge im Real-Korpus). */
@@ -1969,31 +2043,72 @@ function parseMeta(t){
   if(m=t.match(/Redakteur(?:\/Tel\.|\s+Telefon)\s+([A-ZÄÖÜ][\wäöüßÄÖÜ0-9 .\-]{2,40}?)\s+(?:Hauptredaktion|Redaktion|SendeRedaktion|Personalleistung|Ereignis)/))o.produktionsort=clean(m[1]);
   return o;
 }
+/* Jahr der Dispo-Tage (V4.4.2, Review A2). Bezug: Volldaten im Auftrag ohne den Aktualisierungszeitpunkt, deren TT.MM zu einem
+   erkannten Tag passt. Das häufigste Jahr gewinnt (ein Tippfehler wie „15.01.2025“ unter 2026er-Daten fällt raus), Bezug ist das
+   früheste passende Datum dieses Jahres. Ohne solche Daten (Leistungsbestätigung) der Aktualisierungszeitpunkt, sonst heute.
+   tage = ["MM-TT", …]. */
+function jahrBezug(t,tage){
+  const kopf=t.match(/Aktualisierungszeitpunkt:?\s*(\d{2})\.(\d{2})\.(20\d{2})/);
+  const rest=t.replace(/Aktualisierungszeitpunkt:?\s*\d{2}\.\d{2}\.20\d{2}/g,"");
+  const passt=new Set(tage),treffer=[];
+  for(const m of rest.matchAll(/(\d{2})\.(\d{2})\.(20\d{2}|\d{2})(?!\d)/g))
+    if(passt.has(m[2]+"-"+m[1]))treffer.push((m[3].length===2?"20"+m[3]:m[3])+"-"+m[2]+"-"+m[1]);
+  if(treffer.length){
+    const n={};treffer.forEach(d=>{const j=d.slice(0,4);n[j]=(n[j]||0)+1;});
+    const jahr=Object.keys(n).sort((a,b)=>n[b]-n[a]||b.localeCompare(a))[0];
+    return treffer.filter(d=>d.startsWith(jahr)).sort()[0];
+  }
+  return kopf?kopf[3]+"-"+kopf[2]+"-"+kopf[1]:isoLocal(new Date());
+}
+/* Jahr je Tag: Die Tage eines Auftrags liegen dicht beieinander. Im Jahreskreis sortiert liegt der Jahreswechsel in der größten Lücke,
+   so bleibt ein Block über Silvester zusammen. Der ganze Block bekommt das Jahr, das ihn am nächsten an den Bezug legt, Tage vor dem
+   Bezug zählen dreifach (Dispos entstehen meist vor dem Einsatz, Bestätigungen auch Wochen danach). tage = ["MM-TT", …],
+   Ergebnis {"MM-TT": "JJJJ"}. Nach der Code-Prüfung statt eines Fensters je Tag, das späte Bestätigungen ins Folgejahr schob. */
+function jahreFuer(tage,bezug){
+  const k=[...new Set(tage)].sort(),n=k.length,erg={};if(!n)return erg;
+  const pos=x=>Math.round((Date.UTC(2000,+x.slice(0,2)-1,+x.slice(3))-Date.UTC(2000,0,1))/864e5);
+  let g=n-1,lang=-1;
+  for(let i=0;i<n;i++){const l=((pos(k[(i+1)%n])-pos(k[i]))%366+366)%366||366;if(l>lang){lang=l;g=i;}}
+  const s=(g+1)%n,b=new Date(bezug+"T00:00"),j0=b.getFullYear(),tg=ms=>Math.round(ms/864e5);
+  const abstand=j=>{const von=new Date(j+"-"+k[s]+"T00:00"),bis=new Date((s>0?j+1:j)+"-"+k[(s+n-1)%n]+"T00:00");
+    return b<von?tg(von-b):b>bis?3*tg(b-bis):0;};
+  let jahr=j0-1;[j0,j0+1].forEach(j=>{if(abstand(j)<abstand(jahr))jahr=j;});
+  k.forEach((x,i)=>{erg[x]=String(i>=s?jahr:jahr+1);});
+  return erg;
+}
 function parsePersons(t){
-  const year=(t.match(/\d{2}\.\d{2}\.(20\d{2})/)||[])[1]||(t.match(/\b(20\d{2})\b/)||[])[1]||(new Date().getFullYear()+"");
   const sec=t.search(/Personal-Disposition|Personalleistung/);const body=sec>=0?t.slice(sec):t;
-  const nameRe=/[A-ZÄÖÜ][A-Za-zäöüßÄÖÜ-]+,\s+[A-ZÄÖÜ][A-Za-zäöüßÄÖÜ]*\.{0,3}/g;
-  const stops=/(Kamera\/Geräte|Kamera-|Dienstbeginn|Bemerkungen|KFZ|Seite \d|Personal-Disposition|Aktualisierungszeitpunkt)/;
+  /* Name „Nachname, Vorname“, auch abgekürzt „Muster, Eri...“ oder ganz ohne Vornamen „Muster, ...“ (V4.4.2). */
+  const nameRe=/[A-ZÄÖÜ][A-Za-zäöüßÄÖÜ-]+,\s+(?:[A-ZÄÖÜ][A-Za-zäöüßÄÖÜ]*(?:\.{1,3}|…)?|\.{3}|…)/g;
+  const stops=/(Kamera\/Geräte|Dienstbeginn|Bemerkungen|KFZ|Seite \d|Personal-Disposition|Aktualisierungszeitpunkt)/;
+  /* Zellen statt Uhrzeiten (V4.4.2): Jede Zelle ist „TT.MM. HH:MM“ oder „---“. Im EB-Auftrag gelten die ersten vier (Einsatzbeginn,
+     Anreisebeginn, Rückreiseende, Einsatzende), in der Leistungsbestätigung die ersten zwei (Einsatzbeginn, Einsatzende). Was danach
+     kommt, gehört zur nächsten Zeile, etwa zu einer Firma ohne Komma. */
+  const nz=!/Personal-Disposition/.test(t)&&/Personalleistung/.test(t)?2:4;
+  const zeit=c=>c&&c[3]?c[3].padStart(5,"0"):"";
   const anchors=[];let m;
   while(m=nameRe.exec(body))anchors.push({name:m[0],end:m.index+m[0].length,start:m.index});
-  const persons={};const order=[];
+  const zeilen=[];
   anchors.forEach((a,i)=>{
     let end=i+1<anchors.length?anchors[i+1].start:body.length;
     const rest=body.slice(a.end,end),st=rest.search(stops);
     if(st>=0)end=a.end+st;
-    const slice=body.slice(a.end,end);
-    const dm=slice.match(/(\d{2})\.(\d{2})\./);
-    const times=[...slice.matchAll(/(\d{1,2}:\d{2})/g)].map(x=>x[1]);
-    if(!dm||!times.length)return;
-    const iso=year+"-"+dm[2]+"-"+dm[1];
-    const einsatz=times[0].padStart(5,"0"),ende=times[times.length-1].padStart(5,"0");
-    let anreise="",rueck="";if(times.length>=4){anreise=times[1].padStart(5,"0");rueck=times[2].padStart(5,"0");}
-    const nm=cleanName(a.name);
-    /* Funktion steht in der Dispo direkt vor dem Namen, nach der letzten Uhrzeit der Vorzeile (V4.1). */
-    const pre=body.slice(Math.max(0,a.start-160),a.start).replace(/^[\s\S]*(\d{1,2}:\d{2}|---)/,"");
-    if(!persons[nm]){persons[nm]={name:nm,days:[],seen:new Set(),funktion:funktionAus(pre)};order.push(nm);}
-    const key=iso+einsatz;
-    if(!persons[nm].seen.has(key)){persons[nm].seen.add(key);persons[nm].days.push({datum:iso,einsatz,ende,anreise,rueck});}
+    const zl=[...body.slice(a.end,end).matchAll(/(\d{2})\.(\d{2})\.\s*(\d{1,2}:\d{2})|---/g)].slice(0,nz);
+    if(!zl.length||!zl[0][3])return;
+    const voll=zl.length===nz;
+    zeilen.push({nm:cleanName(a.name),tt:zl[0][1],mm:zl[0][2],einsatz:zeit(zl[0]),ende:zeit(voll?zl[nz-1]:zl.filter(c=>c[3]).pop()),
+      anreise:nz===4&&voll?zeit(zl[1]):"",rueck:nz===4&&voll?zeit(zl[2]):"",
+      /* Funktion steht in der Dispo direkt vor dem Namen, nach der letzten Uhrzeit der Vorzeile (V4.1). */
+      pre:body.slice(Math.max(0,a.start-160),a.start).replace(/^[\s\S]*(\d{1,2}:\d{2}|---)/,"")});
+  });
+  /* Das Jahr erst jetzt, aus allen Zeilen zusammen (V4.4.2, A2). */
+  const md=zeilen.map(r=>r.mm+"-"+r.tt),jahre=jahreFuer(md,jahrBezug(t,md));
+  const persons={};const order=[];
+  zeilen.forEach(r=>{
+    const iso=jahre[r.mm+"-"+r.tt]+"-"+r.mm+"-"+r.tt;
+    if(!persons[r.nm]){persons[r.nm]={name:r.nm,days:[],seen:new Set(),funktion:funktionAus(r.pre)};order.push(r.nm);}
+    const key=iso+r.einsatz;
+    if(!persons[r.nm].seen.has(key)){persons[r.nm].seen.add(key);persons[r.nm].days.push({datum:iso,einsatz:r.einsatz,ende:r.ende,anreise:r.anreise,rueck:r.rueck});}
   });
   return order.map(n=>({name:persons[n].name,funktion:persons[n].funktion,days:persons[n].days.sort((x,y)=>(x.datum+x.einsatz).localeCompare(y.datum+y.einsatz))}));
 }
@@ -2015,7 +2130,88 @@ function personMatch(persons,meinName){
   const vh=hit.filter(h=>h.ok);
   return vh.length===1?vh[0].i:-1;
 }
-function parseZDF(raw){const t=clean(raw);const meta=parseMeta(t);meta.persons=parsePersons(t);return meta;}
+/* Tagesplan aus der Auftragsbemerkung (V4.4.2): Datum mit Stichwort, etwa „05.03.26 Anreise“, „07.06.26 Laden + Anreise“,
+   „Abreise am 17.02.2026“ oder „Anreise: 05.03.“. Ergebnis {"MM-TT":"an"|"rueck"}. Je Stichwort zwei Kandidaten: das Datum davor
+   (höchstens 30 Zeichen) und das Datum direkt danach (nur „am“, „:“ oder Leerzeichen dazwischen). Mit „am“ gilt das Datum danach. Sonst
+   entscheidet die Schreibweise der ganzen Bemerkung: Das erste Stichwort mit nur einem Kandidaten zeigt sie an, ohne so eins gilt
+   „Datum vor Stichwort“ wie in allen Dispos bisher. „Hin- und Rückreise“ ist eine Tagesreise und wie zwei Stichworte am selben Tag,
+   die sich widersprechen: Dieser Tag zählt nicht. Vorbereitung, Abwicklung und Dreh brauchen kein Stichwort. */
+function ablaufAus(t){
+  const s=String(t||"").normalize("NFC"),a=s.search(/Auftragsbemerkung/);if(a<0)return {};
+  let b=s.slice(a+17);const e=b.search(/Treff Ort|Drehformate|Personal-Disposition|Personalleistung/);if(e>=0)b=b.slice(0,e);
+  const k=(tt,mm)=>mm.padStart(2,"0")+"-"+tt.padStart(2,"0");
+  const daten=[...b.matchAll(/(\d{1,2})\.(\d{1,2})\.(?:\d{4}|\d{2}(?!\d))?/g)].map(m=>({e:m.index+m[0].length,k:k(m[1],m[2])}));
+  const sw=[...b.matchAll(/(hin-?\s*(?:und|&|\/)\s*r(?:ü|ue)ckreise)|(anreise)|r(?:ü|ue)ckreise|abreise/gi)].map(m=>{
+    const rest=b.slice(m.index+m[0].length),nach=rest.match(/^\s*(?:am\s+|:\s*)?(\d{1,2})\.(\d{1,2})\./i);
+    const vor=daten.filter(d=>d.e<=m.index).pop();
+    return {v:m[1]?"beide":m[2]?"an":"rueck",am:!!nach&&/^\s*am\s/i.test(rest),nach:nach?k(nach[1],nach[2]):"",
+      vor:vor&&m.index-vor.e<=30?vor.k:""};
+  });
+  const eins=sw.find(x=>!x.am&&!x.vor!==!x.nach),nachZuerst=!!(eins&&eins.nach);
+  const plan={},streit=new Set();
+  sw.forEach(x=>{
+    const tag=x.am?x.nach:nachZuerst?(x.nach||x.vor):(x.vor||x.nach);
+    if(!tag)return;
+    if(x.v==="beide"||(plan[tag]&&plan[tag]!==x.v))streit.add(tag);
+    plan[tag]=x.v;
+  });
+  streit.forEach(x=>delete plan[x]);
+  return plan;
+}
+/* Reiseart-Vorwahl im Import (V4.4.2): Mehrtägig, wenn der Tagesplan einen An- oder Rückreisetag nennt. */
+function reiseVorwahl(ablauf){return ablauf&&Object.keys(ablauf).length?"mehr":"ein";}
+/* Text in NFC (V4.4.2): Zerlegte Umlaute („u“ + Trema) würden sonst keinen Namens-Anker bilden. */
+function parseZDF(raw){const t=clean(raw).normalize("NFC");const meta=parseMeta(t);meta.persons=parsePersons(t);meta.ablauf=ablaufAus(t);return meta;}
+/* Tage einer Person für den Import bauen (ab V4.4.2 eigene Funktion für das Prüfwerkzeug). src = Tage aus parsePersons,
+   mehr = Reiseart Mehrtägig, imAusland = Vorgabe aus dem Ort, ablauf = Tagesplan aus ablaufAus.
+   Mehrtägig (V4.4.2): Richtung je Tag aus dem Tagesplan, sonst aus den Fahrzeiten der Dispo (erste Fahrt Anreise, jede spätere
+   Rückreise). Die zwei Reisespalten der Zeile sind dann eine Fahrt von–bis, der Dreh weicht ihr aus. Eine Tagesreise-Zeile bleibt
+   Hin und zurück und zählt nicht als Richtung. Alle übrigen Tage Vor Ort. Ohne jede Richtung und bei Einzeltage wie bisher. */
+function importTage(src,mehr,imAusland,ablauf){
+  const s=src.slice().sort((a,b)=>((a.datum||"")+(a.einsatz||"")).localeCompare((b.datum||"")+(b.einsatz||"")));
+  const last=s.length-1,plan=ablauf||{};
+  let seit=false;
+  const ri=s.map(d=>{const r=plan[(d.datum||"").slice(5)]||(d.anreise||d.rueck?(tagesreise(d)?"beide":seit?"rueck":"an"):"");
+    if(r==="an"||r==="rueck")seit=true;return r;});
+  const genau=mehr&&ri.some(r=>r==="an"||r==="rueck");
+  return s.map((d,i)=>{
+    const t={id:uid(),datum:d.datum,einsatz:d.einsatz,anreise:"",anreiseEnde:"",
+      drehbeginn:d.einsatz?addMin(d.einsatz,60):"",drehende:d.ende?addMin(d.ende,-60):"",rueckBeginn:"",rueck:"",
+      ende:d.ende,pause:pauseVorgabe(d.einsatz,d.ende),uebernachtung:mehr,ausland:imAusland,dispo:{einsatz:d.einsatz,ende:d.ende}};
+    if(!genau){
+      t.anreise=d.anreise||(((!mehr||i===0)&&d.einsatz)?addMin(d.einsatz,30):"");
+      t.rueck=d.rueck||(((!mehr||i===last)&&d.ende)?addMin(d.ende,-30):"");
+      return t;
+    }
+    const fahrt=!!(d.anreise||d.rueck);
+    if(ri[i]==="an"){if(fahrt){t.anreise=d.anreise;t.anreiseEnde=d.rueck;}else t.anreise=d.einsatz?addMin(d.einsatz,30):"";}
+    if(ri[i]==="rueck"){if(fahrt){t.rueckBeginn=d.anreise;t.rueck=d.rueck;}else t.rueck=d.ende?addMin(d.ende,-30):"";}
+    if(ri[i]==="beide"){t.anreise=d.anreise;t.rueck=d.rueck;}
+    if(fahrt&&(ri[i]==="an"||ri[i]==="rueck"))drehAusweichen(t,ri[i]);
+    return t;
+  });
+}
+/* Tagesreise in einer Dispo-Zeile (V4.4.2): Beide Reisezeiten liegen höchstens 60 Minuten an Einsatzbeginn und Einsatzende
+   (06:00 · 06:30 · 15:30 · 16:00). Dann sind sie Beginn der Hinfahrt und Ende der Rückfahrt, keine Fahrt von–bis. */
+function tagesreise(d){
+  const e=hm2min(d.einsatz),a=hm2min(d.anreise),r=hm2min(d.rueck),x=hm2min(d.ende);
+  return e!=null&&a!=null&&r!=null&&x!=null&&dur(e,a)<=60&&dur(r,x)<=60;
+}
+/* Dreh weicht der Fahrt aus der Dispo aus (V4.4.2), verglichen relativ zum Einsatzbeginn (über Mitternacht richtig).
+   Anreisetag: Dreh frühestens ab der Ankunft. Rückreisetag: Beginnt die Fahrt nach dem Drehbeginn, endet der Dreh spätestens bei
+   der Abfahrt, sonst (Fahrt am Morgen) beginnt er frühestens bei der Ankunft. Bleibt nichts übrig, kein Dreh. */
+function drehAusweichen(t,typ){
+  const e=hm2min(t.einsatz);if(e==null||!t.drehbeginn||!t.drehende)return;
+  const rel=x=>dur(e,hm2min(x));
+  let db=t.drehbeginn,de=t.drehende;
+  if(typ==="an"&&t.anreiseEnde&&rel(t.anreiseEnde)>rel(db))db=t.anreiseEnde;
+  if(typ==="rueck"&&t.rueckBeginn){
+    if(rel(t.rueckBeginn)>rel(db)){if(rel(t.rueckBeginn)<rel(de))de=t.rueckBeginn;}
+    else if(t.rueck&&rel(t.rueck)>rel(db))db=t.rueck;
+  }
+  if(rel(db)>=rel(de)){t.drehbeginn="";t.drehende="";return;}
+  t.drehbeginn=db;t.drehende=de;
+}
 
 let impData,impSel;
 function confirmImport(p,fname){
@@ -2028,7 +2224,7 @@ function confirmImport(p,fname){
   const pHinweis=treffer>=0?"Vorauswahl nach deinem Namen.":(!meinName?"Tipp an, wer du bist. Mit deinem Namen unter Einstellungen › Du und dein Vertrag wählt die App dich selbst aus."
     :`Die App findet ${esc(meinName)} auf dieser Dispo nicht eindeutig. Tipp an, wer du bist.`);
   let impTrip=null,tripTouched=false;
-  const defTrip=()=>"ein";
+  const defTrip=()=>reiseVorwahl(p.ablauf);
   openSheet(`<h3>Import bestätigen</h3>
     <p class="note" style="margin:-8px 0 16px">Aus <b style="color:var(--accent-ink)">${esc(fname||"PDF")}</b> erkannt. Bitte prüfen und korrigieren.</p>
     <div class="field"><label>Titel</label><input type="text" class="txt" id="i_titel" value="${esc(p.titel||"")}" placeholder="Titel eintragen"></div>
@@ -2040,29 +2236,36 @@ function confirmImport(p,fname){
     <div class="field" style="margin-top:12px"><label>Beschäftigung</label><div class="toggles" id="i_status"><button data-s="frei">Freier Mitarbeiter</button><button data-s="fest">Fest angestellt</button></div>
       <p class="note">Freie: Der Nachweis verlängert das Einsatzende um den Pausenabzug von FLINK. Fest Angestellte: Zeiten unverändert.</p></div>
     ${S.verdienstOn?`<div class="field"><label>Funktion (für Verdienst)</label><div class="toggles" id="i_fk"><button data-f="assistent">Dreh-Assistent</button><button data-f="kamera">Kamera</button></div><p class="note" id="i_fknote"></p></div>`:""}
-    <div class="field"><label>Name (für Nachweis)</label><input type="text" class="txt" id="i_name" value=""></div>`:`<p class="note">Keine Personen erkannt – du kannst den Auftrag trotzdem anlegen und Tage manuell erfassen.</p>`}
+    <div class="field"><label>Name (für Nachweis)</label><input type="text" class="txt" id="i_name" value=""></div>`:`<p class="note">Keine Personen erkannt. Du kannst den Auftrag trotzdem anlegen und die Tage von Hand erfassen.</p>`}
     <div class="field" style="margin-top:14px"><label>Feiertage nach</label><select id="i_ftort">${ftOptionen(ftErkannt,["","Wie Einstellungen: "+ortLabel(S.feiertagOrt)])}</select>
       <p class="note" id="i_ftnote"></p></div>
     <div class="section-h" style="margin:18px 0 8px"><h3>Reiseart</h3></div>
     <div class="toggles" id="i_trip"><button data-t="ein">Einzeltage</button><button data-t="mehr">Mehrtägig</button></div>
-    <div class="rnote"><b>Einzeltage</b> · jeden Tag hin &amp; zurück, ohne Übernachtung – Tagegeld je Tag möglich.<br><b>Mehrtägig</b> · Anreise am ersten, Rückreise am letzten Tag, Übernachtung vorbelegt – das Tagegeld kommt dann automatisch über die Dienstreise-Abrechnung. Dreh- und Reisezeiten passt du danach je Tag an.</div>
+    <p class="note hidden" id="i_tripnote">Vorgewählt, weil die Dispo An- oder Rückreise nennt.</p>
+    <div class="rnote"><b>Einzeltage</b> · jeden Tag hin &amp; zurück, ohne Übernachtung. Tagegeld je Tag möglich.<br><b>Mehrtägig</b> · mit Übernachtung. An- und Rückreisetag kommen aus der Dispo, sonst gelten der erste und der letzte Tag. Das Tagegeld kommt dann über die Dienstreise-Abrechnung. Dreh- und Reisezeiten passt du danach je Tag an.</div>
     <div class="section-h" style="margin:18px 0 4px"><h3>Tagesvorschau</h3></div>
     <div class="implist" id="i_days"></div>
     <button class="btn" id="doImport" style="margin-top:16px">Importieren</button><button class="btn ghost" id="cancelImport" style="margin-bottom:0">Abbrechen</button>`);
   function paint(){
     document.querySelectorAll("#i_persons button").forEach(b=>b.classList.toggle("on",+b.dataset.i===impSel));
     const sel=persons[impSel];const days=sel?sel.days:[];
-    const dl=document.getElementById("i_days");
-    dl.innerHTML=days.length?days.map(d=>{
-      const c=dayCalc({einsatz:d.einsatz,ende:d.ende,pause:pauseVorgabe(d.einsatz,d.ende)});
-      return `<div class="irow"><div class="d">${fmtDayC(d.datum)}<small>Einsatz ${d.einsatz||"?"}–${d.ende||"?"}</small></div><div class="o ${otClass(c.ot)}">${fmtSigned(c.ot)}</div></div>`;
-    }).join(""):(persons.length&&!sel?'<p class="note">Wähl zuerst aus, wer du bist.</p>':'<p class="note">Keine Tage erkannt.</p>');
     /* Bei Treffer der gespeicherte Name statt der oft abgeschnittenen Fassung aus dem PDF ("Muster, Eri"). */
     const nm=document.getElementById("i_name");if(nm&&sel)nm.value=impSel===treffer&&meinName?meinName:sel.name;
     if(!tripTouched)impTrip=defTrip();
-    document.querySelectorAll("#i_trip button").forEach(b=>b.classList.toggle("on",b.dataset.t===impTrip));
+    paintTage();
     const di=document.getElementById("doImport");if(di){di.disabled=persons.length>0&&!sel;
       di.textContent=days.length?`Importieren · ${days.length} ${days.length===1?"Tag":"Tage"}`:"Importieren";}
+  }
+  /* Vorschau mit Jahr (V4.4.2, A2) und bei Mehrtägig mit dem Tagestyp, gebaut wie beim Speichern über importTage. */
+  function paintTage(){
+    const sel=persons[impSel],mehr=impTrip==="mehr";
+    const tage=sel?importTage(sel.days,mehr,false,p.ablauf):[];
+    document.getElementById("i_days").innerHTML=tage.length?tage.map(d=>{
+      const c=dayCalc({einsatz:d.einsatz,ende:d.ende,pause:d.pause}),tc=mehr?typChip(d):"";
+      return `<div class="irow"><div class="d">${fmtDateLong(d.datum)}${tc?`<span class="chip">${tc}</span>`:""}<small>Einsatz ${d.einsatz||"?"}–${d.ende||"?"}</small></div><div class="o ${otClass(c.ot)}">${fmtSigned(c.ot)}</div></div>`;
+    }).join(""):(persons.length&&!sel?'<p class="note">Wähl zuerst aus, wer du bist.</p>':'<p class="note">Keine Tage erkannt.</p>');
+    document.querySelectorAll("#i_trip button").forEach(b=>b.classList.toggle("on",b.dataset.t===impTrip));
+    document.getElementById("i_tripnote").classList.toggle("hidden",tripTouched||reiseVorwahl(p.ablauf)!=="mehr");
   }
   let impFk=null,fkTouched=false;
   const paintFk=()=>{const sel=persons[impSel];if(!fkTouched)impFk=(sel&&sel.funktion)||S.funktion||"assistent";
@@ -2081,34 +2284,25 @@ function confirmImport(p,fname){
     document.getElementById("i_ftnote").textContent=(!v?(ftErkannt?"Es gilt die Einstellung.":"Im Produktionsort nicht erkannt, es gilt die Einstellung."):(v===ftErkannt?"Aus dem Produktionsort erkannt, bitte prüfen.":"Von dir gewählt."))+(auslandVorgabe(v)?" Die Tage starten mit Ausland Ja.":"");};
   document.getElementById("i_ftort").onchange=paintFtNote;
   paintFtNote();
-  document.querySelectorAll("#i_trip button").forEach(b=>b.onclick=()=>{impTrip=b.dataset.t;tripTouched=true;document.querySelectorAll("#i_trip button").forEach(x=>x.classList.toggle("on",x.dataset.t===impTrip));});
+  /* Reiseart zeichnet nur die Vorschau neu, der Name im Feld bleibt, wie getippt (V4.4.2). */
+  document.querySelectorAll("#i_trip button").forEach(b=>b.onclick=()=>{impTrip=b.dataset.t;tripTouched=true;paintTage();});
   paint();
   document.getElementById("cancelImport").onclick=closeSheet;
   document.getElementById("doImport").onclick=()=>{
     const sel=persons[impSel];if(persons.length&&!sel)return;
-    const src=(sel?sel.days:[]).slice().sort((a,b)=>((a.datum||"")+(a.einsatz||"")).localeCompare((b.datum||"")+(b.einsatz||"")));
-    const mehr=impTrip==="mehr";const last=src.length-1;
-    const imAusland=auslandVorgabe(val("i_ftort"));
-    const days=src.map((d,i)=>({id:uid(),datum:d.datum,einsatz:d.einsatz,
-      anreise:d.anreise||(((!mehr||i===0)&&d.einsatz)?addMin(d.einsatz,30):""),
-      anreiseEnde:"",
-      drehbeginn:d.einsatz?addMin(d.einsatz,60):"",
-      drehende:d.ende?addMin(d.ende,-60):"",
-      rueckBeginn:"",
-      rueck:d.rueck||(((!mehr||i===last)&&d.ende)?addMin(d.ende,-30):""),
-      ende:d.ende,pause:pauseVorgabe(d.einsatz,d.ende),uebernachtung:mehr,ausland:imAusland,dispo:{einsatz:d.einsatz,ende:d.ende}}));
+    const days=importTage(sel?sel.days:[],impTrip==="mehr",auslandVorgabe(val("i_ftort")),p.ablauf);
     /* Funktion nur speichern, wenn erkannt oder bewusst gewählt: mit Verdienst-Option zählt das Segment, sonst nur die
        Erkennung aus der Dispo. Ohne beides bleibt das Feld weg und der Auftrag folgt der Vorgabe S.funktion. */
     const fk=S.verdienstOn&&sel?impFk:(sel&&sel.funktion);
     const no={id:uid(),titel:val("i_titel"),auftragsnr:val("i_anr"),prodNummer:val("i_pnr"),kostentraeger:val("i_kt"),produktionsort:val("i_ort"),mitarbeiter:val("i_name"),status:impStatus,...(fk?{funktion:fk}:{}),...(val("i_ftort")?{feiertagOrt:val("i_ftort")}:{}),days};
-    DB.orders.push(no);persist();state.orderId=no.id;state.tab="orders";closeSheet();render();toast(days.length?days.length+" Tag(e) importiert – bitte prüfen!":"Auftrag angelegt");
+    DB.orders.push(no);persist();state.orderId=no.id;state.tab="orders";closeSheet();render();toast(days.length?(days.length===1?"1 Tag":days.length+" Tage")+" importiert, bitte prüfen.":"Auftrag angelegt");
   };
 }
 
 /* ===== Utils ===== */
 function val(id){return (document.getElementById(id)||{}).value||"";}
 function esc(s){return String(s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
-let toastT;function toast(m){const el=document.getElementById("toast");el.textContent=m;el.classList.add("on");clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove("on"),2600);}
+let toastT;function toast(m){const el=document.getElementById("toast");el.textContent=m;el.classList.add("on");clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove("on"),Math.max(2600,String(m).length*60));}
 /* kind="go" = nicht-destruktiv (Amber), sonst destruktiv (Rot) */
 function askConfirm(msg,onYes,yesLabel,kind){const el=document.getElementById("confirmBox");el.querySelector(".ctitle").textContent=(yesLabel||"Löschen")+"?";el.querySelector(".cmsg").textContent=msg;el.classList.remove("out");el.classList.add("on");const yes=document.getElementById("cYes"),no=document.getElementById("cNo");yes.textContent=yesLabel||"Löschen";yes.classList.toggle("go",kind==="go");const close=()=>{el.classList.add("out");setTimeout(()=>{el.classList.remove("on","out");},150);yes.onclick=null;no.onclick=null;};yes.onclick=()=>{close();onYes();};no.onclick=close;}
 if("serviceWorker" in navigator&&(location.protocol==="https:"||location.hostname==="localhost"))navigator.serviceWorker.register("sw.js").catch(()=>{});
