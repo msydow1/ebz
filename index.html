@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="Zeiterfassung">
 <meta name="theme-color" content="#15171A">
 <title>Zeiterfassung</title>
-<!-- Zeiterfassung V4.5.1 · Design "Amber Editorial" -->
+<!-- Zeiterfassung V4.6.0 · Design "Amber Editorial" -->
 <!-- impeccable-disable single-font -- Nutzer wählte beim V1.2-Redesign bewusst "Inter durchgängig" (eine Familie, tabular-nums für Zeiten) -->
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -50,6 +50,7 @@ body.light .bar{background:rgba(245,244,241,.85)}
 .kpi{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:13px 12px;min-width:0}
 .kpi .l{font-size:9px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted)}
 .kpi .n{font-weight:800;font-size:22px;margin-top:3px;color:var(--text-strong)}
+.kpi .n small{font-size:13px;font-weight:600;color:var(--muted)}
 .kpi.acc{background:var(--accent-soft);border-color:var(--accent-line)}
 .kpi.acc .l{color:var(--accent-ink)}
 .kpi.posk{background:var(--pos-soft);border-color:var(--pos-line)}
@@ -86,6 +87,11 @@ body.light .bar{background:rgba(245,244,241,.85)}
 .hero .hsub.neg{color:var(--danger)}
 .hero .hsub[hidden],.tgbox[hidden]{display:none}
 .hero .linkbtn.left{margin:-6px 0 -14px}
+.hero .hkopf{display:flex;align-items:center;justify-content:space-between;margin:-10px -8px -6px 0}
+.hero .hkopf .pfeile{display:flex}
+.hero .hkopf .iconbtn{color:var(--accent);font-size:22px;font-family:inherit;min-width:44px;min-height:44px}
+.hero .hkopf .iconbtn:disabled{color:var(--faint);opacity:.45}
+.srow .v.klein{font-size:13px;font-weight:600;color:var(--muted);white-space:nowrap}
 .btn.wide{width:100%;margin:0 0 12px}
 .ucard{padding:14px 15px}
 .ucard .ut{font-size:15px;font-weight:700;color:var(--text-strong)}
@@ -371,7 +377,7 @@ body.light .btn.danger{border-color:rgba(194,78,59,.4)}
   <div class="view" id="view"></div>
   <div class="foot">
     <div class="foot-note">Daten bleiben nur auf diesem Gerät · alle Angaben ohne Gewähr</div>
-    <div class="foot-v">Zeiterfassung <b>V4.5.1</b></div>
+    <div class="foot-v">Zeiterfassung <b>V4.6.0</b></div>
   </div>
 </div>
 <input type="file" id="pdfInput" accept="application/pdf" class="hidden">
@@ -476,8 +482,16 @@ if(typeof S.fachbereich!=="string")S.fachbereich="";
    Wird einmal nach jedem Update gezeigt: Vergleich S.seenVersion gegen APP_VERSION.
    Nicht bei frischen Installationen (keine Aufträge) – ein neuer Kollege soll kein
    Changelog sehen, bevor er die App überhaupt kennt. Neue Einträge oben anfügen. */
-const APP_VERSION="4.5.1";
+const APP_VERSION="4.6.0";
 const WHATSNEW=[
+  {v:"4.6.0", t:"Statistik je Jahr und Feiertage in ganz Europa", items:[
+    ["Statistik je Jahr","Im großen Kasten der Statistik blätterst du mit den Pfeilen durch die Jahre. Alle Zahlen, die Monate und die Aufträge gelten dann für dieses Jahr. Unten unter Pro Jahr siehst du die Jahre im Vergleich, ein Tipp öffnet das Jahr. Als freier Mitarbeiter siehst du dort auch, wie viel Urlaub du beantragt hast."],
+    ["Jahresliste als PDF","In der Statistik gibt es die Jahresliste als PDF: jeder Einsatztag mit Datum, Auftrag, Ort, Einsatzzeit und Stunden, unten die Summe. Gedacht für deine Unterlagen, zum Beispiel für die Steuer."],
+    ["Brückentage","Bist du fest angestellt, zeigt die Statistik die Brückentage am Dienstort, zum Beispiel „1 für 4“: ein Urlaubstag, vier Tage am Stück frei."],
+    ["Feiertage in ganz Europa","Die App kennt jetzt die Feiertage aller EU-Länder und von Großbritannien, dort getrennt nach England und Wales, Schottland und Nordirland. Birmingham, London oder Dublin erkennt der Import aus der Dispo. Fällt in England ein Feiertag aufs Wochenende, gilt der Zuschlag am eigentlichen Tag, nicht am freien Montag danach."],
+    ["Zeiten prüfen","Passt eine Zeit nicht zusammen, etwa 08:30 statt 18:30 als Einsatzende, zeigt der Tag den Hinweis „Zeiten prüfen“. Vor PDF und Mail fragt die App einmal nach. Speichern kannst du trotzdem, Nachtdrehs über Mitternacht sind kein Fehler."],
+    ["Kleinigkeiten","Ein langer Titel bricht im PDF um statt über den Rand zu laufen. Stellst du die Reiseart auf Einzeltage um, beginnt die Rückreise nie mehr mitten im Dreh. Der Betreff der Mail nennt Auftrag und Zeitraum. Ohne Namen stehen keine Platzhalter mehr in der Mail."]
+  ]},
   {v:"4.5.1", t:"Urlaub einfacher", items:[
     ["Ein Block je Antrag","Unter dem Kalender steht jetzt ein Block je Antrag, darüber einer für alles, was noch nicht beantragt ist. Welche Tage es sind, siehst du im Kalender. „Abgeschickt?“ tippst du einmal für den ganzen Antrag. „Genehmigt“ gibt es nicht mehr."],
     ["Anträge mit Nummer","Deinen ersten Antrag im Jahr schickst du selbst, er ist Nummer 1. Die App zählt ab 2 weiter, und die Datei heißt zum Beispiel „Urlaubsantrag 2026 Nr 2“. So überschreibt ein neuer Antrag keinen alten."],
@@ -709,14 +723,34 @@ function neuerTag(o){
 }
 /* Anzahl der Tage, an denen der Nachweis wegen der FLINK-Pausenautomatik später endet (nur bei Status frei). */
 function flinkTage(o){if(!o||orderStatus(o)!=="frei")return 0;return o.days.filter(d=>dayCalc(d).korr>0).length;}
+/* Zeiten prüfen (Review A6, V4.6): nur ein Hinweis, nichts wird gesperrt. Alle Zeiten zählen als Minuten ab Einsatzbeginn,
+   so stimmt ein Nachtdreh über Mitternacht ohne Datumsrechnung. Hinweis bei einem Einsatz über 16 Stunden (Tippfehler wie 08:30
+   statt 18:30), bei einer Zeit außerhalb des Einsatzes und bei einer Zeit vor der vorigen in der Reihenfolge Anreise, Dreh,
+   Rückreise. Leer, wenn alles passt oder Einsatzbeginn bzw. -ende fehlen. */
+const ZEIT_FELDER=[["anreise","Anreise"],["anreiseEnde","Ende der Anreise"],["drehbeginn","Drehbeginn"],["drehende","Drehende"],["rueckBeginn","Rückreise"],["rueck","Ende der Rückreise"]];
+function dayFlags(d){
+  const e=hm2min(d&&d.einsatz),span=dur(e,hm2min(d&&d.ende));
+  if(e==null||span==null)return "";
+  if(span>960)return "Der Einsatz dauert "+fmtMin(span)+" Stunden. Stimmt das Einsatzende?";
+  let vor=null;
+  for(const [k,name] of ZEIT_FELDER){const m=hm2min(d[k]);if(m==null)continue;const off=dur(e,m);
+    if(off>span)return name+" "+d[k]+" liegt nicht zwischen Einsatzbeginn "+d.einsatz+" und Einsatzende "+d.ende+".";
+    if(vor&&off<vor.off)return name+" "+d[k]+" liegt vor "+vor.name+" "+vor.zeit+".";
+    vor={off,name,zeit:d[k]};}
+  return "";
+}
 /* === BEDIENUNG-END === */
 /* === FEIERTAGE-BEGIN === Feiertage am Arbeitsort (V4.3). Reine Rechnung ohne DOM, getestet in tests/feiertage.test.mjs gegen
    tests/feiertage-referenz.json (Python-Bibliothek holidays 0.105, Jahre 2023 bis 2035). Grundlage: PdTV 9.5, 100 % an den am
    Arbeitsort geltenden gesetzlichen Feiertagen einschließlich Oster- und Pfingstsonntag.
-   Regeln je Ort: [Monat,Tag,Name] fester Tag · ["O",Abstand,Name] Tage ab Ostersonntag · ["W",Monat,Tag,Wochentag,Name] erster
-   Wochentag (0 = So bis 6 = Sa) ab diesem Datum. Optional als letztes Element: ab/bis (Jahre), nicht (Liste von Jahren),
+   Regeln je Ort: [Monat,Tag,Name] fester Tag · ["O",Abstand,Name] Tage ab Ostersonntag · ["OO",Abstand,Name] Tage ab dem
+   orthodoxen Ostersonntag (V4.6) · ["W",Monat,Tag,Wochentag,Name] erster Wochentag (0 = So bis 6 = Sa) ab diesem Datum.
+   Optional als letztes Element: ab/bis (Jahre), nicht (Liste von Jahren), alle (nur in Jahren, die durch diese Zahl teilbar sind),
    keinSo (entfällt am Sonntag), nurWt (nur an diesen Wochentagen), bezugWt [Monat,Tag,[Wochentage]] (entfällt, wenn der
-   Bezugstag auf einen dieser Wochentage fällt), karwoche (fällt der Tag auf Gründonnerstag, gilt er eine Woche später).
+   Bezugstag auf einen dieser Wochentage fällt), karwoche (fällt der Tag auf Gründonnerstag, gilt er eine Woche später),
+   wennFr (bei "W": ist das Datum selbst ein Freitag, gilt es).
+   Ersatztage, wenn ein Feiertag aufs Wochenende fällt (Großbritannien, Irland, Bulgarien und andere), zählen nicht: Der Zuschlag
+   gilt am Kalendertag (Entscheidung Max 24.10.2026). Verordnete Brückentage und verschobene Arbeitstage zählen ebenfalls nicht.
    Regionen erben die Regeln ihres Landes: "DE-BY-A" erbt von "DE-BY", das von "DE".
    Finnland: Mittsommerabend und Heiligabend wie in der Referenz, dort nach dem Jahresurlaubsgesetz arbeitsfrei. In Schweden sind
    die Vorabende nur tatsächlich frei (Kategorie de_facto der Referenz) und zählen nicht. */
@@ -828,6 +862,62 @@ const FT_REGELN={
   HR:[[1,1,"Neujahr"],[1,6,"Heilige Drei Könige"],["O",0,"Ostersonntag"],["O",1,"Ostermontag"],[5,1,"Tag der Arbeit"],
     [5,30,"Tag der Staatlichkeit"],["O",60,"Fronleichnam"],[6,22,"Tag des antifaschistischen Kampfes"],[8,5,"Tag des Sieges"],
     [8,15,"Mariä Himmelfahrt"],[11,1,"Allerheiligen"],[11,18,"Gedenktag für die Opfer des Heimatkriegs"],[12,25,"Weihnachten"],[12,26,"Stephanstag"]],
+  /* V4.6: übrige EU-Länder landesweit und Großbritannien (Wales wie England), Prüfung gegen holidays 0.107. */
+  BE:[[1,1,"Neujahr"],["O",0,"Ostersonntag"],["O",1,"Ostermontag"],[5,1,"Tag der Arbeit"],["O",39,"Christi Himmelfahrt"],
+    ["O",49,"Pfingstsonntag"],["O",50,"Pfingstmontag"],[7,21,"Nationalfeiertag"],[8,15,"Mariä Himmelfahrt"],[11,1,"Allerheiligen"],
+    [11,11,"Waffenstillstand 1918"],[12,25,"Weihnachten"]],
+  BG:[[1,1,"Neujahr"],[3,3,"Tag der Befreiung"],["OO",-2,"Karfreitag"],["OO",-1,"Karsamstag"],["OO",0,"Ostersonntag"],
+    ["OO",1,"Ostermontag"],[5,1,"Tag der Arbeit"],[5,6,"Georgstag"],[5,24,"Tag der Slawenapostel Kyrill und Method"],
+    [9,6,"Tag der Vereinigung"],[9,22,"Unabhängigkeitstag"],[12,24,"Heiligabend"],[12,25,"1. Weihnachtstag"],[12,26,"2. Weihnachtstag"]],
+  CY:[[1,1,"Neujahr"],[1,6,"Theophanie"],["OO",-48,"Reiner Montag"],[3,25,"Griechischer Nationalfeiertag"],
+    [4,1,"Zyprischer Nationalfeiertag"],["OO",-2,"Karfreitag"],["OO",0,"Ostersonntag"],["OO",1,"Ostermontag"],[5,1,"Tag der Arbeit"],
+    ["OO",50,"Pfingstmontag"],[8,15,"Mariä Himmelfahrt"],[10,1,"Unabhängigkeitstag"],[10,28,"Ochi-Tag"],[12,25,"1. Weihnachtstag"],
+    [12,26,"2. Weihnachtstag"]],
+  DK:[[1,1,"Neujahr"],["O",-3,"Gründonnerstag"],["O",-2,"Karfreitag"],["O",0,"Ostersonntag"],["O",1,"Ostermontag"],
+    ["O",26,"Großer Bettag",{bis:2023}],["O",39,"Christi Himmelfahrt"],["O",49,"Pfingstsonntag"],["O",50,"Pfingstmontag"],
+    [12,25,"1. Weihnachtstag"],[12,26,"2. Weihnachtstag"]],
+  EE:[[1,1,"Neujahr"],[2,24,"Unabhängigkeitstag"],["O",-2,"Karfreitag"],["O",0,"Ostersonntag"],[5,1,"Frühlingstag"],
+    ["O",49,"Pfingstsonntag"],[6,23,"Siegestag"],[6,24,"Johannistag"],[8,20,"Tag der Wiederherstellung der Unabhängigkeit"],
+    [12,24,"Heiligabend"],[12,25,"1. Weihnachtstag"],[12,26,"2. Weihnachtstag"]],
+  GR:[[1,1,"Neujahr"],[1,6,"Theophanie"],["OO",-48,"Reiner Montag"],[3,25,"Nationalfeiertag"],["OO",-2,"Karfreitag"],
+    ["OO",1,"Ostermontag"],[5,1,"Tag der Arbeit",{nicht:[2024]}],[5,7,"Tag der Arbeit (verlegt)",{ab:2024,bis:2024}],
+    ["OO",50,"Pfingstmontag"],[8,15,"Mariä Himmelfahrt"],[10,28,"Ochi-Tag"],[12,25,"1. Weihnachtstag"],[12,26,"2. Weihnachtstag"]],
+  HU:[[1,1,"Neujahr"],[3,15,"Nationalfeiertag"],["O",-2,"Karfreitag"],["O",0,"Ostersonntag"],["O",1,"Ostermontag"],
+    [5,1,"Tag der Arbeit"],["O",49,"Pfingstsonntag"],["O",50,"Pfingstmontag"],[8,20,"Staatsgründungstag"],[10,23,"Nationalfeiertag"],
+    [11,1,"Allerheiligen"],[12,25,"1. Weihnachtstag"],[12,26,"2. Weihnachtstag"]],
+  IE:[[1,1,"Neujahr"],["W",2,1,1,"St. Brigid's Day",{ab:2023,wennFr:1}],[3,17,"St. Patrick's Day"],["O",1,"Ostermontag"],
+    ["W",5,1,1,"Bankfeiertag im Mai"],["W",6,1,1,"Bankfeiertag im Juni"],["W",8,1,1,"Bankfeiertag im August"],
+    ["W",10,25,1,"Bankfeiertag im Oktober"],[12,25,"Weihnachten"],[12,26,"St. Stephen's Day"]],
+  LV:[[1,1,"Neujahr"],["O",-2,"Karfreitag"],["O",0,"Ostersonntag"],["O",1,"Ostermontag"],[5,1,"Tag der Arbeit"],
+    [5,4,"Tag der Wiederherstellung der Unabhängigkeit"],["W",5,8,0,"Muttertag"],[5,29,"Eishockey-WM, Bronze",{ab:2023,bis:2023}],
+    [7,10,"Abschluss des Sängerfests",{ab:2023,bis:2023}],["O",49,"Pfingstsonntag"],[6,23,"Līgo-Tag"],
+    [6,24,"Johannistag"],[11,18,"Tag der Ausrufung der Republik"],[12,24,"Heiligabend"],[12,25,"1. Weihnachtstag"],
+    [12,26,"2. Weihnachtstag"],[12,31,"Silvester"]],
+  LT:[[1,1,"Neujahr"],[2,16,"Tag der Wiederherstellung des Staates"],[3,11,"Tag der Wiederherstellung der Unabhängigkeit"],
+    ["O",0,"Ostersonntag"],["O",1,"Ostermontag"],[5,1,"Tag der Arbeit"],["W",5,1,0,"Muttertag"],["W",6,1,0,"Vatertag"],
+    [6,24,"Johannistag"],[7,6,"Tag der Staatlichkeit"],[8,15,"Mariä Himmelfahrt"],[11,1,"Allerheiligen"],[11,2,"Allerseelen"],
+    [12,24,"Heiligabend"],[12,25,"1. Weihnachtstag"],[12,26,"2. Weihnachtstag"]],
+  LU:[[1,1,"Neujahr"],["O",1,"Ostermontag"],[5,1,"Tag der Arbeit"],[5,9,"Europatag"],["O",39,"Christi Himmelfahrt"],
+    ["O",50,"Pfingstmontag"],[6,23,"Nationalfeiertag"],[8,15,"Mariä Himmelfahrt"],[11,1,"Allerheiligen"],[12,25,"1. Weihnachtstag"],
+    [12,26,"2. Weihnachtstag"]],
+  MT:[[1,1,"Neujahr"],[2,10,"Schiffbruch des Apostels Paulus"],[3,19,"Josefstag"],[3,31,"Tag der Freiheit"],["O",-2,"Karfreitag"],
+    [5,1,"Tag der Arbeit"],[6,7,"Sette Giugno"],[6,29,"Peter und Paul"],[8,15,"Mariä Himmelfahrt"],[9,8,"Tag des Sieges"],
+    [9,21,"Unabhängigkeitstag"],[12,8,"Mariä Empfängnis"],[12,13,"Tag der Republik"],[12,25,"Weihnachten"]],
+  NL:[[1,1,"Neujahr"],["O",-2,"Karfreitag"],["O",0,"Ostersonntag"],["O",1,"Ostermontag"],[4,27,"Königstag",{keinSo:1}],
+    [4,26,"Königstag",{nurWt:[6]}],[5,5,"Befreiungstag",{alle:5}],["O",39,"Christi Himmelfahrt"],["O",49,"Pfingstsonntag"],
+    ["O",50,"Pfingstmontag"],[12,25,"1. Weihnachtstag"],[12,26,"2. Weihnachtstag"]],
+  PT:[[1,1,"Neujahr"],["O",-2,"Karfreitag"],["O",0,"Ostersonntag"],[4,25,"Tag der Freiheit"],[5,1,"Tag der Arbeit"],
+    ["O",60,"Fronleichnam"],[6,10,"Tag Portugals"],[8,15,"Mariä Himmelfahrt"],[10,5,"Tag der Republik"],[11,1,"Allerheiligen"],
+    [12,1,"Tag der Unabhängigkeit"],[12,8,"Mariä Empfängnis"],[12,25,"Weihnachten"]],
+  RO:[[1,1,"Neujahr"],[1,2,"Neujahr, 2. Tag"],[1,6,"Theophanie",{ab:2024}],[1,7,"Johannes der Täufer",{ab:2024}],
+    [1,24,"Tag der Vereinigung"],["OO",-2,"Karfreitag"],["OO",0,"Ostersonntag"],["OO",1,"Ostermontag"],[5,1,"Tag der Arbeit"],
+    ["OO",49,"Pfingstsonntag"],["OO",50,"Pfingstmontag"],[6,1,"Kindertag"],[8,15,"Mariä Himmelfahrt"],[11,30,"Andreastag"],
+    [12,1,"Nationalfeiertag"],[12,25,"1. Weihnachtstag"],[12,26,"2. Weihnachtstag"]],
+  GB:[[1,1,"Neujahr"],["O",-2,"Karfreitag"],["W",5,1,1,"Bankfeiertag im Mai"],[5,8,"Krönung von Charles III.",{ab:2023,bis:2023}],
+    ["W",5,25,1,"Bankfeiertag im Frühjahr"],[12,25,"Weihnachten"],[12,26,"Boxing Day"]],
+  "GB-ENG":[["O",1,"Ostermontag"],["W",8,25,1,"Bankfeiertag im Spätsommer"]],
+  "GB-SCT":[[1,2,"Neujahr, 2. Tag"],["W",8,1,1,"Bankfeiertag im Sommer"],[11,30,"Andreastag"]],
+  "GB-NIR":[[3,17,"St. Patrick's Day"],["O",1,"Ostermontag"],[7,12,"Schlacht am Boyne"],["W",8,25,1,"Bankfeiertag im Spätsommer"]],
   XX:[]
 };
 /* Auswahlliste und Anzeigename je Ort, in der Reihenfolge der Auswahlfelder. */
@@ -846,13 +936,21 @@ const FT_ORTE=[["DE","Deutschland (nur bundesweit)","Deutschland"],["DE-BW","Bad
   ["CH-SO","Kanton Solothurn","Schweiz"],["CH-SZ","Kanton Schwyz","Schweiz"],["CH-TG","Kanton Thurgau","Schweiz"],
   ["CH-TI","Kanton Tessin","Schweiz"],["CH-UR","Kanton Uri","Schweiz"],["CH-VD","Kanton Waadt","Schweiz"],["CH-VS","Kanton Wallis","Schweiz"],
   ["CH-ZG","Kanton Zug","Schweiz"],["CH-ZH","Kanton Zürich","Schweiz"],
-  ["AT","Österreich","Weitere Länder"],["IT","Italien","Weitere Länder"],["SI","Slowenien","Weitere Länder"],["NO","Norwegen","Weitere Länder"],
-  ["SE","Schweden","Weitere Länder"],["FI","Finnland","Weitere Länder"],["FR","Frankreich","Weitere Länder"],
-  ["FR-AM","Frankreich, Elsass-Mosel","Weitere Länder"],["AD","Andorra","Weitere Länder"],["ES","Spanien (nur landesweit)","Weitere Länder"],
-  ["PL","Polen","Weitere Länder"],["CZ","Tschechien","Weitere Länder"],["SK","Slowakei","Weitere Länder"],["HR","Kroatien","Weitere Länder"],
+  ["AD","Andorra","Weitere Länder"],["BE","Belgien","Weitere Länder"],["BG","Bulgarien","Weitere Länder"],
+  ["DK","Dänemark","Weitere Länder"],["EE","Estland","Weitere Länder"],["FI","Finnland","Weitere Länder"],
+  ["FR","Frankreich","Weitere Länder"],["FR-AM","Frankreich, Elsass-Mosel","Weitere Länder"],
+  ["GR","Griechenland","Weitere Länder"],["GB-ENG","Großbritannien: England und Wales","Weitere Länder"],
+  ["GB-NIR","Großbritannien: Nordirland","Weitere Länder"],["GB-SCT","Großbritannien: Schottland","Weitere Länder"],
+  ["IE","Irland","Weitere Länder"],["IT","Italien","Weitere Länder"],["HR","Kroatien","Weitere Länder"],
+  ["LV","Lettland","Weitere Länder"],["LT","Litauen","Weitere Länder"],["LU","Luxemburg","Weitere Länder"],
+  ["MT","Malta","Weitere Länder"],["NL","Niederlande","Weitere Länder"],["NO","Norwegen","Weitere Länder"],
+  ["AT","Österreich","Weitere Länder"],["PL","Polen","Weitere Länder"],["PT","Portugal","Weitere Länder"],
+  ["RO","Rumänien","Weitere Länder"],["SE","Schweden","Weitere Länder"],["SK","Slowakei","Weitere Länder"],
+  ["SI","Slowenien","Weitere Länder"],["ES","Spanien (nur landesweit)","Weitere Länder"],["CZ","Tschechien","Weitere Länder"],
+  ["HU","Ungarn","Weitere Länder"],["CY","Zypern","Weitere Länder"],
   ["XX","Anderes Land (von Hand im Tag)","Weitere Länder"]];
 /* Kurzname für den Zusatz im Nachweis, z. B. "Neujahr, 2. Tag (Slowenien)". */
-const FT_KURZ={"DE-BY-A":"Augsburg","FR-AM":"Elsass-Mosel","XX":""};
+const FT_KURZ={"DE-BY-A":"Augsburg","FR-AM":"Elsass-Mosel","GB-ENG":"England und Wales","GB-SCT":"Schottland","GB-NIR":"Nordirland","XX":""};
 function ortGueltig(ort){return Object.prototype.hasOwnProperty.call(FT_REGELN,ort)?ort:"DE";}
 /* Voller Name für Auswahlfelder und Hinweise, z. B. "Bayern" oder "Kanton Wallis". */
 function ortLabel(ort){const e=FT_ORTE.find(x=>x[0]===ortGueltig(ort));return e?e[1]:"";}
@@ -861,6 +959,9 @@ function ortName(ort){const k=ortGueltig(ort);if(k in FT_KURZ)return FT_KURZ[k];
 function ostersonntag(j){const a=j%19,b=Math.floor(j/100),c=j%100,d=Math.floor(b/4),e=b%4,f=Math.floor((b+8)/25),g=Math.floor((b-f+1)/3),
   h=(19*a+b-d-g+15)%30,i=Math.floor(c/4),k=c%4,l=(32+2*e+2*i-h-k)%7,m=Math.floor((a+11*h+22*l)/451),n=h+l-7*m+114;
   return j+"-"+String(Math.floor(n/31)).padStart(2,"0")+"-"+String(n%31+1).padStart(2,"0");}
+/* Orthodoxer Ostersonntag (V4.6): julianisches Osterdatum nach Meeus, plus 13 Tage in den gregorianischen Kalender (1900 bis 2099). */
+function osterOrth(j){const a=j%4,b=j%7,c=j%19,d=(19*c+15)%30,e=(2*a+4*b-d+34)%7,m=Math.floor((d+e+114)/31),t=(d+e+114)%31+1;
+  return plusTage(j+"-"+String(m).padStart(2,"0")+"-"+String(t).padStart(2,"0"),13);}
 /* Datum plus Tage, in UTC gerechnet (keine Sommerzeit-Sprünge). */
 function plusTage(iso,n){const t=new Date(iso+"T00:00:00Z");if(isNaN(t))return "";t.setUTCDate(t.getUTCDate()+n);return t.toISOString().slice(0,10);}
 function wochentag(iso){return new Date(iso+"T00:00:00Z").getUTCDay();}
@@ -873,9 +974,10 @@ function feiertageJahr(ort,jahr){
   kette.forEach(teil=>(FT_REGELN[teil]||[]).forEach(r=>{
     const opt=typeof r[r.length-1]==="object"?r[r.length-1]:{};let iso,name;
     if(r[0]==="O"){iso=plusTage(os,r[1]);name=r[2];}
-    else if(r[0]==="W"){iso=jahr+"-"+pad(r[1])+"-"+pad(r[2]);iso=plusTage(iso,(r[3]-wochentag(iso)+7)%7);name=r[4];}
+    else if(r[0]==="OO"){iso=plusTage(osterOrth(jahr),r[1]);name=r[2];}
+    else if(r[0]==="W"){const anker=jahr+"-"+pad(r[1])+"-"+pad(r[2]);iso=opt.wennFr&&wochentag(anker)===5?anker:plusTage(anker,(r[3]-wochentag(anker)+7)%7);name=r[4];}
     else{iso=jahr+"-"+pad(r[0])+"-"+pad(r[1]);name=r[2];}
-    if(opt.ab&&jahr<opt.ab||opt.bis&&jahr>opt.bis||opt.nicht&&opt.nicht.includes(jahr))return;
+    if(opt.ab&&jahr<opt.ab||opt.bis&&jahr>opt.bis||opt.nicht&&opt.nicht.includes(jahr)||opt.alle&&jahr%opt.alle)return;
     const wt=wochentag(iso);
     if(opt.keinSo&&wt===0||opt.nurWt&&!opt.nurWt.includes(wt))return;
     if(opt.bezugWt&&opt.bezugWt[2].includes(wochentag(jahr+"-"+pad(opt.bezugWt[0])+"-"+pad(opt.bezugWt[1]))))return;
@@ -908,10 +1010,21 @@ const FT_ORTSLISTE=[
   [FT_W("frankfurt am main|frankfurt ?\\/ ?m(?:ain)?|frankfurt a\\. ?m\\.?|flughafen frankfurt|frankfurt airport|fraport|flughafen fra|wiesbaden|darmstadt|kassel|offenbach"),"DE-HE"],
   [FT_W("stuttgart|karlsruhe|freiburg im breisgau|mannheim|heidelberg|sinsheim"),"DE-BW"],
   [FT_W("leipzig|dresden|chemnitz"),"DE-SN"],[FT_W("hannover|wolfsburg|braunschweig|osnabr[üu]ck"),"DE-NI"],[FT_W("magdeburg|halle \\(saale\\)"),"DE-ST"],
-  [FT_W("erfurt|jena|oberhof"),"DE-TH"],[FT_W("potsdam|cottbus"),"DE-BB"],[FT_W("rostock|schwerin"),"DE-MV"],[FT_W("kiel|l[üu]beck"),"DE-SH"],[FT_W("saarbr[üu]cken"),"DE-SL"]];
+  [FT_W("erfurt|jena|oberhof"),"DE-TH"],[FT_W("potsdam|cottbus"),"DE-BB"],[FT_W("rostock|schwerin"),"DE-MV"],[FT_W("kiel|l[üu]beck"),"DE-SH"],[FT_W("saarbr[üu]cken"),"DE-SL"],
+  /* V4.6: große Städte und Sportorte in der EU und in Großbritannien. Keine Namen, die auch Vornamen sind (Sofia). */
+  [FT_W("london|wembley|wimbledon|birmingham|manchester|liverpool|leeds|newcastle|sheffield|cardiff"),"GB-ENG"],
+  [FT_W("glasgow|edinburgh|aberdeen|st\\.? ?andrews"),"GB-SCT"],[FT_W("belfast"),"GB-NIR"],[FT_W("dublin"),"IE"],
+  [FT_W("amsterdam|rotterdam|den haag|eindhoven|zandvoort"),"NL"],[FT_W("br[üu]ssel|bruxelles|antwerpen|spa-francorchamps"),"BE"],
+  [FT_W("lissabon|lisboa"),"PT"],[FT_W("kopenhagen|k[øo]benhavn"),"DK"],[FT_W("budapest"),"HU"],[FT_W("athen"),"GR"],[FT_W("bukarest"),"RO"],
+  [FT_W("tallinn"),"EE"],[FT_W("riga"),"LV"],[FT_W("vilnius"),"LT"],[FT_W("valletta"),"MT"],[FT_W("limassol|nikosia"),"CY"]];
 const FT_CODES={SUI:"CH",SCHWEIZ:"CH",ITA:"IT",ITALIEN:"IT",SLO:"SI",SVN:"SI",SLOWENIEN:"SI",NOR:"NO",NORWEGEN:"NO",AUT:"AT","ÖSTERREICH":"AT",
   SWE:"SE",SCHWEDEN:"SE",FIN:"FI",FINNLAND:"FI",FRA:"FR",FRANKREICH:"FR",AND:"AD",ANDORRA:"AD",ESP:"ES",SPANIEN:"ES",POL:"PL",POLEN:"PL",
-  CZE:"CZ",TSCHECHIEN:"CZ",SVK:"SK",SLOWAKEI:"SK",CRO:"HR",HRV:"HR",KROATIEN:"HR",GER:"DE",DEU:"DE",DEUTSCHLAND:"DE"};
+  CZE:"CZ",TSCHECHIEN:"CZ",SVK:"SK",SLOWAKEI:"SK",CRO:"HR",HRV:"HR",KROATIEN:"HR",GER:"DE",DEU:"DE",DEUTSCHLAND:"DE",
+  /* V4.6. „DEN“ fehlt bewusst (Artikel), Dänemark nur ausgeschrieben oder DNK. */
+  BEL:"BE",BELGIEN:"BE",BUL:"BG",BGR:"BG",BULGARIEN:"BG",CYP:"CY",ZYPERN:"CY",DNK:"DK","DÄNEMARK":"DK",EST:"EE",ESTLAND:"EE",
+  GRE:"GR",GRC:"GR",GRIECHENLAND:"GR",HUN:"HU",UNGARN:"HU",IRL:"IE",IRLAND:"IE",LAT:"LV",LVA:"LV",LETTLAND:"LV",LTU:"LT",LITAUEN:"LT",
+  LUX:"LU",LUXEMBURG:"LU",MLT:"MT",MALTA:"MT",NED:"NL",NLD:"NL",NIEDERLANDE:"NL",HOLLAND:"NL",POR:"PT",PRT:"PT",PORTUGAL:"PT",
+  ROU:"RO","RUMÄNIEN":"RO",GBR:"GB-ENG",ENGLAND:"GB-ENG",WALES:"GB-ENG",GROSSBRITANNIEN:"GB-ENG",SCHOTTLAND:"GB-SCT",NORDIRLAND:"GB-NIR"};
 /* Nur Präfixe, die in echten Dispos vorkommen oder eindeutig sind. "S-", "E-", "D-" usw. fehlen bewusst (S-Bahn, E-Werk). */
 const FT_PRAEFIX={I:"IT",A:"AT",CH:"CH",SLO:"SI",PL:"PL",CZ:"CZ",SK:"SK",HR:"HR",FIN:"FI",AND:"AD",F:"FR",E:"ES",N:"NO",S:"SE"};
 /* Kürzel in Klammern, auch einbuchstabig: „Innsbruck (A)“, „Bormio (I)“. */
@@ -1317,6 +1430,49 @@ function fmtEur(n){return n==null?"–":n.toLocaleString("de-DE",{minimumFractio
 function fmtEurRund(n){return n==null?"–":Math.round(n).toLocaleString("de-DE")+" €";}
 function fmtStd(h){return String(h).replace(".",",")+" Std";}
 /* === TARIF-END === */
+/* === STATISTIK-BEGIN === Statistik je Jahr, Jahresliste und Brückentage (V4.6). Reine Funktionen ohne DOM, getestet in
+   tests/statistik.test.mjs. Nutzt dayCalc sowie feiertageJahr, plusTage und wochentag aus dem Block FEIERTAGE. */
+/* Zahlen eines Jahres über alle Tage mit Datum in dem Jahr: Überstunden, Netto, Arbeitstage, Tagegeld-Tage, Aufträge mit einem Tag darin. */
+function statJahr(orders,jahr){
+  const r={ot:0,netto:0,tage:0,tgTage:0,auftraege:0},j=String(jahr);
+  orders.forEach(o=>{let drin=false;o.days.forEach(d=>{if(!d.datum||d.datum.slice(0,4)!==j)return;const c=dayCalc(d);drin=true;
+    r.tage++;r.netto+=c.netto||0;r.ot+=c.ot||0;if(c.tg.state==="ok")r.tgTage++;});if(drin)r.auftraege++;});
+  return r;
+}
+/* Jahre zum Blättern: alle mit Tagen und das laufende, neueste zuerst. */
+function statJahre(orders,heuteJahr){
+  const s=new Set([String(heuteJahr)]);orders.forEach(o=>o.days.forEach(d=>{if(d.datum)s.add(d.datum.slice(0,4));}));
+  return [...s].sort().reverse().map(Number);
+}
+/* Jahresliste als Unterlage für dich (Max 24.10.2026): je Einsatztag Datum, Einsatz (Titel, sonst Auftragsnummer), Ort, Einsatz
+   von bis und die Stunden netto (Einsatz minus Pause), nach Datum. Nicht für die Dispo gedacht. */
+function jahresZeilen(orders,jahr){
+  const j=String(jahr),r=[];
+  orders.forEach(o=>o.days.forEach(d=>{if(!d.datum||d.datum.slice(0,4)!==j)return;
+    r.push({datum:d.datum,titel:o.titel||o.auftragsnr||"Ohne Titel",ort:o.produktionsort||"",von:d.einsatz||"",bis:d.ende||"",netto:dayCalc(d).netto});}));
+  return r.sort((a,b)=>a.datum.localeCompare(b.datum)||a.von.localeCompare(b.von));
+}
+/* Brückentage (Idee Max 16.10.2026, gebaut 24.10.2026, nur für Feste): Frei sind Wochenende und Feiertag am Dienstort. Gesucht sind
+   Lücken von 1 bis 4 Arbeitstagen zwischen zwei freien Blöcken, an denen ein Feiertag an einem Werktag hängt. Je Lücke: von, bis,
+   urlaubstage, freiVon, freiBis, freiTage (alles zusammen frei) und anlass (die Feiertage). Eine Lücke gehört zum Jahr ihres ersten Tags,
+   so zählt der Jahreswechsel 2026/27 mit Urlaub am 28. bis 31.12. zu 2026. Arbeitswoche Montag bis Freitag (Max 19.10.2026). */
+function brueckentage(ort,jahr){
+  const ft={};[jahr-1,jahr,jahr+1].forEach(j=>feiertageJahr(ort,j).forEach(f=>{ft[f.datum]=f.name;}));
+  const we=d=>{const w=wochentag(d);return w===0||w===6;},frei=d=>we(d)||!!ft[d],r=[];
+  const block=(d,schritt)=>{let x=d;while(frei(plusTage(x,schritt)))x=plusTage(x,schritt);return x;};
+  const anlass=(a,b)=>{const n=[];for(let d=a;d<=b;d=plusTage(d,1))if(ft[d]&&!we(d)&&!n.includes(ft[d]))n.push(ft[d]);return n;};
+  let d=jahr+"-01-01";
+  while(d.slice(0,4)===String(jahr)){
+    if(frei(d)){d=plusTage(d,1);continue;}
+    let e=d,n=0;while(!frei(e)){n++;e=plusTage(e,1);}
+    const vor=plusTage(d,-1),bis=plusTage(e,-1);
+    if(n<=4&&frei(vor)){const fv=block(vor,-1),fb=block(e,1),a=anlass(fv,vor).concat(anlass(e,fb).filter(x=>!anlass(fv,vor).includes(x)));
+      if(a.length){let t=0;for(let x=fv;x<=fb;x=plusTage(x,1))t++;r.push({von:d,bis,urlaubstage:n,freiVon:fv,freiBis:fb,freiTage:t,anlass:a});}}
+    d=e;
+  }
+  return r;
+}
+/* === STATISTIK-END === */
 /* ===== Vertragstage (V4.2) ===== Reine Rechnung ohne DOM, getestet in tests/vertragstage.test.mjs. */
 /* Arbeitstage laut Vertrag eingeben: ganze Zahl 1 bis 366, ein angehängtes "Tage" ist erlaubt. Sonst null (kein Zähler). */
 function parseTage(s){const m=String(s??"").trim().match(/^(\d{1,3})(\s*tage?)?$/i);if(!m)return null;const n=+m[1];return n>=1&&n<=366?n:null;}
@@ -1325,10 +1481,11 @@ function parseTage(s){const m=String(s??"").trim().match(/^(\d{1,3})(\s*tage?)?$
    mehr mit: Ältere Aufträge ohne eigenen Status folgten der Einstellung und fielen beim Umschalten auf „fest“ heraus.
    Frei (S.status): Vertragstage nötig, sonst null; frei = Vertrag minus beides, darf negativ werden (über dem Vertrag).
    Fest: immer geleistet und disponiert, ohne Vertrag und ohne frei (vertrag und frei = null). */
-function vertragsTage(heute){
+function vertragsTage(heute,jahrX){
   const fest=S.status==="fest",v=S.vertragstage,mitVertrag=!fest&&Number.isInteger(v)&&v>=1&&v<=366;
   if(!fest&&!mitVertrag)return null;
-  const bis=heute||isoLocal(new Date()),jahr=bis.slice(0,4),daten=new Set();
+  /* jahrX (V4.6): anderes Jahr für die Statistik. Vergangene Jahre sind ganz geleistet, künftige ganz disponiert. */
+  const bis=heute||isoLocal(new Date()),jahr=String(jahrX||bis.slice(0,4)),daten=new Set();
   DB.orders.forEach(o=>o.days.forEach(d=>{if(d.datum&&d.datum.slice(0,4)===jahr)daten.add(d.datum);}));
   let geleistet=0,disponiert=0;daten.forEach(t=>{if(t<=bis)geleistet++;else disponiert++;});
   return {jahr,vertrag:mitVertrag?v:null,geleistet,disponiert,frei:mitVertrag?v-geleistet-disponiert:null};
@@ -1353,11 +1510,14 @@ function orderTrip(o){
 /* Reiseart auf alle Tage anwenden. Ändert NUR uebernachtung und die vier Reisefelder –
    Einsatzbeginn/-ende, Dreh und Pause bleiben unangetastet, damit Netto und Überstunden
    sich nicht verschieben. Muster wie beim Import: bei "mehr" Anreise nur am ersten,
-   Rückreise nur am letzten Tag; bei "ein" beide Fahrten an jedem Tag. */
+   Rückreise nur am letzten Tag; bei "ein" beide Fahrten an jedem Tag.
+   Review A7 (V4.6): Die Rückreise beginnt nie vor dem Drehende. Läge der übliche Anker (Ende minus 60) im Dreh, etwa an einem
+   Übernachtungstag mit Ende gleich Drehende plus 30, beginnt sie am Drehende und endet 30 Minuten später, höchstens am
+   Einsatzende. Sonst bleibt alles wie bisher. Gibt die Zahl der so angepassten Tage zurück. */
 function applyTrip(o,trip){
   const mehr=trip==="mehr";
   const days=o.days.slice().sort((a,b)=>((a.datum||"")+(a.einsatz||"")).localeCompare((b.datum||"")+(b.einsatz||"")));
-  const last=days.length-1;
+  const last=days.length-1;let angepasst=0;
   days.forEach((d,i)=>{
     d.uebernachtung=mehr;
     const hin=!mehr||i===0, rueck=!mehr||i===last;
@@ -1365,11 +1525,15 @@ function applyTrip(o,trip){
     d.anreiseEnde=hin&&d.einsatz?addMin(d.einsatz,60):"";
     d.rueckBeginn=rueck&&d.ende?addMin(d.ende,-60):"";
     d.rueck=rueck&&d.ende?addMin(d.ende,-30):"";
+    const e=hm2min(d.einsatz),off=x=>dur(e,hm2min(x));
+    if(d.rueckBeginn&&d.drehende&&e!=null&&off(d.rueckBeginn)<off(d.drehende)){
+      d.rueckBeginn=d.drehende;d.rueck=off(addMin(d.drehende,30))>off(d.ende)?d.ende:addMin(d.drehende,30);angepasst++;}
   });
+  return angepasst;
 }
 
 /* ===== Routing ===== */
-let state={tab:"orders",orderId:null,urlaubJahr:null};
+let state={tab:"orders",orderId:null,urlaubJahr:null,statJahr:null};
 const view=document.getElementById("view");
 function paintThemeIcon(){const b=document.getElementById("themeBtn");if(b)b.innerHTML=(S.theme==="light"?ICON_SUN:ICON_MOON);}
 function applyTheme(){const l=S.theme==="light";document.body.classList.toggle("light",l);paintThemeIcon();const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=l?"#F5F4F1":"#15171A";}
@@ -1414,7 +1578,10 @@ function renderOrders(){
     <div class="kpi"><div class="l">Tagegeld</div><div class="n" style="color:${totTG>0?'var(--pos)':'var(--muted)'}">${totTG>0?totTG+"×":"—"}</div></div>
   </div>`+vertragsZeileHtml()+`<div class="btnrow topbtns"><button class="btn" id="importPdf">PDF importieren</button><button class="btn ghost" id="addOrder">Auftrag anlegen</button></div>`;
   if(!DB.orders.length){
-    h+=`<div class="empty"><div class="big">🗂</div><p>Noch kein Auftrag angelegt.<br>Importiere oben ein Dispo-PDF oder leg einen Auftrag an.</p></div>`;
+    /* Erstkontakt (Review B7): der Weg der Dispo aus der Mail und ein Backup für alle, die ihre Daten zurückholen wollen. */
+    h+=`<div class="empty"><div class="big">🗂</div><p>Noch kein Auftrag angelegt.<br>Importiere oben ein Dispo-PDF oder leg einen Auftrag an.</p>
+      <p class="note">Die Dispo kommt per Mail? Tippe das PDF an, dann auf Teilen und auf In Dateien sichern. Danach findest du es unter PDF importieren.</p>
+      <button class="btn ghost" id="leerBackup" style="max-width:260px;margin:12px auto 0">Backup einlesen</button></div>`;
   }else{
     const cardHtml=o=>{
       const ot=orderOT(o),tgd=orderTGdays(o);
@@ -1439,6 +1606,7 @@ function renderOrders(){
   view.innerHTML=h;
   bindTabs();
   document.getElementById("addOrder").onclick=()=>editOrder(null);
+  const lb=document.getElementById("leerBackup");if(lb)lb.onclick=()=>document.getElementById("backupInput").click();
   document.getElementById("importPdf").onclick=()=>document.getElementById("pdfInput").click();
   const rb=document.getElementById("remBak");if(rb)rb.onclick=exportBackup;
   const rl=document.getElementById("remLater");if(rl)rl.onclick=()=>{S.bakSnooze=Date.now();persist();render();};
@@ -1487,6 +1655,8 @@ function renderDetail(){
     if(ad!=null)l2+=` · Anreise ${fmtMin(ad)}`;
     if(rd!=null)l2+=` · Rückreise ${fmtMin(rd)}`;
     let chips="";
+    /* Zeiten prüfen (Review A6): nur ein Hinweis, der Text steht im Tages-Sheet. */
+    if(dayFlags(d))chips+=`<span class="chip nw">Zeiten prüfen</span>`;
     if(c.tg.state==="ok")chips+=`<span class="chip pos">Tagegeld</span>`;
     /* FLINK-Ausgleich sichtbar (V4.4): nur frei und nur an Tagen, an denen der Nachweis später endet. */
     if(orderStatus(o)==="frei"&&c.korr>0)chips+=`<span class="chip nw">Nachweis ${exportEnde(o,d)} · +${c.korr} FLINK</span>`;
@@ -1510,8 +1680,11 @@ function renderDetail(){
   document.getElementById("editOrder").onclick=()=>editOrder(o.id);
   document.getElementById("abrToggle").onclick=()=>{o.abgerechnet=!o.abgerechnet;persist();render();toast(o.abgerechnet?"Als abgerechnet markiert":"Auftrag wieder aktiv");};
   document.getElementById("addDay").onclick=()=>editDay(o.id,null);
-  document.getElementById("mailOrder").onclick=()=>mailOrder(o);
-  document.getElementById("pdfOrder").onclick=()=>pdfOrder(o);
+  /* Vor PDF und Mail fragen, wenn Tage mit „Zeiten prüfen“ dabei sind (Review A6). Nichts wird gesperrt. */
+  const vorExport=f=>{const n=o.days.filter(d=>dayFlags(d)).length;if(!n)return f();
+    askConfirm((n===1?"An einem Tag passen":"An "+n+" Tagen passen")+" die Zeiten nicht zusammen, zu sehen am Hinweis „Zeiten prüfen“. Trotzdem erstellen?",f,"Trotzdem erstellen","go");};
+  document.getElementById("mailOrder").onclick=()=>vorExport(()=>mailOrder(o));
+  document.getElementById("pdfOrder").onclick=()=>vorExport(()=>pdfOrder(o));
   document.getElementById("mailSet").onclick=()=>openSettings("mail");
   view.querySelectorAll("#tripSeg button").forEach(b=>b.onclick=()=>{
     const trip=b.dataset.t; if(trip===orderTrip(o))return;
@@ -1519,10 +1692,10 @@ function renderDetail(){
     const was=trip==="mehr"
       ? `Alle ${n} Tage werden auf Übernachtung gesetzt. Anreise nur am ersten, Rückreise nur am letzten Tag. Bei Übernachtung kommt das Tagegeld automatisch über die Dienstreise-Abrechnung.`
       : `Alle ${n} Tage werden auf „keine Übernachtung" gesetzt und bekommen eigene An- und Rückreise. Tagegeld wird dann je Tag geprüft.`;
-    askConfirm(was+" Einsatz- und Drehzeiten bleiben unverändert.",()=>{
-      applyTrip(o,trip);persist();render();
-      const tgd=orderTGdays(o);
-      toast(trip==="mehr"?"Auf mehrtägig umgestellt":(tgd>0?`Auf Einzeltage umgestellt · ${tgd}× Tagegeld möglich`:"Auf Einzeltage umgestellt"));
+    askConfirm(was+" Einsatz- und Drehzeiten bleiben unverändert. Bei heimgefahrenen Tagen prüf danach die Rückreise.",()=>{
+      const ang=applyTrip(o,trip);persist();render();
+      const tgd=orderTGdays(o),zus=ang?` · Rückreise an ${ang===1?"1 Tag":ang+" Tagen"} ans Drehende gelegt`:"";
+      toast((trip==="mehr"?"Auf mehrtägig umgestellt":(tgd>0?`Auf Einzeltage umgestellt · ${tgd}× Tagegeld möglich`:"Auf Einzeltage umgestellt"))+zus);
     },"Umstellen","go");
   });
   view.querySelectorAll(".dayDel").forEach(b=>b.onclick=e=>{e.stopPropagation();const id=b.dataset.del;askConfirm("Diesen Arbeitstag wirklich löschen?",()=>{o.days=o.days.filter(x=>x.id!==id);persist();render();toast("Tag gelöscht");});});
@@ -1535,7 +1708,7 @@ function vertragsZeileHtml(){const v=vertragsTage();if(!v||v.vertrag==null&&!DB.
   if(v.vertrag==null)return `<p class="note vline">Einsatztage ${v.jahr} · ${v.geleistet}&nbsp;geleistet · ${v.disponiert}&nbsp;disponiert</p>`;
   return `<p class="note vline">Vertragstage ${v.jahr} · ${v.geleistet}&nbsp;geleistet · ${v.disponiert}&nbsp;disponiert · ${v.frei>=0?`noch ${v.frei}&nbsp;frei`:`<span class="vwarn">${-v.frei} über Vertrag</span>`}</p>`;}
 /* Block in der Statistik: drei Kacheln und ein Balken (geleistet voll, disponiert heller, Rest leer). */
-function vertragsBlockHtml(){const v=vertragsTage();if(!v)return "";
+function vertragsBlockHtml(jahr){const v=vertragsTage(null,jahr);if(!v)return "";
   if(v.vertrag==null)return `<div class="section-h"><h3>Einsatztage ${v.jahr}</h3></div>
   <div class="kpis two">
     <div class="kpi"><div class="l">Geleistet</div><div class="n">${v.geleistet}</div></div>
@@ -1551,28 +1724,37 @@ function vertragsBlockHtml(){const v=vertragsTage();if(!v)return "";
   <div class="vbar" aria-hidden="true"><span class="g" style="width:${g}%"></span><span class="d" style="width:${dsp}%"></span></div>`;}
 /* ===== Statistik ===== */
 function renderStats(){
-  const totOT=DB.orders.reduce((a,o)=>a+orderOT(o),0);
-  const totNetto=DB.orders.reduce((a,o)=>a+orderNetto(o),0);
-  const totDays=DB.orders.reduce((a,o)=>a+o.days.length,0);
-  const totTGd=DB.orders.reduce((a,o)=>a+orderTGdays(o),0);
-  const nw=new Date();
+  /* Statistik je Jahr (V4.6, Max 19.10./24.10.2026): Pfeile im großen Kasten, damit er auf derselben Höhe steht wie in den anderen
+     Reitern. Alle Zahlen, Vertragstage, Monate und Aufträge gelten für das gewählte Jahr, „Pro Jahr“ vergleicht alle Jahre. */
+  const nw=new Date(),hj=nw.getFullYear(),jahre=statJahre(DB.orders,hj);
+  if(!jahre.includes(state.statJahr))state.statJahr=hj;
+  const jahr=state.statJahr,i=jahre.indexOf(jahr),r=statJahr(DB.orders,jahr),frei=S.status!=="fest",ort=urlaubOrt(S.feiertagOrt);
+  const uj=frei?urlaubJahr(DB.urlaub,jahr,S.urlaubAnspruch,null,ort):null;
   let h=`<div class="pagehead"><div class="eyebrow">${esc(headEyebrow())}</div><div class="display">Statistik</div></div>`+tabsHtml();
-  h+=`<div class="hero"><div class="l">Überstunden gesamt</div><div class="n ${otClass(totOT)}">${fmtSigned(totOT)}</div><div class="hsub">${DB.orders.length} ${DB.orders.length===1?"Auftrag":"Aufträge"} · Stand ${MN[nw.getMonth()]} ${nw.getFullYear()}</div></div>
+  h+=`<div class="hero"><div class="hkopf"><div class="l">Überstunden ${jahr}</div><div class="pfeile"><button class="iconbtn" id="sPrev" aria-label="Jahr zurück"${i>=jahre.length-1?" disabled":""}>‹</button><button class="iconbtn" id="sNext" aria-label="Jahr vor"${i<=0?" disabled":""}>›</button></div></div>
+    <div class="n ${otClass(r.ot)}">${fmtSigned(r.ot)}</div><div class="hsub">${r.auftraege} ${r.auftraege===1?"Auftrag":"Aufträge"} · ${jahr===hj?"Stand "+MN[nw.getMonth()]+" "+hj:jahr<hj?"ganzes Jahr":"bisher geplant"}</div></div>
   <div class="kpis two">
-    <div class="kpi"><div class="l">Netto-Arbeitszeit</div><div class="n">${fmtMin(totNetto)}</div></div>
-    <div class="kpi"><div class="l">Arbeitstage</div><div class="n">${totDays}</div></div>
-    <div class="kpi posk"><div class="l">Tagegeld-Tage</div><div class="n">${totTGd}</div></div>
-    <div class="kpi"><div class="l">Soll / Tag</div><div class="n">${fmtMin(S.sollMin)}</div></div>
+    <div class="kpi"><div class="l">Netto-Arbeitszeit</div><div class="n">${fmtMin(r.netto)}</div></div>
+    <div class="kpi"><div class="l">Arbeitstage</div><div class="n">${r.tage}</div></div>
+    <div class="kpi posk"><div class="l">Tagegeld-Tage</div><div class="n">${r.tgTage}</div></div>
+    ${uj?`<div class="kpi"><div class="l">Urlaub beantragt</div><div class="n">${uj.beantragt} <small>von ${S.urlaubAnspruch}</small></div></div>`:`<div class="kpi"><div class="l">Soll / Tag</div><div class="n">${fmtMin(S.sollMin)}</div></div>`}
   </div>`;
-  h+=vertragsBlockHtml();
+  if(r.tage)h+=`<button class="btn ghost" id="sPdf">Jahresliste ${jahr} als PDF</button>`;
+  h+=vertragsBlockHtml(jahr);
   /* Direkter Weg (V4.4): Freie ohne Vertragstage sehen eine ruhige Zeile, bis ein Wert gespeichert ist. */
-  if(S.status!=="fest"&&S.vertragstage==null)h+=`<button class="linkbtn left" id="vtSet">Vertragstage eintragen ›</button>`;
-  // Gruppierung nach Monat und Jahr (aus den Tagesdaten)
+  if(frei&&S.vertragstage==null)h+=`<button class="linkbtn left" id="vtSet">Vertragstage eintragen ›</button>`;
+  /* Brückentage nur für Feste, nach dem Dienstort (Max 24.10.2026). */
+  if(!frei){const bt=brueckentage(ortGueltig(S.feiertagOrt),jahr);
+    h+=`<div class="section-h"><h3>Brückentage ${jahr}</h3><span class="tot">${esc(ortLabel(S.feiertagOrt))}</span></div>`;
+    h+=bt.length?bt.map(b=>`<div class="srow"><div class="nm">${esc(aufzaehlung(b.anlass))}<small>Urlaub ${esc(zeitraumLesbar(b.von,b.bis))} · frei ${esc(zeitraumLesbar(b.freiVon,b.freiBis))}</small></div><div class="v klein">${b.urlaubstage} für ${b.freiTage}</div></div>`).join("")
+      :`<p class="note">Für ${jahr} gibt es am Dienstort keine Brückentage.</p>`;
+    h+=`<p class="note">„1 für 4“ heißt: 1 Urlaubstag, 4 Tage am Stück frei. Gerechnet mit Montag bis Freitag und den Feiertagen am Dienstort aus Einstellungen › Du und dein Vertrag. Dein Dienstplan kann abweichen.</p>`;}
+  // Monate des gewählten Jahres, Jahre für den Vergleich
   const perMonth={},perYear={};
   DB.orders.forEach(o=>o.days.forEach(d=>{
     if(!d.datum)return;const c=dayCalc(d);if(c.netto==null)return;
     const mk=d.datum.slice(0,7),yk=d.datum.slice(0,4);
-    (perMonth[mk]??={ot:0,netto:0,days:0});perMonth[mk].ot+=c.ot||0;perMonth[mk].netto+=c.netto;perMonth[mk].days++;
+    if(yk===String(jahr)){(perMonth[mk]??={ot:0,netto:0,days:0});perMonth[mk].ot+=c.ot||0;perMonth[mk].netto+=c.netto;perMonth[mk].days++;}
     (perYear[yk]??={ot:0,netto:0,days:0});perYear[yk].ot+=c.ot||0;perYear[yk].netto+=c.netto;perYear[yk].days++;
   }));
   const months=Object.keys(perMonth).sort().reverse(),years=Object.keys(perYear).sort().reverse();
@@ -1581,17 +1763,51 @@ function renderStats(){
       h+=`<div class="srow"><div class="nm">${fmtMonth(mk)}<small>${m.days} ${m.days===1?"Tag":"Tage"} · ${fmtMin(m.netto)} netto</small></div><div class="v ${otClass(m.ot)}">${fmtSigned(m.ot)}</div></div>`;});
   }
   if(years.length>1){h+=`<div class="section-h"><h3>Pro Jahr</h3></div>`;
-    years.forEach(yk=>{const yy=perYear[yk];
-      h+=`<div class="srow"><div class="nm">${yk}<small>${yy.days} ${yy.days===1?"Tag":"Tage"} · ${fmtMin(yy.netto)} netto</small></div><div class="v ${otClass(yy.ot)}">${fmtSigned(yy.ot)}</div></div>`;});
+    years.forEach(yk=>{const yy=perYear[yk],ub=frei?urlaubJahr(DB.urlaub,+yk,S.urlaubAnspruch,null,ort).beantragt:0;
+      h+=`<div class="srow" data-jahr="${yk}" style="cursor:pointer"><div class="nm">${yk}<small>${yy.days} ${yy.days===1?"Tag":"Tage"} · ${fmtMin(yy.netto)} netto${frei?` · Urlaub ${ub} von ${S.urlaubAnspruch}`:""}</small></div><div class="v ${otClass(yy.ot)}">${fmtSigned(yy.ot)}</div></div>`;});
   }
-  if(DB.orders.length){h+=`<div class="section-h"><h3>Pro Auftrag</h3></div>`;
-    DB.orders.slice().sort((a,b)=>byDate(b,a)).forEach(o=>{const ot=orderOT(o),tgd=orderTGdays(o);
+  const imJahr=DB.orders.filter(o=>o.days.some(d=>d.datum&&d.datum.slice(0,4)===String(jahr))||(jahr===hj&&!o.days.some(d=>d.datum)));
+  if(imJahr.length){h+=`<div class="section-h"><h3>Pro Auftrag</h3></div>`;
+    imJahr.slice().sort((a,b)=>byDate(b,a)).forEach(o=>{const ot=orderOT(o),tgd=orderTGdays(o);
       h+=`<div class="srow${o.abgerechnet?" dim":""}" data-open="${o.id}" style="cursor:pointer"><div class="nm">${esc(o.titel||"Ohne Titel")}<small>${o.days.length} ${o.days.length===1?"Tag":"Tage"} · ${fmtMin(orderNetto(o))} netto${tgd>0?` · ${tgd}× Tagegeld`:""}</small></div><div style="display:flex;align-items:center;gap:10px"><span class="v ${otClass(ot)}">${fmtSigned(ot)}</span><span class="chev">›</span></div></div>`;});
-  }else h+=`<div class="empty"><div class="big">📊</div><p>Noch keine Daten.</p></div>`;
+  }else h+=`<div class="empty"><div class="big">📊</div><p>${DB.orders.length?"Für "+jahr+" gibt es noch keine Einsätze.":"Noch keine Daten."}</p></div>`;
   view.innerHTML=h;
   bindTabs();
+  const geh=k=>{state.statJahr=jahre[i+k];render();const b=document.getElementById(k>0?"sPrev":"sNext"),a=document.getElementById(k>0?"sNext":"sPrev");
+    (b&&!b.disabled?b:a).focus({preventScroll:true});};
+  document.getElementById("sPrev").onclick=()=>geh(1);document.getElementById("sNext").onclick=()=>geh(-1);
+  const sp=document.getElementById("sPdf");if(sp)sp.onclick=()=>jahresPdf(jahr);
   ["vtHead","vtSet"].forEach(id=>{const el=document.getElementById(id);if(el){el.onclick=()=>openSettings("vertrag");el.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();openSettings("vertrag");}};}});
+  view.querySelectorAll("[data-jahr]").forEach(c=>c.onclick=()=>{state.statJahr=+c.dataset.jahr;window.scrollTo(0,0);render();});
   view.querySelectorAll("[data-open]").forEach(c=>c.onclick=()=>{state.orderId=c.dataset.open;window.scrollTo(0,0);render();});
+}
+/* Jahresliste als PDF (V4.6, Max 24.10.2026): wo, wann, wie lang und wie viele Stunden, für die eigenen Unterlagen. Ohne Überstunden
+   und Tagegeld, die bleiben intern. Teilen wie beim Nachweis. */
+function jahresPdf(jahr){
+  try{const {jsPDF}=window.jspdf;const doc=new jsPDF({unit:"mm",format:"a4"});const M=14,z=jahresZeilen(DB.orders,jahr);let y=M;
+    const kopf=()=>{doc.setFont("helvetica","bold");doc.setFontSize(8);doc.setTextColor(120,110,95);
+      doc.text("Datum",14,y);doc.text("Einsatz",38,y);doc.text("Ort",110,y);doc.text("Von – bis",150,y);doc.text("Stunden",196,y,{align:"right"});
+      y+=2;doc.setDrawColor(225,218,205);doc.line(M,y,196,y);y+=5;doc.setFont("helvetica","normal");doc.setFontSize(8.5);doc.setTextColor(40,35,28);};
+    doc.setFillColor(250,125,25);doc.rect(0,0,210,3,"F");
+    doc.setFont("helvetica","bold");doc.setFontSize(9);doc.setTextColor(150,140,125);doc.text("EINSÄTZE "+jahr,M,y);y+=8;
+    doc.setFontSize(17);doc.setTextColor(30,25,20);doc.text("Jahresliste "+jahr,M,y);y+=8;
+    doc.setFont("helvetica","normal");doc.setFontSize(10);doc.setTextColor(90,82,72);
+    [clean(S.absender)&&"Mitarbeiter: "+clean(S.absender),"Erstellt am: "+fmtDE()].filter(Boolean).forEach(t=>{doc.text(t,M,y);y+=5.2;});y+=4;
+    kopf();
+    const kurz=(t,w)=>{const l=doc.splitTextToSize(t||"",w);return l.length>1?doc.splitTextToSize(l[0]+" …",w)[0]:(l[0]||"");};
+    let summe=0;
+    z.forEach(r=>{if(y>278){doc.addPage();y=M;kopf();}
+      doc.text(fmtDate(r.datum)+String(r.datum).slice(2,4),14,y);doc.text(kurz(r.titel,68),38,y);doc.text(kurz(r.ort,36),110,y);
+      doc.text((r.von||"—")+"–"+(r.bis||"—"),150,y);doc.text(r.netto!=null?fmtMin(r.netto):"—",196,y,{align:"right"});
+      summe+=r.netto||0;y+=6;});
+    y+=1;doc.line(M,y,196,y);y+=6;doc.setFont("helvetica","bold");
+    doc.text(z.length+" "+(z.length===1?"Einsatztag":"Einsatztage"),14,y);doc.text(fmtMin(summe)+" Std",196,y,{align:"right"});
+    y+=6;doc.setFont("helvetica","normal");doc.setFontSize(7.5);doc.setTextColor(150,140,125);doc.text("Stunden: Einsatzzeit minus Pause, wie in der App eingetragen.",M,y);
+    const fname="Einsatzliste "+jahr+".pdf",blob=doc.output("blob"),file=new File([blob],fname,{type:"application/pdf"});
+    if(navigator.canShare&&navigator.canShare({files:[file]})){
+      navigator.share({files:[file]}).then(()=>toast("PDF geteilt")).catch(err=>{if(err&&err.name!=="AbortError"){doc.save(fname);toast("PDF erstellt");}});
+    }else{doc.save(fname);toast("PDF erstellt");}
+  }catch(e){console.error(e);toast("PDF ließ sich nicht erstellen. Versuch es noch einmal, am besten mit Internet.");}
 }
 
 /* ===== Verdienst (V4.1, freiwillig) ===== */
@@ -1644,7 +1860,8 @@ function renderUrlaub(){
     <div class="hsub neg" id="uMehr"></div>
     ${j.verguetung!=null?`<div class="hsub">Dafür bekommst du ungefähr ${esc(fmtEur(j.verguetung))}.</div>`:`<button class="linkbtn left" id="uSatz">Trag deinen Betrag je Urlaubstag ein, dann siehst du hier die Vergütung ›</button>`}</div>`;
   h+=`<div id="uKal"></div><button class="linkbtn" id="uDatum">Oder mit Datum eintragen: erster und letzter Tag ›</button>`;
-  h+=`<div class="tgbox nw" id="uVerfall"${verfall?"":" hidden"}><div class="t">${esc(verfall)}</div></div>`;
+  /* Ausnahmen laut Ergänzungs-TV Nr. 1 (2025) Nr. 4 und 5 und Merkblatt HA Personal 02/2025 (V4.6). */
+  h+=`<div class="tgbox nw" id="uVerfall"${verfall?"":" hidden"}><div class="t">${esc(verfall)}</div><div class="why">Ausnahmen: Warst du ohne eigene Schuld am Antrag gehindert, holst du ihn bis 31. März nach. Eine Übertragung ins neue Jahr gibt es nur aus dringenden Gründen mit Genehmigung, dann nimmst du den Urlaub bis 30. April.</div></div>`;
   /* Ein Block je Antrag (V4.5.1): Zeiträume als Links zum Ändern, ein Knopf für den nächsten Schritt des ganzen Antrags. */
   if(!bl.length)h+=`<div class="empty"><p>Noch kein Urlaub für ${jahr} eingetragen.</p></div>`;
   else h+=`<div class="cards">`+bl.map(b=>{const ids=esc(b.urlaube.map(u=>u.id).join(","));
@@ -1967,6 +2184,7 @@ function editDay(orderId,dayId){
     </div>
     <div class="field" style="margin-top:14px"><label>Feiertag am Arbeitsort</label><input type="text" class="txt" id="d_feiertag" value="${esc(feiertagTag(o,d))}" placeholder="kein Feiertag">
       <p class="note">${feiertagOrt(o)==="XX"?"Für dieses Land kennt die App nur Oster- und Pfingstsonntag.":"Automatisch nach "+esc(ortLabel(feiertagOrt(o)))+"."} Leeren heißt: kein Feiertag. Für ein Land, das die App nicht kennt, trägst du den Namen selbst ein.</p></div>
+    <div class="tgbox nw" id="zeitHinweis" hidden><div class="t"></div></div>
     <div id="tgbox"></div>
     <p class="note">Überstunden rechnet die App nur aus der Einsatzzeit minus Pause. Dreh- und Reisezeit stehen im Nachweis und schlagen das Einsatzende vor: letzte Tätigkeit plus 30 Minuten, bis du es selbst tippst.</p>
     <button class="btn" id="saveDay" style="margin-top:14px">Speichern</button>
@@ -2034,6 +2252,9 @@ function editDay(orderId,dayId){
   if(hasDispo)g("useDispo").onclick=()=>{g("d_einsatz").value=dsp.einsatz||"";g("d_ende").value=dsp.ende||"";endeEd=true;g("endeHw").classList.add("hidden");deriveFromEinsatz();recalc();};
   function recalc(){
     paintTyp();
+    /* Zeiten prüfen (Review A6): Hinweis beim Tippen, Speichern bleibt möglich. */
+    const zh=g("zeitHinweis"),zt=dayFlags({einsatz:val("d_einsatz"),ende:val("d_ende"),anreise:val("d_anreise"),anreiseEnde:val("d_anreiseEnde"),drehbeginn:val("d_drehbeginn"),drehende:val("d_drehende"),rueckBeginn:val("d_rueckBeginn"),rueck:val("d_rueck")});
+    zh.hidden=!zt;zh.firstElementChild.textContent=zt?"Zeiten prüfen: "+zt:"";
     const c=dayCalc({einsatz:val("d_einsatz"),ende:val("d_ende"),drehbeginn:val("d_drehbeginn"),drehende:val("d_drehende"),pause:tmpPause,uebernachtung:tmpUE,ausland:tmpAL});
     g("calc").innerHTML=`<div class="clbl">Rechnung</div>
       <div class="r">
@@ -2203,7 +2424,9 @@ function openSettings(ziel){
       if(!prevSichern(DB)){toast("Der jetzige Stand ließ sich nicht sichern. Nichts zurückgeholt.");return;}
       DB=standBereinigen(pv.db);persist();location.reload();
     },"Zurückholen","go");};
-  document.getElementById("wipe").onclick=()=>{askConfirm("Wirklich ALLE Aufträge und Urlaube löschen?"+(prev?" Auch der gesicherte Stand vom letzten Einlesen wird gelöscht.":""),()=>{DB.orders=[];DB.urlaub=[];persist();prevLoeschen();closeSheet();state.orderId=null;render();toast("Alle Daten gelöscht");});};
+  /* Mit Zahlen (Review B8), damit klar ist, was verloren geht. */
+  document.getElementById("wipe").onclick=()=>{const na=DB.orders.length,nt=DB.orders.reduce((a,o)=>a+o.days.length,0),nu=DB.urlaub.length;
+    askConfirm("Wirklich alles löschen: "+na+" "+(na===1?"Auftrag":"Aufträge")+" mit "+nt+" "+(nt===1?"Tag":"Tagen")+" und "+nu+" "+(nu===1?"Urlaub":"Urlaube")+"?"+(prev?" Auch der gesicherte Stand vom letzten Einlesen wird gelöscht.":""),()=>{DB.orders=[];DB.urlaub=[];persist();prevLoeschen();closeSheet();state.orderId=null;render();toast("Alle Daten gelöscht");});};
 }
 /* Unterseite „Du und dein Vertrag“ (V4.4): speichert genau absender, status, vertragstage, feiertagOrt. */
 function openVertragSettings(){
@@ -2392,6 +2615,7 @@ function openHelp(){
       <p>Am schnellsten geht es mit der Dispo. Tippe oben unter den Reitern auf <b>PDF importieren</b> und wähle die Datei aus. Die App liest Titel, Auftragsnummer, Produktionsnummer, Ort und die Namen aller eingeteilten Personen heraus und legt dir die Drehtage gleich mit an.</p>
       <p>Die App sucht dich über deinen Namen aus Einstellungen › Du und dein Vertrag und wählt dich vor. Findet sie dich nicht, ist niemand ausgewählt, und du tippst an, wer du bist. Danach prüfst du die <b>Reiseart</b>. Einzeltage heißt, du fährst jeden Tag hin und zurück. Mehrtägig heißt, du übernachtest vor Ort. Nennt die Dispo einen An- oder Rückreisetag, ist Mehrtägig schon vorgewählt. Die Vorschau zeigt dir jeden Tag mit Jahr und bei Mehrtägig mit Tagestyp. Den Tagestyp einzelner Tage änderst du danach im Tag.</p>
       <p>Ohne Dispo geht es genauso über <b>Auftrag anlegen</b>. Dann trägst du die Tage von Hand ein.</p>
+      <p>Im Auftrag stellst du unter <b>Beschäftigung</b> ein, ob du dort frei oder fest arbeitest. Vorgewählt ist, was in Einstellungen › Du und dein Vertrag steht. Bei Freien verlängert der Nachweis das Einsatzende um den Teil der Pause, den FLINK zu viel abzieht (Abschnitt 3).</p>
       <p class="tip">Die Dispo kommt per Mail? Tippe das PDF an, dann auf Teilen und auf In Dateien sichern. Danach findest du es im Import ganz oben unter Zuletzt benutzt.</p></div>
 
     <div class="hsec"><div class="eb">2 · Einen Tag erfassen</div>
@@ -2401,6 +2625,7 @@ function openHelp(){
       <p>Das <b>Einsatzende</b> rechnet sich dabei selbst aus. Es liegt immer 30 Minuten nach deiner letzten Tätigkeit, also nach der Rückreise, sonst nach dem Dreh. Sobald du es einmal selbst eintippst, bleibt dein Wert stehen, ebenso ein Ende aus der Dispo. Ändern ein Tagestyp, entfällt oder kein Dreh das Ende, steht das im Einsatz-Kasten, bis du selbst eine Zeit tippst.</p>
       <p>Für Sonderfälle gibt es kleine Schalter. <b>Kein Dreh</b> nimmst du für Tage ohne Dreh. <b>Entfällt</b> steht bei Anreise und Rückreise getrennt zur Verfügung. Schaltest du eine Fahrt wieder ein, bevor du speicherst, kommen deine vorherigen Zeiten zurück.</p>
       <p>Bist du im Ausland unterwegs, stellst du unten <b>Ausland</b> auf Ja. Dann hältst du fest, wann du Deutschland verlassen hast und wann du zurück warst. Mit dem ✕ leerst du ein Feld einzeln. Die Zeiten stehen unten im Notizfeld des Nachweises. Erkennt die App beim Import einen Ort im Ausland, steht Ausland schon auf Ja.</p>
+      <p>Passen die Zeiten nicht zusammen, zeigt die App den Hinweis <b>Zeiten prüfen</b>: wenn der Einsatz über 16 Stunden dauert, eine Zeit außerhalb des Einsatzes liegt oder die Rückreise vor dem Drehende beginnt. Das ist nur ein Hinweis, speichern kannst du trotzdem. Vor PDF und Mail fragt die App einmal nach.</p>
       <p class="tip">Ist am iPhone gerade das Zeitrad offen, schließt der erste Tipp daneben nur das Rad. Tipp danach einfach noch einmal.</p></div>
 
     <div class="hsec"><div class="eb">3 · Pausen und was FLINK daraus macht</div>
@@ -2454,7 +2679,7 @@ function openHelp(){
       <p class="tip">Am 1. Januar beginnt die Zählung von vorn. Liegst du über der Zahl aus dem Vertrag, steht das rot in der Statistik.</p></div>
 
     <div class="hsec"><div class="eb">11 · Feiertage</div>
-      <p>Die App kennt die gesetzlichen Feiertage in Deutschland je Bundesland, in der Schweiz je Kanton und in 13 weiteren Ländern. Oster- und Pfingstsonntag zählen immer, weil der Tarif sie ausdrücklich nennt.</p>
+      <p>Die App kennt die gesetzlichen Feiertage in Deutschland je Bundesland, in der Schweiz je Kanton, in allen übrigen EU-Ländern, in Großbritannien (England und Wales, Schottland, Nordirland), Norwegen und Andorra. Oster- und Pfingstsonntag zählen immer, weil der Tarif sie ausdrücklich nennt. Fällt ein Feiertag aufs Wochenende und das Land gibt dafür einen freien Montag, gilt der Zuschlag trotzdem am eigentlichen Tag.</p>
       <p>Als freier Mitarbeiter zählt der Feiertag dort, wo du arbeitest. Beim Dispo-Import erkennt die App das Land aus dem Produktionsort, im Auftrag änderst du es unter <b>Feiertage nach</b>. Erkennt sie nichts, gilt dein üblicher Arbeitsort aus <b>Einstellungen › Du und dein Vertrag</b>. Als fest Angestellter gilt immer der Dienstort, den du dort einträgst.</p>
       <p>Im Tag steht, ob er ein Feiertag ist. Stimmt das nicht, leerst du das Feld. Für ein Land, das die App nicht kennt, trägst du den Namen selbst ein. Regionale Feiertage in Spanien, etwa Gründonnerstag in den meisten Regionen, und Ortsfeiertage in Italien kennt die App nicht, die trägst du ebenfalls selbst ein.</p>
       <p class="tip">Im PDF bekommt ein Feiertag ein Sternchen beim Datum, in der Mail den Zusatz „Feiertag“. Unten stehen alle Feiertage mit Namen. So sieht die Disposition, wo der Zuschlag fällig ist.</p></div>
@@ -2465,9 +2690,14 @@ function openHelp(){
       <p>Urlaub musst du beim ZDF beantragen, und zwar spätestens <b>6 Wochen vor dem ersten Urlaubstag</b>. Unter dem Kalender steht ein Block für alles, was noch nicht beantragt ist, mit der Frist, und darunter ein Block je Antrag. Den <b>ersten Antrag im Jahr</b> schickst du selbst mit dem Formular für den Jahresurlaub ab, weil dafür Nachweise dazugehören. Er ist Antrag 1. Danach tippst du in der App auf <b>Ja, abgeschickt</b>. Stand ein Urlaub später auch darin, tippst du auf seinen Zeitraum und dort auf <b>Schon abgeschickt?</b>.</p>
       <p>Für alle weiteren Urlaube tippst du auf <b>Antrag ausfüllen lassen</b>. Die App füllt das echte Formular des ZDF mit allen geplanten Urlauben des Jahres aus, die noch in keinem Antrag stehen. Die Anträge bekommen ab 2 eine Nummer, die Datei heißt zum Beispiel „Urlaubsantrag 2026 Nr 2“. Mit <b>Antrag teilen</b> sicherst du die Datei oder schickst sie weiter. Dann unterschreibst du den Antrag und lässt ihn vom Fachbereich gegenzeichnen, denn der Fachbereich muss von deinem Urlaub wissen. Danach geht er an Freie-Mitarbeiter-3.Kreis-Urlaub@zdf.de. Ist er abgeschickt, tippst du im Block auf <b>Abgeschickt?</b>. Das gilt für den ganzen Antrag.</p>
       <p>Lehnt das ZDF einen Tag ab, tippst du im Block auf den Zeitraum und unter <b>Einen Tag herausnehmen</b> auf den Tag. Der Antrag bleibt, denn ein Tag weniger braucht keinen neuen. Einen anderen Tag tippst du danach im Kalender an, dafür füllt die App einen neuen Antrag aus. Machst du einen Urlaub nur kürzer, bleibt der Antrag auch. Kommen neue Tage dazu, fragt die App nach und setzt den Urlaub auf „Noch nicht beantragt“ zurück.</p>
-      <p>Urlaub gilt nur im Kalenderjahr. Was du bis zum Jahresende nicht beantragst, <b>verfällt am 31. Dezember</b>. Ab Oktober erinnert dich die App daran, solange du noch Tage frei hast.</p>
+      <p>Urlaub gilt nur im Kalenderjahr. Was du bis zum Jahresende nicht beantragst, <b>verfällt am 31. Dezember</b>. Ab Oktober erinnert dich die App daran, solange du noch Tage frei hast. Es gibt zwei Ausnahmen: Warst du ohne eigene Schuld daran gehindert, den Antrag zu stellen, holst du ihn bis zum 31. März nach. Und das ZDF kann den Urlaub aus dringenden betrieblichen oder persönlichen Gründen ins neue Jahr übertragen, das muss genehmigt werden. Dann beantragst du ihn in den ersten drei Monaten und nimmst ihn bis spätestens 30. April.</p>
       <p>Unter <b>Einstellungen › Urlaub und Antrag</b> stellst du ein, wie viele Urlaubstage du im Jahr hast. Laut Merkblatt sind es 31. Trägst du einen Betrag je Urlaubstag ein, zeigt die App, was du für deinen Urlaub ungefähr bekommst. Den Fachbereich kannst du dort auch eintragen, dann steht er gleich im Antrag. Sonst füllst du ihn im Formular selbst aus.</p>
       <p class="tip">Mit <b>In meinen Kalender übernehmen</b> zeigt dein iPhone deine Urlaubstage, mit <b>Alle hinzufügen</b> kommt jeder als eigener Termin in deinen Kalender, zum Beispiel „ZDF Urlaub 12 von 31“. Hat sich seitdem etwas geändert, lösch erst die alten „ZDF Urlaub“-Termine im Kalender und übernimm dann neu. Vorhandene Termine ändert dein iPhone dabei nicht, sonst stimmen die Nummern nicht mehr.</p></div>
+
+    <div class="hsec"><div class="eb">13 · Statistik</div>
+      <p>Die <b>Statistik</b> zeigt immer ein Jahr. Mit den Pfeilen im großen Kasten blätterst du zwischen den Jahren. Darunter stehen Netto-Arbeitszeit, Arbeitstage, Tagegeld-Tage und als freier Mitarbeiter der beantragte Urlaub, dann die Vertragstage, die Monate und die Aufträge des Jahres. Unter <b>Pro Jahr</b> vergleichst du die Jahre.</p>
+      <p>Mit <b>Jahresliste als PDF</b> bekommst du alle Einsatztage des Jahres mit Datum, Auftrag, Ort, Einsatzzeit und Stunden. Die Liste ist für deine Unterlagen gedacht und enthält keine Überstunden und kein Tagegeld.</p>
+      <p class="tip">Fest Angestellte sehen dort auch die <b>Brückentage</b> am Dienstort. „1 für 4“ heißt: ein Urlaubstag, vier Tage am Stück frei. Gerechnet wird mit Montag bis Freitag, dein Dienstplan kann abweichen.</p></div>
 
     <button class="btn" id="helpBack" style="margin-top:6px">Verstanden</button>`);
   document.getElementById("helpBack").onclick=()=>openSettings();
@@ -2477,19 +2707,8 @@ function openHelp(){
    damit beide nie mehr auseinanderlaufen. tageTxt z. B. „3 Einsatztage“ oder „{tage}“. */
 function mailKopfStandard(name,prodTxt,tageTxt){return ["Hallo "+name+",","","nachfolgend mein Stundennachweis für die Produktion "+prodTxt+" ("+tageTxt+")."];}
 /* ===== Export ===== */
-function orderReportText(o){
-  const L=["ZEITNACHWEIS",o.titel||"Ohne Titel"];
-  if(o.auftragsnr)L.push("Auftrag: "+o.auftragsnr);if(o.prodNummer)L.push("Prod.-Nr.: "+o.prodNummer);if(o.kostentraeger)L.push("Kostenträger: "+o.kostentraeger);if(o.produktionsort)L.push("Ort: "+o.produktionsort);const _mit=o.mitarbeiter||S.absender;if(_mit)L.push("Mitarbeiter: "+_mit);L.push("");
-  o.days.slice().sort((a,b)=>(a.datum||"").localeCompare(b.datum||"")).forEach(d=>{const c=dayCalc(d);
-    L.push(fmtDateLong(d.datum));
-    L.push("  Einsatz: "+(d.einsatz||"–")+"–"+(d.ende||"–")+"   Pause: "+(c.pause===0?"keine":c.pause+" Min")+"   Netto: "+fmtMin(c.netto)+" Std   Überstd.: "+fmtSigned(c.ot));
-    if(d.anreise||d.rueck)L.push("  Anreise: "+(d.anreise||"–")+"   Rückreise: "+(d.rueck||"–"));
-    if(c.tg.state==="ok")L.push("  Abwesend: "+fmtMin(c.absence)+" Std → Tagegeld möglich (bitte prüfen)");
-    L.push("");});
-  L.push("─────────────");L.push("Summe Netto: "+fmtMin(orderNetto(o))+" Std");L.push("Summe Überstunden: "+fmtSigned(orderOT(o))+" Std");
-  const tgd=orderTGdays(o);if(tgd>0)L.push("Tagegeld-fähige Tage: "+tgd+" (bitte selbst prüfen, Antrag binnen 6 Monaten)");
-  L.push("(Soll "+fmtMin(S.sollMin)+" Std/Tag · ohne Gewähr)");return L.join("\n");
-}
+/* Text-Export gibt es absichtlich nicht (Review C1): Er enthielte Netto, Überstunden und Tagegeld, die nach außen nicht gehören.
+   Nachweise laufen nur über mailOrder und pdfOrder. */
 function flipName(n){const p=String(n||"").split(",");return p.length===2?clean(p[1])+" "+clean(p[0]):clean(n);}
 function initials(n){const p=clean(flipName(n)).split(/\s+/).filter(Boolean);if(!p.length)return "";const a=p[0][0].toUpperCase();const b=p.length>1?p[p.length-1][0].toUpperCase():"";return a+"."+(b?b+".":"");}
 function fmtDE(dt){const d=dt||new Date();return String(d.getDate()).padStart(2,"0")+"."+String(d.getMonth()+1).padStart(2,"0")+"."+d.getFullYear();}
@@ -2511,22 +2730,24 @@ function feiertagText(o){
   return z.length?"Feiertage am Arbeitsort: "+z.join(" · "):"";
 }
 function mailOrder(o){
-  const subj="Zeitnachweis"+(o.prodNummer?" · Produktion "+o.prodNummer:(o.titel?" · "+o.titel:(o.auftragsnr?" · "+o.auftragsnr:"")));
+  /* Betreff mit Auftragsnummer, Produktion und Zeitraum (Review B4): zwei Nachweise zur selben Produktion sind so unterscheidbar. */
+  const subj=["Zeitnachweis",o.auftragsnr,o.prodNummer&&"Produktion "+o.prodNummer,!o.auftragsnr&&!o.prodNummer&&o.titel,fmtRange(o)].filter(Boolean).join(" · ");
   const prodTxt=o.titel?(o.titel+(o.prodNummer?" ("+o.prodNummer+")":"")):(o.prodNummer?"mit der Prod.-Nr. "+o.prodNummer:(o.auftragsnr||""));
-  const sender=flipName(o.mitarbeiter||S.absender)||"[Dein Name]";
+  /* Ohne Namen keine Platzhalter in eckigen Klammern (Review C2): „Hallo zusammen“, Unterschrift nur, wenn ein Name da ist. */
+  const sender=flipName(o.mitarbeiter||S.absender);
   /* Anschreiben und Gruss sind in den Einstellungen frei formulierbar.
      Leer = der bisherige Standardtext, damit sich fuer niemanden etwas aendert.
      Platzhalter werden ersetzt, sind aber optional - wer den Namen ausschreibt,
      braucht sie nicht. */
   const tage=o.days.length;
   const platzhalter=s=>String(s)
-    .replace(/\{name\}/g,S.empfaenger||"[Name]")
+    .replace(/\{name\}/g,S.empfaenger||"zusammen")
     .replace(/\{produktion\}/g,prodTxt)
     .replace(/\{auftrag\}/g,o.auftragsnr||"")
     .replace(/\{tage\}/g,tage+" "+(tage===1?"Einsatztag":"Einsatztage"));
   const kopf=clean(S.anschreiben)
     ? platzhalter(S.anschreiben).split("\n")
-    : mailKopfStandard(S.empfaenger||"[Name]",prodTxt,tage+" "+(tage===1?"Einsatztag":"Einsatztage"));
+    : mailKopfStandard(S.empfaenger||"zusammen",prodTxt,tage+" "+(tage===1?"Einsatztag":"Einsatztage"));
   const L=[...kopf,""];
   o.days.slice().sort((a,b)=>(a.datum||"").localeCompare(b.datum||"")).forEach(d=>{const c=dayCalc(d);
     const dreh=(d.drehbeginn||d.drehende)?((d.drehbeginn||"—")+"–"+(d.drehende||"—")):"—";
@@ -2540,14 +2761,17 @@ function mailOrder(o){
   const ftx=feiertagText(o);if(ftx){L.push(ftx);L.push("");}
   const eq=equipText(o);if(eq){L.push("Sonder-Equipment: "+eq);L.push("");}
   const gz=grenzText(o);if(gz){L.push(gz);L.push("");}
-  (clean(S.gruss)?platzhalter(S.gruss).split("\n"):["Viele liebe Grüße"]).forEach(z=>L.push(z));L.push(sender);
+  (clean(S.gruss)?platzhalter(S.gruss).split("\n"):["Viele liebe Grüße"]).forEach(z=>L.push(z));if(sender)L.push(sender);
   window.location.href="mailto:"+encodeURIComponent(S.email||"")+"?subject="+encodeURIComponent(subj)+"&body="+encodeURIComponent(L.join("\n"));
 }
 function pdfOrder(o){
   try{const {jsPDF}=window.jspdf;const doc=new jsPDF({unit:"mm",format:"a4"});const M=14;let y=M;const ac=[250,125,25];
     doc.setFillColor(...ac);doc.rect(0,0,210,3,"F");
     doc.setFont("helvetica","bold");doc.setFontSize(9);doc.setTextColor(150,140,125);doc.text("ZEITNACHWEIS",M,y);y+=8;
-    doc.setFontSize(17);doc.setTextColor(30,25,20);doc.text(o.titel||"Ohne Titel",M,y);y+=9;
+    /* Langer Titel (Review A9): umbrechen statt über den Rand, bei zwei Zeilen 14 pt, höchstens zwei Zeilen. Ohne Titel die Auftragsnummer. */
+    const titel=o.titel||o.auftragsnr||"Ohne Titel";doc.setFontSize(17);doc.setTextColor(30,25,20);let tz=doc.splitTextToSize(titel,182);
+    if(tz.length>1){doc.setFontSize(14);tz=doc.splitTextToSize(titel,182);if(tz.length>2){tz=tz.slice(0,2);tz[1]=doc.splitTextToSize(tz[1]+" …",176)[0].replace(/\s*…?$/,"")+" …";}}
+    tz.forEach((zl,i)=>doc.text(zl,M,y+i*6.2));y+=9+(tz.length-1)*6.2;
     doc.setFont("helvetica","normal");doc.setFontSize(10);doc.setTextColor(90,82,72);
     [o.auftragsnr&&"Auftrag: "+o.auftragsnr,o.prodNummer&&"Prod.-Nr.: "+o.prodNummer,o.kostentraeger&&"Kostenträger: "+o.kostentraeger,o.produktionsort&&"Ort: "+o.produktionsort,(o.mitarbeiter||S.absender)&&"Mitarbeiter: "+(o.mitarbeiter||S.absender),"Erstellt am: "+fmtDE()].filter(Boolean).forEach(t=>{doc.text(t,M,y);y+=5.2;});
     y+=2;doc.setDrawColor(225,218,205);doc.line(M,y,196,y);y+=2;
@@ -2822,9 +3046,9 @@ function drehAusweichen(t,typ){
   t.drehbeginn=db;t.drehende=de;
 }
 
-let impData,impSel;
+let impSel;
 function confirmImport(p,fname){
-  impData=p;const persons=p.persons||[];
+  const persons=p.persons||[];
   const ftErkannt=ortAusText(p.produktionsort)||"";
   /* Vorauswahl nur über den gespeicherten Namen (V4.2, A8). Kein Rückfall auf die erste Person: deren Einsatzzeiten sehen
      plausibel aus, Name und Reisezeiten wären aber die eines Kollegen. */

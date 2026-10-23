@@ -1,6 +1,6 @@
 /* Zeiterfassung Service Worker – Offline-Cache.
    Navigation: network-first (Updates kommen an), Assets: cache-first. */
-const CACHE = "zeiterfassung-v4.5.1";
+const CACHE = "zeiterfassung-v4.6.0";
 const ASSETS = [
   "./",
   "manifest.json",
