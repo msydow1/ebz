@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="Zeiterfassung">
 <meta name="theme-color" content="#15171A">
 <title>Zeiterfassung</title>
-<!-- Zeiterfassung V4.6.1 · Design "Amber Editorial" -->
+<!-- Zeiterfassung V4.6.2 · Design "Amber Editorial" -->
 <!-- impeccable-disable single-font -- Nutzer wählte beim V1.2-Redesign bewusst "Inter durchgängig" (eine Familie, tabular-nums für Zeiten) -->
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -66,12 +66,14 @@ body.light .bar{background:rgba(245,244,241,.85)}
 .note.warnline{color:var(--accent-ink);margin:-8px 0 16px}
 .vwarn{color:var(--danger);font-weight:700;white-space:nowrap}
 /* Hero */
-.hero{background:linear-gradient(135deg,var(--accent-soft),transparent);border:1px solid var(--accent-line);border-radius:16px;padding:22px 18px;margin-bottom:14px;min-height:176px;box-sizing:border-box}/* gleich hoch in Statistik, Verdienst und Urlaub (Max 24.10.2026) */
+.hero{background:linear-gradient(135deg,var(--accent-soft),transparent);border:1px solid var(--accent-line);border-radius:16px;padding:22px 18px;margin-bottom:14px;padding:18px}
 .hero .l{font-size:9px;font-weight:600;letter-spacing:1.4px;text-transform:uppercase;color:var(--accent-ink)}
 .hero .n{font-weight:800;font-size:46px;letter-spacing:-1.5px;line-height:1.05;margin-top:4px;color:var(--text-strong)}
 .hero.small{padding:16px 18px}
 .hero.small .n{font-size:30px;letter-spacing:-1px}
-.hero .hsub{font-size:12px;font-weight:500;color:var(--muted);margin-top:6px}
+.hero .hsub{font-size:12px;font-weight:500;color:var(--muted);margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}/* eine Zeile: alle großen Kästen gleich hoch (Max 24.10.2026) */
+.hero .hsub .ausn{border:none;background:none;padding:0;font:inherit;font-weight:700;color:var(--accent-ink);cursor:pointer}
+.hero .hausn{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.5}
 /* Segment-Tabs */
 .segs{display:flex;background:var(--field);border-radius:12px;padding:4px;margin:0 0 18px}
 .segs button{flex:1;padding:10px 0;border:none;border-radius:9px;background:transparent;color:var(--muted);font-family:inherit;font-size:13px;font-weight:700}
@@ -87,8 +89,8 @@ body.light .bar{background:rgba(245,244,241,.85)}
 .hero .hsub.neg{color:var(--danger)}
 .hero .hsub[hidden],.tgbox[hidden]{display:none}
 .hero .linkbtn.left{margin:-6px 0 -14px}
-.hero .hkopf{display:flex;align-items:center;justify-content:space-between;margin:-10px -8px -6px 0}
-.hero .hkopf .pfeile{display:flex}
+.hero .hkopf{display:flex;align-items:center;justify-content:space-between;margin-right:-8px}
+.hero .hkopf .pfeile{display:flex;margin:-16px 0}/* 44-px-Pfeile ohne zusätzliche Höhe: Kasten so hoch wie in Verdienst und Urlaub */
 .hero .hkopf .iconbtn{color:var(--accent);font-size:22px;font-family:inherit;min-width:44px;min-height:44px}
 .hero .hkopf .iconbtn:disabled{color:var(--faint);opacity:.45}
 .srow .v.klein{font-size:13px;font-weight:600;color:var(--muted);white-space:nowrap}
@@ -378,7 +380,7 @@ body.light .btn.danger{border-color:rgba(194,78,59,.4)}
   <div class="view" id="view"></div>
   <div class="foot">
     <div class="foot-note">Daten bleiben nur auf diesem Gerät · alle Angaben ohne Gewähr</div>
-    <div class="foot-v">Zeiterfassung <b>V4.6.1</b></div>
+    <div class="foot-v">Zeiterfassung <b>V4.6.2</b></div>
   </div>
 </div>
 <input type="file" id="pdfInput" accept="application/pdf" class="hidden">
@@ -483,8 +485,12 @@ if(typeof S.fachbereich!=="string")S.fachbereich="";
    Wird einmal nach jedem Update gezeigt: Vergleich S.seenVersion gegen APP_VERSION.
    Nicht bei frischen Installationen (keine Aufträge) – ein neuer Kollege soll kein
    Changelog sehen, bevor er die App überhaupt kennt. Neue Einträge oben anfügen. */
-const APP_VERSION="4.6.1";
+const APP_VERSION="4.6.2";
 const WHATSNEW=[
+  {v:"4.6.2", t:"Erster Antrag aus der App", items:[
+    ["Auch der erste Antrag","Die App füllt jetzt auch deinen ersten Urlaubsantrag im Jahr aus. Anschrift, Telefon und Seite 2 mit den Nachweisen ergänzt du selbst."],
+    ["Ruhiger","Der große Kasten oben ist schlanker und überall gleich hoch. Den Hinweis zum Verfall gibt es nur noch unter „Ausnahmen“ im Urlaub-Kasten."]
+  ]},
   {v:"4.6.1", t:"Aufgeräumt", items:[
     ["Urlaub schneller","Einen eingetragenen Urlaubstag tippst du im Kalender an und löschst ihn. Weniger Text auf der Seite, die Ausnahmen zum Verfall klappst du bei Bedarf auf."],
     ["Jahresliste in den Einstellungen","Die Jahresliste als PDF steht jetzt unter Einstellungen › Export, für jedes abgeschlossene Jahr."],
@@ -1139,7 +1145,7 @@ function urlaubJahr(liste,jahr,anspruch,satz,ort){
 /* Antrag spätestens 6 Wochen vor Beginn (§ 2 Abs. 2 UrlTV). */
 function fristBis(von){return plusTage(von,-42);}
 /* Ist im Jahr schon ein Urlaub beantragt? Den ersten Antrag (613) schickt jeder selbst, danach füllt die App die 627. */
-function erstAntragDa(liste,jahr){return liste.some(u=>u.von.slice(0,4)===String(jahr)&&u.stand==="beantragt");}
+function erstAntragDa(liste,jahr){return liste.some(u=>u.von.slice(0,4)===String(jahr)&&(u.stand==="beantragt"||u.formular==="613"));}
 /* Nummer für den nächsten Antrag aus der App, auch im Dateinamen: Der erste Antrag ist 1, die App zählt ab 2 (Max 23.10.2026). */
 function naechsteAntragNr(liste,jahr){
   return Math.max(1,...liste.filter(u=>u.von.slice(0,4)===String(jahr)&&u.formular==="627").map(u=>u.antragNr||0))+1;
@@ -1167,8 +1173,9 @@ function antragBloecke(liste,jahr,heute,ort){
   const offen=im.filter(u=>u.stand==="geplant"&&!u.ausgefuelltAm);
   if(offen.length){const f=fristBis(offen[0].von),vorbei=heute>f,eins=offen.length===1;
     const b={art:"offen",nr:0,titel:"Noch nicht beantragt",urlaube:offen,tage:summe(offen),klasse:vorbei?"warn":"",neben:null};
-    if(!erstDa)Object.assign(b,{text:vorbei?"Die 6-Wochen-Frist ist vorbei. Schick den ersten Antrag so schnell wie möglich. Schon abgeschickt?"
-      :(eins?"Diesen Urlaub":"Diese Urlaube")+" beantragst du selbst mit dem ersten Antrag im Jahr. Abschicken bis "+datumLesbar(f)+". Schon abgeschickt?",knopf:"Ja, abgeschickt",aktion:"erst"});
+    /* Ab V4.6.2 füllt die App auch den ersten Antrag (613, Seite 1) aus (Max 24.10.2026). */
+    if(!erstDa)Object.assign(b,{text:"Erster Antrag im Jahr. "+(vorbei?"Die 6-Wochen-Frist ist vorbei, schick ihn so schnell wie möglich.":"Abschicken bis "+datumLesbar(f)+"."),
+      knopf:"Antrag ausfüllen lassen",aktion:"antrag",neben:{text:"Schon selbst abgeschickt? Ja",aktion:"erst"}});
     else Object.assign(b,{text:vorbei?"Die 6-Wochen-Frist ist vorbei. Schick den Antrag so schnell wie möglich.":"Noch nicht beantragt. Abschicken bis "+datumLesbar(f)+".",
       knopf:"Antrag ausfüllen lassen",aktion:"antrag",neben:eins?{text:"War im ersten Antrag? Ja, abgeschickt",aktion:"erst"}:null});
     r.push(b);}
@@ -1191,11 +1198,6 @@ function nurWeniger(alt,neu,ort){const a=new Set(urlaubTageListe(alt.von,alt.bis
 /* Gibt es für den Urlaub schon einen Antrag (ausgefüllt oder beantragt)? */
 function antragDa(u){return u.stand!=="geplant"||!!u.ausgefuelltAm;}
 function antragZuruecksetzen(u){return Object.assign(u,{stand:"geplant",formular:"",ausgefuelltAm:"",beantragtAm:"",antragId:"",antragNr:0});}
-/* Ab 1. Oktober im laufenden Jahr, solange Tage frei sind. */
-function verfallHinweis(jahr,heute,frei){
-  if(String(jahr)!==heute.slice(0,4)||heute.slice(5)<"10-01"||frei<=0)return "";
-  return "Achtung: Nicht beantragter Urlaub verfällt am 31. Dezember. Du hast noch "+frei+" "+(frei===1?"Tag":"Tage")+" frei.";
-}
 /* Zip ohne Fremdbibliothek: lesen über das Inhaltsverzeichnis am Ende (Größen von dort, auch bei Datendeskriptoren),
    entpacken mit DecompressionStream("deflate-raw"), schreiben ungepackt (Methode 0, Word liest das). */
 function crc32(b){let c=-1;for(let i=0;i<b.length;i++){c^=b[i];for(let k=0;k<8;k++)c=c&1?(c>>>1)^0xEDB88320:c>>>1;}return (c^-1)>>>0;}
@@ -1297,10 +1299,13 @@ function antragWerte(jahr,zeilen,p,heute,ort){
   return w;
 }
 /* Vorlage 627 (Bytes) → fertige Word-Datei (Bytes). */
-async function antragDocx(vorlageBytes,jahr,zeilen,p,heute,ort){
-  const z=await zipLesen(vorlageBytes),td=new TextDecoder(),te=new TextEncoder();
+/* Felder des ersten Antrags (613): 1 Name, 3 Fachbereich, 7 Jahr, 8 bis 22 die Zeilen, 23 und 42 Datum. Anschrift, Telefon und Seite 2
+   (Einkünfte, Nachweise) füllt man selbst aus. */
+function werte613(w){const r=[];r[1]=w[2];r[3]=w[3];r[7]=w[1];for(let i=0;i<15;i++)r[8+i]=w[4+i];r[23]=w[19];r[42]=w[19];return r;}
+async function antragDocx(vorlageBytes,jahr,zeilen,p,heute,ort,form){
+  const z=await zipLesen(vorlageBytes),td=new TextDecoder(),te=new TextEncoder(),w=antragWerte(jahr,zeilen,p,heute,ort);
   z.forEach(e=>{
-    if(e.name==="word/document.xml")e.data=te.encode(refFuellen(vorlageFuellen(td.decode(e.data),antragWerte(jahr,zeilen,p,heute,ort)),"Name",nameFormular(p.absender)));
+    if(e.name==="word/document.xml")e.data=te.encode(refFuellen(vorlageFuellen(td.decode(e.data),form==="613"?werte613(w):w),"Name",nameFormular(p.absender)));
     else if(/^word\/(header|footer)\d*\.xml$/.test(e.name))e.data=te.encode(refFuellen(td.decode(e.data),"Name",nameFormular(p.absender)));
     else if(e.name==="[Content_Types].xml")e.data=te.encode(alsDokument(td.decode(e.data)));
   });
@@ -1857,15 +1862,15 @@ function renderUrlaub(){
   /* Nur das laufende und das nächste Jahr; das Jahr wechselt mit den Monatspfeilen im Kalender (V4.5.1, Max 23.10.2026). */
   if(state.urlaubJahr!==hj&&state.urlaubJahr!==hj+1)state.urlaubJahr=hj;
   const jahr=state.urlaubJahr;
-  const j=urlaubJahr(DB.urlaub,jahr,S.urlaubAnspruch,S.urlaubSatz,ort),verfall=verfallHinweis(jahr,heute,j.frei);
+  const j=urlaubJahr(DB.urlaub,jahr,S.urlaubAnspruch,S.urlaubSatz,ort);
   const bl=antragBloecke(DB.urlaub,jahr,heute,ort),frei=Math.max(j.frei,0);
   let h=`<div class="pagehead"><div class="eyebrow">${esc(headEyebrow())}</div><div class="display">Urlaub</div></div>`+tabsHtml();
-  h+=`<div class="hero"><div class="l">Du hast ${jahr} noch</div><div class="n" id="uFreiN">${frei} ${frei===1?"Tag":"Tage"}</div><div class="hsub">von ${S.urlaubAnspruch} ${S.urlaubAnspruch===1?"Urlaubstag":"Urlaubstagen"} frei.</div>
+  h+=`<div class="hero"><div class="l">Du hast ${jahr} noch</div><div class="n" id="uFreiN">${frei} ${frei===1?"Tag":"Tage"}</div><div class="hsub" id="uSub">von ${S.urlaubAnspruch} ${S.urlaubAnspruch===1?"Urlaubstag":"Urlaubstagen"} frei · <button class="ausn" id="uAusn" aria-expanded="false">Ausnahmen</button></div>
     <div class="hsub neg" id="uMehr"></div>
-    ${j.verguetung!=null?`<div class="hsub">Dafür bekommst du ungefähr ${esc(fmtEur(j.verguetung))}.</div>`:`<button class="linkbtn left" id="uSatz">Betrag je Urlaubstag eintragen ›</button>`}</div>`;
+    <div class="hausn" id="uAusnT" hidden>Nicht beantragter Urlaub verfällt am 31. Dezember. Ohne eigene Schuld am Antrag gehindert: bis 31. März nachholen. Übertragung ins neue Jahr nur aus dringenden Gründen mit Genehmigung, dann Urlaub bis 30. April nehmen.</div></div>`;
+  /* Vergütung als ruhige Zeile unter dem Kasten, damit er so hoch bleibt wie in Statistik und Verdienst. */
+  h+=j.verguetung!=null?`<p class="note">Vergütung ungefähr ${esc(fmtEur(j.verguetung))}</p>`:`<button class="linkbtn left" id="uSatz">Betrag je Urlaubstag eintragen ›</button>`;
   h+=`<div id="uKal"></div>`;
-  /* Ausnahmen laut Ergänzungs-TV Nr. 1 (2025) Nr. 4 und 5 und Merkblatt HA Personal 02/2025 (V4.6). */
-  h+=`<div class="tgbox nw" id="uVerfall"${verfall?"":" hidden"}><div class="t">${esc(verfall)}</div><details class="why"><summary><b>Ausnahmen</b></summary>Ohne eigene Schuld am Antrag gehindert: bis 31. März nachholen. Übertragung ins neue Jahr nur aus dringenden Gründen mit Genehmigung, dann Urlaub bis 30. April nehmen.</details></div>`;
   /* Ein Block je Antrag (V4.5.1): Zeiträume als Links zum Ändern, ein Knopf für den nächsten Schritt des ganzen Antrags. */
   if(!bl.length)h+=`<div class="empty"><p>Noch kein Urlaub für ${jahr} eingetragen.</p></div>`;
   else h+=`<div class="cards">`+bl.map(b=>{const ids=esc(b.urlaube.map(u=>u.id).join(","));
@@ -1879,6 +1884,7 @@ function renderUrlaub(){
   view.innerHTML=h;bindTabs();
   urlaubTippKalender(jahr,ort,j,heute);
   const us=document.getElementById("uSatz");if(us)us.onclick=()=>openSettings("urlaub");
+  const ua=document.getElementById("uAusn");ua.onclick=()=>{const t=document.getElementById("uAusnT");t.hidden=!t.hidden;ua.setAttribute("aria-expanded",String(!t.hidden));};
   const ui=document.getElementById("uIcs");if(ui)ui.onclick=()=>urlaubKalender(jahr);
   view.querySelectorAll("[data-urlaub]").forEach(c=>c.onclick=()=>openUrlaub(DB.urlaub.find(u=>u.id===c.dataset.urlaub),jahr));
   view.querySelectorAll("[data-schritt]").forEach(b=>b.onclick=()=>urlaubAktion(b.dataset.schritt,b.dataset.ids.split(","),jahr));
@@ -1916,7 +1922,6 @@ function urlaubTippKalender(jahr,ort,j,heute){
     /* Große Zahl, Satz über dem Anspruch und Verfall-Hinweis rechnen mit der Auswahl mit (Schlussprüfung 23.10.2026). */
     const f=Math.max(rest,0);document.getElementById("uFreiN").textContent=f+" "+(f===1?"Tag":"Tage");
     const mehr=document.getElementById("uMehr");const zuviel=-rest+" "+(rest===-1?"Tag":"Tage");mehr.textContent=rest>=0?"":n?"Mit deiner Auswahl "+(rest===-1?"ist":"sind")+" das "+zuviel+" mehr als dein Anspruch.":"Du hast "+zuviel+" mehr eingetragen als dein Anspruch.";mehr.hidden=rest>=0;
-    const vf=document.getElementById("uVerfall"),vt=verfallHinweis(jahr,heute,rest);vf.hidden=!vt;vf.firstElementChild.textContent=vt;
     const blaettern=d=>{const pfeil=d<0?"uMPrev":"uMNext";let mm=m+d,y=jahr;if(mm<1){mm=12;y--;}if(mm>12){mm=1;y++;}
       state.urlaubMonat=mm;if(y===jahr)return zeichnen(pfeil);
       state.urlaubJahr=y;state.urlaubKalJahr=y;state.urlaubAuswahl=new Set();
@@ -2016,14 +2021,16 @@ async function urlaubAntrag(jahr){
   if(!clean(S.absender)){toast("Für den Antrag fehlt noch dein Name. Trag ihn unter Einstellungen › Vertragsdaten ein.");return openSettings("vertrag");}
   const gruppen=antragZeilen(DB.urlaub,jahr);if(!gruppen.length)return;
   const heute=isoLocal(new Date()),p={absender:S.absender,fachbereich:S.fachbereich},dateien=[],nr0=naechsteAntragNr(DB.urlaub,jahr);
+  /* Ohne ersten Antrag im Jahr wird die erste Datei das Formular 613 (Nr 1), weitere 627 ab Nr 2 (V4.6.2). */
+  const erst=!erstAntragDa(DB.urlaub,jahr);
   try{
-    const r=await fetch("vorlagen/627.dotx");
-    if(!r.ok)throw new Error("Vorlage 627: "+r.status);
-    const vorlage=new Uint8Array(await r.arrayBuffer());
+    const vorlagen={};
+    for(const f of erst?["613","627"]:["627"]){const r=await fetch("vorlagen/"+f+".dotx");if(!r.ok)throw new Error("Vorlage "+f+": "+r.status);vorlagen[f]=new Uint8Array(await r.arrayBuffer());}
     for(let g=0;g<gruppen.length;g++){
-      const bytes=await antragDocx(vorlage,jahr,gruppen[g],p,heute,urlaubOrt(S.feiertagOrt));
+      const form=erst&&g===0?"613":"627",nr=form==="613"?1:nr0+g-(erst?1:0);
+      const bytes=await antragDocx(vorlagen[form],jahr,gruppen[g],p,heute,urlaubOrt(S.feiertagOrt),form);
       /* Nummer im Dateinamen, damit ein zweiter Antrag den ersten nicht überschreibt (Max 23.10.2026). */
-      dateien.push({id:uid(),nr:nr0+g,zeilen:gruppen[g],blob:new Blob([bytes],{type:DOCX_TYP}),fname:"Urlaubsantrag "+jahr+" Nr "+(nr0+g)+".docx"});
+      dateien.push({id:uid(),nr,form,zeilen:gruppen[g],blob:new Blob([bytes],{type:DOCX_TYP}),fname:"Urlaubsantrag "+jahr+" Nr "+nr+".docx"});
     }
   }catch(e){console.error(e);toast("Der Antrag ließ sich nicht erstellen. Öffne die App einmal mit Netz und versuch es noch einmal.");return;}
   const n=dateien.length;
@@ -2033,15 +2040,15 @@ async function urlaubAntrag(jahr){
     <button class="btn" id="uTeil">Antrag teilen</button><button class="btn ghost" id="uTeilNein" style="margin-bottom:0">Später</button>`);
     /* Kein await vor dateiTeilen: der Aufruf läuft direkt in diesem Tipp. */
     document.getElementById("uTeil").onclick=()=>dateiTeilen(d.blob,d.fname,DOCX_TYP,()=>{
-      d.zeilen.forEach(u=>Object.assign(u,{formular:"627",ausgefuelltAm:heute,antragId:d.id,antragNr:d.nr}));persist();render();
-      if(k+1<n)bereit(k+1);else antragFertig(n);},"Teilen ging nicht. Tipp noch einmal auf „Antrag teilen“.");
+      d.zeilen.forEach(u=>Object.assign(u,{formular:d.form,ausgefuelltAm:heute,antragId:d.id,antragNr:d.nr}));persist();render();
+      if(k+1<n)bereit(k+1);else antragFertig(n,dateien.some(x=>x.form==="613"));},"Teilen ging nicht. Tipp noch einmal auf „Antrag teilen“.");
     document.getElementById("uTeilNein").onclick=closeSheet;};
   bereit(0);
 }
 /* Hinweis nach dem Ausfüllen als Sheet, weil er für einen Toast zu lang ist. */
-function antragFertig(anzahl){
+function antragFertig(anzahl,erst){
   openSheet(`<h3>${anzahl>1?"Deine Anträge sind fertig":"Dein Antrag ist fertig"}</h3>
-    <p class="uhinweis">Jetzt unterschreiben, vom Fachbereich gegenzeichnen lassen und an Freie-Mitarbeiter-3.Kreis-Urlaub@zdf.de schicken. Danach auf „Abgeschickt?“ tippen.${clean(S.fachbereich)?"":" Den Fachbereich trägst du im Formular selbst ein."}</p>
+    <p class="uhinweis">${erst?"Beim ersten Antrag ergänzt du Anschrift, Telefon und Seite 2 mit den Nachweisen selbst. ":""}Dann unterschreiben, vom Fachbereich gegenzeichnen lassen und an Freie-Mitarbeiter-3.Kreis-Urlaub@zdf.de schicken. Danach auf „Abgeschickt?“ tippen.${clean(S.fachbereich)?"":" Den Fachbereich trägst du im Formular selbst ein."}</p>
     <button class="btn" id="uOk" style="margin-bottom:0">Verstanden</button>`);
   document.getElementById("uOk").onclick=closeSheet;
 }
@@ -2702,7 +2709,7 @@ function openHelp(){
       <p>Urlaub musst du beim ZDF beantragen, und zwar spätestens <b>6 Wochen vor dem ersten Urlaubstag</b>. Unter dem Kalender steht ein Block für alles, was noch nicht beantragt ist, mit der Frist, und darunter ein Block je Antrag. Den <b>ersten Antrag im Jahr</b> schickst du selbst mit dem Formular für den Jahresurlaub ab, weil dafür Nachweise dazugehören. Er ist Antrag 1. Danach tippst du in der App auf <b>Ja, abgeschickt</b>. Stand ein Urlaub später auch darin, tippst du auf seinen Zeitraum und dort auf <b>Schon abgeschickt?</b>.</p>
       <p>Für alle weiteren Urlaube tippst du auf <b>Antrag ausfüllen lassen</b>. Die App füllt das echte Formular des ZDF mit allen geplanten Urlauben des Jahres aus, die noch in keinem Antrag stehen. Die Anträge bekommen ab 2 eine Nummer, die Datei heißt zum Beispiel „Urlaubsantrag 2026 Nr 2“. Mit <b>Antrag teilen</b> sicherst du die Datei oder schickst sie weiter. Dann unterschreibst du den Antrag und lässt ihn vom Fachbereich gegenzeichnen, denn der Fachbereich muss von deinem Urlaub wissen. Danach geht er an Freie-Mitarbeiter-3.Kreis-Urlaub@zdf.de. Ist er abgeschickt, tippst du im Block auf <b>Abgeschickt?</b>. Das gilt für den ganzen Antrag.</p>
       <p>Lehnt das ZDF einen Tag ab, tippst du im Block auf den Zeitraum und unter <b>Einen Tag herausnehmen</b> auf den Tag. Der Antrag bleibt, denn ein Tag weniger braucht keinen neuen. Einen anderen Tag tippst du danach im Kalender an, dafür füllt die App einen neuen Antrag aus. Machst du einen Urlaub nur kürzer, bleibt der Antrag auch. Kommen neue Tage dazu, fragt die App nach und setzt den Urlaub auf „Noch nicht beantragt“ zurück.</p>
-      <p>Urlaub gilt nur im Kalenderjahr. Was du bis zum Jahresende nicht beantragst, <b>verfällt am 31. Dezember</b>. Ab Oktober erinnert dich die App daran, solange du noch Tage frei hast. Es gibt zwei Ausnahmen: Warst du ohne eigene Schuld daran gehindert, den Antrag zu stellen, holst du ihn bis zum 31. März nach. Und das ZDF kann den Urlaub aus dringenden betrieblichen oder persönlichen Gründen ins neue Jahr übertragen, das muss genehmigt werden. Dann beantragst du ihn in den ersten drei Monaten und nimmst ihn bis spätestens 30. April.</p>
+      <p>Urlaub gilt nur im Kalenderjahr. Was du bis zum Jahresende nicht beantragst, <b>verfällt am 31. Dezember</b>. Die Ausnahmen stehen oben im Urlaub-Kasten unter <b>Ausnahmen</b>. Es gibt zwei Ausnahmen: Warst du ohne eigene Schuld daran gehindert, den Antrag zu stellen, holst du ihn bis zum 31. März nach. Und das ZDF kann den Urlaub aus dringenden betrieblichen oder persönlichen Gründen ins neue Jahr übertragen, das muss genehmigt werden. Dann beantragst du ihn in den ersten drei Monaten und nimmst ihn bis spätestens 30. April.</p>
       <p>Unter <b>Einstellungen › Urlaub und Antrag</b> stellst du ein, wie viele Urlaubstage du im Jahr hast. Laut Merkblatt sind es 31. Trägst du einen Betrag je Urlaubstag ein, zeigt die App, was du für deinen Urlaub ungefähr bekommst. Den Fachbereich kannst du dort auch eintragen, dann steht er gleich im Antrag. Sonst füllst du ihn im Formular selbst aus.</p>
       <p class="tip">Mit <b>In meinen Kalender übernehmen</b> zeigt dein iPhone deine Urlaubstage, mit <b>Alle hinzufügen</b> kommt jeder als eigener Termin in deinen Kalender, zum Beispiel „ZDF Urlaub 12 von 31“. Hat sich seitdem etwas geändert, lösch erst die alten „ZDF Urlaub“-Termine im Kalender und übernimm dann neu. Vorhandene Termine ändert dein iPhone dabei nicht, sonst stimmen die Nummern nicht mehr.</p></div>
 
