@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="Zeiterfassung">
 <meta name="theme-color" content="#15171A">
 <title>Zeiterfassung</title>
-<!-- Zeiterfassung V4.4.2 · Design "Amber Editorial" -->
+<!-- Zeiterfassung V4.5.0 · Design "Amber Editorial" -->
 <!-- impeccable-disable single-font -- Nutzer wählte beim V1.2-Redesign bewusst "Inter durchgängig" (eine Familie, tabular-nums für Zeiten) -->
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -19,8 +19,8 @@
 <script src="vendor/jspdf.umd.min.js"></script>
 <style>
 /* ===== Tokens (Handoff "Amber Editorial") ===== */
-:root{--bg:#15171A;--surface:#1E2228;--surface-2:#262B31;--field:#22262C;--field-input:#34393F;--line:#2A2F35;--line-strong:#3A4048;--text:#E8E8E8;--text-strong:#FFFFFF;--muted:#8A9099;--silver:#C3C3C3;--faint:#6E747B;--accent:#FA7D19;--accent-soft:rgba(250,125,25,.14);--accent-line:rgba(250,125,25,.28);--accent-ink:#B8925F;--pos:#54BE86;--pos-soft:rgba(84,190,134,.14);--pos-line:rgba(84,190,134,.40);--info:#6B87A2;--info-soft:rgba(107,135,162,.14);--info-line:rgba(107,135,162,.32);--danger:#E0705C;--on-accent:#15171A;--glow:0 8px 24px rgba(250,125,25,.30);--cardshadow:none;--holo-1:#FA7D19;--holo-2:#FFC08A;--holo-3:#F2A9CF;--holo-4:#B6A8F4;--holo-5:#8ED8EA}
-body.light{--bg:#F5F4F1;--surface:#FFFFFF;--surface-2:#EFEDE8;--field:#E9E7E1;--field-input:#E9E7E1;--line:#DEDBD3;--line-strong:#C9C5BC;--text:#28251F;--text-strong:#141210;--muted:#7A756C;--silver:#545048;--faint:#9B968C;--accent:#E86F0C;--accent-soft:rgba(232,111,12,.12);--accent-line:rgba(232,111,12,.30);--accent-ink:#B07A3C;--pos:#1E9E60;--pos-soft:rgba(30,158,96,.12);--pos-line:rgba(30,158,96,.45);--info:#49688C;--info-soft:rgba(73,104,140,.10);--info-line:rgba(73,104,140,.30);--danger:#C24E3B;--on-accent:#FFFFFF;--glow:0 8px 24px rgba(232,111,12,.32);--cardshadow:0 2px 14px rgba(0,0,0,.05);--holo-1:#E86F0C;--holo-2:#E8955A;--holo-3:#C9679D;--holo-4:#7C6AD0;--holo-5:#3C9DB8}
+:root{--bg:#15171A;--surface:#1E2228;--surface-2:#262B31;--field:#22262C;--field-input:#34393F;--line:#2A2F35;--line-strong:#3A4048;--text:#E8E8E8;--text-strong:#FFFFFF;--muted:#8A9099;--silver:#C3C3C3;--faint:#6E747B;--accent:#FA7D19;--accent-soft:rgba(250,125,25,.14);--accent-line:rgba(250,125,25,.28);--accent-ink:#B8925F;--pos:#54BE86;--pos-soft:rgba(84,190,134,.14);--pos-line:rgba(84,190,134,.40);--info:#6B87A2;--info-soft:rgba(107,135,162,.14);--info-line:rgba(107,135,162,.32);--danger:#E0705C;--on-accent:#15171A;--glow:0 8px 24px rgba(250,125,25,.30);--cardshadow:none;--holo-1:#FA7D19;--holo-2:#FFC08A;--holo-3:#F2A9CF;--holo-4:#B6A8F4;--holo-5:#8ED8EA;--urlaub-has-bg:rgba(250,125,25,.14);--urlaub-has-fg:#FA7D19}
+body.light{--bg:#F5F4F1;--surface:#FFFFFF;--surface-2:#EFEDE8;--field:#E9E7E1;--field-input:#E9E7E1;--line:#DEDBD3;--line-strong:#C9C5BC;--text:#28251F;--text-strong:#141210;--muted:#7A756C;--silver:#545048;--faint:#9B968C;--accent:#E86F0C;--accent-soft:rgba(232,111,12,.12);--accent-line:rgba(232,111,12,.30);--accent-ink:#B07A3C;--pos:#1E9E60;--pos-soft:rgba(30,158,96,.12);--pos-line:rgba(30,158,96,.45);--info:#49688C;--info-soft:rgba(73,104,140,.10);--info-line:rgba(73,104,140,.30);--danger:#C24E3B;--on-accent:#FFFFFF;--glow:0 8px 24px rgba(232,111,12,.32);--cardshadow:0 2px 14px rgba(0,0,0,.05);--holo-1:#E86F0C;--holo-2:#E8955A;--holo-3:#C9679D;--holo-4:#7C6AD0;--holo-5:#3C9DB8;--urlaub-has-bg:#94520C;--urlaub-has-fg:#FFFFFF}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;padding:0;max-width:100%;overflow-x:hidden}
 body{background:var(--bg);color:var(--text);font-family:"Inter",-apple-system,system-ui,sans-serif;font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
@@ -62,6 +62,7 @@ body.light .bar{background:rgba(245,244,241,.85)}
 .vbar .g{background:var(--accent)}
 .vbar .d{background:var(--accent-line)}
 .note.vline{margin:-6px 0 14px}
+.note.warnline{color:var(--accent-ink);margin:-8px 0 16px}
 .vwarn{color:var(--danger);font-weight:700;white-space:nowrap}
 /* Hero */
 .hero{background:linear-gradient(135deg,var(--accent-soft),transparent);border:1px solid var(--accent-line);border-radius:16px;padding:22px 18px;margin-bottom:14px}
@@ -81,6 +82,48 @@ body.light .bar{background:rgba(245,244,241,.85)}
 .cards.done .card{background:var(--surface-2);box-shadow:none}
 .cards.done .card:active{background:var(--surface)}
 .section-h+.cards{margin-top:8px}
+/* Reiter Urlaub (Spec 2026-10-23, Variante B) */
+.yearnav{display:flex;align-items:center;justify-content:center;gap:14px;margin:0 0 12px;font-size:16px;font-weight:700;color:var(--text-strong)}
+.yearnav .iconbtn{color:var(--accent);font-size:22px;font-family:inherit}
+.hero .hsub.neg{color:var(--danger)}
+.hero .hsub[hidden],.tgbox[hidden]{display:none}
+.hero .linkbtn.left{margin:-6px 0 -14px}
+.btn.wide{width:100%;margin:0 0 12px}
+.ucard{padding:14px 15px}
+.ucard .ut{font-size:15px;font-weight:700;color:var(--text-strong)}
+.ucard .us{font-size:12px;color:var(--muted);margin-top:2px}
+.ucard .ust{font-size:13px;color:var(--text);margin-top:8px}
+.ucard .ust.ok{color:var(--pos)}.ucard .ust.wait,.ucard .ust.warn{color:var(--accent-ink)}
+.ucard .ustep{width:100%;margin:10px 0 0}
+.ucard .linkbtn.uneben{margin:2px auto -10px}
+.tgbox+.cards{margin-top:12px}
+.note.uinfo{font-size:13px;color:var(--text);margin:-4px 0 6px}
+.note.uinfo:empty{display:none}
+.note.uinfo.warnline{color:var(--accent-ink)}
+.uhinweis{font-size:14px;line-height:1.55;color:var(--text);margin:-4px 0 18px;overflow-wrap:anywhere}
+.umon{display:flex;justify-content:space-between;align-items:center;margin:4px 0 8px;font-size:16px;font-weight:700;color:var(--text-strong)}
+.umon .iconbtn{color:var(--accent);font-size:22px;font-family:inherit}
+.umon .iconbtn:disabled{color:var(--faint);opacity:.45}
+.ucal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;text-align:center}
+.ucal i{font-style:normal;font-size:11px;font-weight:600;color:var(--muted);padding-bottom:2px}
+.ucal button{min-width:0;min-height:44px;padding:0;border:none;border-radius:10px;background:var(--surface);color:var(--text);font-family:inherit;font-size:14px;font-weight:600;font-variant-numeric:tabular-nums;opacity:1;touch-action:manipulation;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+.ucal button:active{background:var(--surface-2)}
+.ucal button:disabled{cursor:default}
+.ucal button.gr,.ucal button.ft{background:transparent;color:var(--faint)}
+.ucal button.ft{text-decoration:line-through}
+.ucal button.has{background:var(--urlaub-has-bg);color:var(--urlaub-has-fg)}
+.ucal button.sel,.ucal button.sel:active{background:var(--accent);color:var(--on-accent)}
+.ucal button.ein{box-shadow:inset 0 0 0 1.5px var(--accent-ink)}
+.uleg{display:flex;flex-wrap:wrap;gap:2px 12px;font-size:11px;color:var(--muted);margin:10px 0 0;line-height:1.6}
+.uleg u{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:4px;vertical-align:-1px}
+.uleg u.has{background:var(--urlaub-has-bg)}.uleg u.sel{background:var(--accent)}.uleg u.ein{box-shadow:inset 0 0 0 1.5px var(--accent-ink)}
+.ubar{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:13px 15px;margin-top:12px;box-shadow:var(--cardshadow)}
+.ubar .z{font-size:15px;font-weight:700;color:var(--text-strong)}
+.ubar .r{font-size:13px;color:var(--muted);margin-top:2px}
+.ubar .r.neg{color:var(--danger)}
+.ubar ul{margin:6px 0 0;padding-left:18px;font-size:13px;color:var(--text)}
+.ubar .btn{margin:12px 0 0}
+.usteps{font-size:12px;color:var(--muted);margin:14px 0 4px;padding-left:20px;line-height:1.6}
 .card .eyeline{font-size:9px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
 .card .toprow{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
 .card .titel{font-weight:700;font-size:16px;letter-spacing:-.3px;line-height:1.25;color:var(--text-strong);margin:0;min-width:0}
@@ -326,7 +369,7 @@ body.light .btn.danger{border-color:rgba(194,78,59,.4)}
   <div class="view" id="view"></div>
   <div class="foot">
     <div class="foot-note">Daten bleiben nur auf diesem Gerät · alle Angaben ohne Gewähr</div>
-    <div class="foot-v">Zeiterfassung <b>V4.4.2</b></div>
+    <div class="foot-v">Zeiterfassung <b>V4.5.0</b></div>
   </div>
 </div>
 <input type="file" id="pdfInput" accept="application/pdf" class="hidden">
@@ -352,6 +395,18 @@ function standBereinigen(db){
   if(!istObj(db))db={};
   db.orders=Array.isArray(db.orders)?db.orders.filter(istObj):[];
   db.orders.forEach(o=>{o.days=Array.isArray(o.days)?o.days.filter(istObj):[];o.days.forEach(d=>{if(d.datum!=null&&typeof d.datum!=="string")d.datum="";});});
+  /* Urlaub: nur echte Kalendertage (2027-02-31 fällt weg), Ende nicht vor Beginn, beides im selben Jahr, ID auf sichere Zeichen begrenzt (sie landet in der Kalenderdatei). */
+  const ISO=/^\d{4}-\d{2}-\d{2}$/,ST=["geplant","beantragt","genehmigt"];
+  const tag=x=>{if(typeof x!=="string"||!ISO.test(x))return false;const d=new Date(x+"T00:00:00Z");return !isNaN(d)&&d.toISOString().slice(0,10)===x;};
+  const belegt=new Set();
+  db.urlaub=(Array.isArray(db.urlaub)?db.urlaub:[]).filter(u=>istObj(u)&&tag(u.von)&&tag(u.bis)&&u.bis>=u.von&&u.von.slice(0,4)===u.bis.slice(0,4)).map(u=>({
+    id:String(u.id||"").replace(/[^A-Za-z0-9-]/g,"").slice(0,40)||("u"+u.von.replace(/-/g,"")),von:u.von,bis:u.bis,
+    stand:ST.includes(u.stand)?u.stand:"geplant",formular:u.formular==="613"||u.formular==="627"?u.formular:"",
+    ausgefuelltAm:tag(u.ausgefuelltAm)?u.ausgefuelltAm:"",beantragtAm:tag(u.beantragtAm)?u.beantragtAm:"",
+    antragId:String(u.antragId??"").replace(/[^A-Za-z0-9-]/g,"").slice(0,40)})).map(u=>{
+    /* Doppelte IDs nach der Bereinigung auflösen: -2, -3 und so weiter anhängen. */
+    let id=u.id,k=2;while(belegt.has(id))id=u.id+"-"+(k++);
+    belegt.add(id);u.id=id;return u;});
   if(!istObj(db.settings))db.settings={};
   return db;
 }
@@ -364,21 +419,29 @@ function backupPruefen(j){
   const db=istObj(j)&&j.app==="zeiterfassung"?j.data:j;
   if(!istObj(db)||!Array.isArray(db.orders))return null;
   if(!db.orders.every(o=>istObj(o)&&Array.isArray(o.days)&&o.days.every(tagOk)))return null;
+  if(db.urlaub!=null&&!Array.isArray(db.urlaub))return null;
   if(db.settings!=null&&!istObj(db.settings))return null;
   return {db,exportedAt:istObj(j)&&typeof j.exportedAt==="string"?j.exportedAt:""};
 }
 /* Text der Rückfrage beim Einlesen (zurueck=false) und beim Zurückholen (zurueck=true): Datum, Inhalt mit Zeitraum, jetziger Stand. */
 function backupFrage(neu,datum,alt,zurueck){
   const zahl=(k,eins,viele)=>k+" "+(k===1?eins:viele);
+  /* Urlaube so zählen, wie sie nach dem Einlesen bleiben: an einem Klon bereinigen, damit neu und alt unverändert bleiben. */
+  const urlaube=db=>standBereinigen(JSON.parse(JSON.stringify(db))).urlaub.length;
   const tt=iso=>iso.slice(8,10)+"."+iso.slice(5,7)+"."+iso.slice(0,4);
   const inhalt=db=>{const ds=db.orders.flatMap(o=>(o.days||[]).map(d=>d&&d.datum)).filter(x=>typeof x==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(x)).sort();
     return {a:db.orders.length,t:db.orders.reduce((s,o)=>s+(o.days||[]).length,0),von:ds[0]||"",bis:ds[ds.length-1]||""};};
-  const n=inhalt(neu),a=inhalt(alt),vom=datumAus(datum)?" vom "+datumAus(datum):"";
+  const n=inhalt(neu),a=inhalt(alt),un=urlaube(neu),ua=urlaube(alt),vom=datumAus(datum)?" vom "+datumAus(datum):"";
   const zeit=n.von?", "+tt(n.von)+(n.bis!==n.von?" bis "+tt(n.bis):""):"";
   return (zurueck?"Stand"+vom+" zurückholen?":"Backup"+vom+" einlesen?")+
-    " Darin "+zahl(n.a,"Auftrag","Aufträge")+" mit "+zahl(n.t,"Tag","Tagen")+zeit+"."+
-    " Dein jetziger Stand mit "+zahl(a.a,"Auftrag","Aufträgen")+" und "+zahl(a.t,"Tag","Tagen")+" wird ersetzt."+
+    " Darin "+zahl(n.a,"Auftrag","Aufträge")+" mit "+zahl(n.t,"Tag","Tagen")+zeit+(un?(zeit?", und "+zahl(un,"Urlaub","Urlaube"):" und "+zahl(un,"Urlaub","Urlauben")):"")+"."+
+    " Dein jetziger Stand mit "+zahl(a.a,"Auftrag","Aufträgen")+(ua?", "+zahl(a.t,"Tag","Tagen")+" und "+zahl(ua,"Urlaub","Urlauben"):" und "+zahl(a.t,"Tag","Tagen"))+" wird ersetzt."+
     (zurueck?" Du kannst ihn danach wieder zurückholen.":" Du kannst ihn danach in den Einstellungen zurückholen.");
+}
+/* Untertitel der Zeile „Vorherigen Stand zurückholen“: Datum, Aufträge und, wenn welche da sind, die Urlaube (bereinigt gezählt). */
+function prevZeile(gesichertAm,db){
+  const a=db.orders.length,u=standBereinigen(JSON.parse(JSON.stringify(db))).urlaub.length;
+  return "gesichert am "+(datumAus(gesichertAm)||"unbekannt")+" · "+a+" "+(a===1?"Auftrag":"Aufträge")+(u?" · "+u+" "+(u===1?"Urlaub":"Urlaube"):"");
 }
 /* === DATEN-END === */
 let DB=standBereinigen(Store.load());
@@ -397,13 +460,24 @@ S.verdienstOn??=false; S.satzAssist??=null; S.satzKamera??=null; S.nettoQuote??=
 if(!(Number.isInteger(S.vertragstage)&&S.vertragstage>=1&&S.vertragstage<=366))S.vertragstage=null;
 S.anschreiben??=""; S.gruss??="";  /* leer = Standardtext, siehe mailOrder */
 S.feiertagOrt??="DE";  /* Feiertage (V4.3): üblicher Arbeitsort bzw. Dienstort. Unbekannte Werte fängt ortGueltig() beim Lesen ab. */
+/* Urlaub (UrlTV): Anspruch 31 Arbeitstage, Satz je Urlaubstag leer, bis jemand ihn einträgt. Fachbereich für den Antrag (freiwillig). */
+if(!(Number.isInteger(S.urlaubAnspruch)&&S.urlaubAnspruch>=1&&S.urlaubAnspruch<=60))S.urlaubAnspruch=31;
+if(typeof S.urlaubSatz!=="number"||!isFinite(S.urlaubSatz)||S.urlaubSatz<=0)S.urlaubSatz=null;
+if(typeof S.fachbereich!=="string")S.fachbereich="";
 
 /* ===== Was ist neu =====
    Wird einmal nach jedem Update gezeigt: Vergleich S.seenVersion gegen APP_VERSION.
    Nicht bei frischen Installationen (keine Aufträge) – ein neuer Kollege soll kein
    Changelog sehen, bevor er die App überhaupt kennt. Neue Einträge oben anfügen. */
-const APP_VERSION="4.4.2";
+const APP_VERSION="4.5.0";
 const WHATSNEW=[
+  {v:"4.5.0", t:"Urlaub", items:[
+    ["Urlaub im Kalender antippen","Für Freie gibt es jetzt den Reiter Urlaub. Oben siehst du, wie viele Urlaubstage du im Jahr noch frei hast. Darunter tippst du im Kalender die Tage an, an denen du Urlaub willst, einzeln oder mehrere. Wochenenden und Feiertage sind grau, denn sie kosten dich keinen Urlaubstag. Dabei zählen nur deutsche Feiertage."],
+    ["Oder mit Datum","Lieber mit Datum? Unter dem Kalender trägst du einen Urlaub auch mit dem ersten und dem letzten Tag ein. Die App zählt die Urlaubstage für dich."],
+    ["Den Antrag füllt die App aus","Den ersten Antrag im Jahr schickst du selbst ab, weil dafür Nachweise dazugehören. In der App tippst du danach bei den Urlauben darin auf „Ja, abgeschickt“. Alle weiteren Anträge füllt die App mit dem echten Formular des ZDF für dich aus. Du unterschreibst, lässt den Fachbereich gegenzeichnen und schickst den Antrag an Freie-Mitarbeiter-3.Kreis-Urlaub@zdf.de."],
+    ["Immer der nächste Schritt","Bei jedem Urlaub steht, was als Nächstes zu tun ist und bis wann der Antrag raus muss. Das ZDF will ihn spätestens 6 Wochen vor dem ersten Urlaubstag haben. Ist er abgeschickt oder genehmigt, tippst du das einfach an."],
+    ["Urlaub im iPhone-Kalender","Mit „In meinen Kalender übernehmen“ kommt jeder Urlaubstag als eigener Termin in deinen Kalender, zum Beispiel „ZDF Urlaub 12 von 31“. So siehst du auch dort, wie viele Tage du schon verplant hast."]
+  ]},
   {v:"4.4.2", t:"Import genauer, Backup sicherer", items:[
     ["Reisen mit Übernachtung richtig erkannt","Nennt die Dispo für einen Tag eine Fahrt mit Beginn und Ende, wird daraus jetzt eine Fahrt: am Anreisetag hin, am Rückreisetag zurück, auch bei Teil- und Restrückreise. Steht in der Bemerkung ein Tagesplan wie „05.03. Anreise“, liest die App ihn mit und wählt Mehrtägig gleich vor. Die Drehzeit beginnt nach der Ankunft und endet vor der Abfahrt."],
     ["Vorschau mit Jahr und Tagestyp","Im Import siehst du bei jedem Tag das Jahr und bei Mehrtägig den Tagestyp, bevor du speicherst. Januar-Dispos aus dem Dezember landen nicht mehr im Vorjahr."],
@@ -849,6 +923,268 @@ function feiertagOrt(o){const eigen=orderStatus(o)!=="fest"&&o&&o.feiertagOrt;re
 /* Feiertag eines Tags: eigener Eintrag im Tag (auch "" = bewusst keiner) vor dem automatischen Wert. */
 function feiertagTag(o,d){return typeof d.feiertag==="string"?d.feiertag.trim():feiertagAuto(d.datum,feiertagOrt(o));}
 /* === FEIERTAGE-END === */
+/* === URLAUB-BEGIN === Urlaub für arbeitnehmerähnliche Freie (UrlTV, Merkblatt HA Personal 02/2025). Reine Funktionen ohne DOM,
+   getestet in tests/urlaub.test.mjs. Nutzt feiertageJahr, plusTage und wochentag aus dem Block FEIERTAGE, runde2 aus TARIF.
+   Ein Urlaub: {id, von, bis, stand:"geplant"|"beantragt"|"genehmigt", formular:""|"613"|"627", ausgefuelltAm, beantragtAm, antragId}.
+   antragId: Kennung der erzeugten Datei, gleich für alle Urlaube aus derselben Datei, sonst "". */
+const UR_ISO=/^\d{4}-\d{2}-\d{2}$/;
+const UR_MON=["Januar","Februar","März","April","Mai","Juni","Juli","August","September","Oktober","November","Dezember"];
+/* Feiertage am Dienstort im Zeitraum, nur Montag bis Freitag, als Liste der Namen. */
+function urlaubFeiertage(von,bis,ort){
+  if(!UR_ISO.test(von||"")||!UR_ISO.test(bis||"")||bis<von)return [];
+  const fs=[];for(let j=+von.slice(0,4);j<=+bis.slice(0,4);j++)feiertageJahr(ort,j).forEach(f=>{const w=wochentag(f.datum);if(f.datum>=von&&f.datum<=bis&&w>0&&w<6)fs.push(f.name);});
+  return fs;
+}
+/* Urlaubstage als Liste der ISO-Daten: Montag bis Freitag, Feiertage am Dienstort zählen nicht (Entscheidung Max 23.10.2026). */
+function urlaubTageListe(von,bis,ort){
+  if(!UR_ISO.test(von||"")||!UR_ISO.test(bis||"")||bis<von)return [];
+  const ft=new Set();for(let j=+von.slice(0,4);j<=+bis.slice(0,4);j++)feiertageJahr(ort,j).forEach(f=>ft.add(f.datum));
+  const r=[];for(let d=von;d&&d<=bis;d=plusTage(d,1)){const w=wochentag(d);if(w>0&&w<6&&!ft.has(d))r.push(d);}
+  return r;
+}
+function urlaubTage(von,bis,ort){return urlaubTageListe(von,bis,ort).length;}
+/* „a“, „a und b“, „a, b und c“ für Listen im Text. */
+function aufzaehlung(liste){const l=(liste||[]).filter(Boolean);return l.length<2?(l[0]||""):l.slice(0,-1).join(", ")+" und "+l[l.length-1];}
+function datumLesbar(iso){return +iso.slice(8,10)+". "+UR_MON[+iso.slice(5,7)-1];}
+function zeitraumLesbar(von,bis){
+  if(von===bis)return datumLesbar(von);
+  return von.slice(0,7)===bis.slice(0,7)?+von.slice(8,10)+". bis "+datumLesbar(bis):datumLesbar(von)+" bis "+datumLesbar(bis);
+}
+/* Prüfen vor dem Speichern: {text, sperrt}. Eine Überschneidung mit einem anderen Urlaub sperrt (Schlussprüfung 23.10.2026). */
+function urlaubPruefen(u,liste,ort){
+  if(!UR_ISO.test(u.von||"")||!UR_ISO.test(u.bis||""))return {text:"Trag den ersten und den letzten Tag ein.",sperrt:true};
+  if(u.bis<u.von)return {text:"Der letzte Tag liegt vor dem ersten.",sperrt:true};
+  if(u.von.slice(0,4)!==u.bis.slice(0,4))return {text:"Ein Urlaub muss in einem Jahr liegen. Trag ihn bitte in zwei Teilen ein: bis 31. Dezember und ab 1. Januar.",sperrt:true};
+  if(!urlaubTage(u.von,u.bis,ort))return {text:"An diesen Tagen ist Wochenende oder Feiertag. Das ergibt keinen Urlaubstag.",sperrt:true};
+  const x=liste.find(o=>o.id!==u.id&&o.von<=u.bis&&o.bis>=u.von);
+  return x?{text:"Das überschneidet sich mit deinem Urlaub "+zeitraumLesbar(x.von,x.bis)+".",sperrt:true}:{text:"",sperrt:false};
+}
+/* Für den Urlaub zählen nur deutsche Feiertage: der Dienstort, wenn er in Deutschland liegt, sonst bundesweit (Nachtrag 23.10.2026 nachts). */
+function urlaubOrt(ort){const k=ortGueltig(ort);return /^DE/.test(k)?k:"DE";}
+/* Leere Felder vor dem Monatsersten im Raster Montag bis Sonntag (0 = Montag). monat 1 bis 12. */
+function monatVersatz(jahr,monat){return (wochentag(jahr+"-"+String(monat).padStart(2,"0")+"-01")+6)%7;}
+/* Kalendertage eines Monats für das Antippen: art "we" (Wochenende), "ft" (Feiertag, mit name), "urlaub" (schon eingetragener
+   Urlaubstag) oder "frei" (wählbar), dazu einsatz:true, wenn ein Auftrag an dem Tag einen Einsatz hat. */
+function monatTage(jahr,monat,ort,liste,orders){
+  const von=jahr+"-"+String(monat).padStart(2,"0")+"-01",ft={};
+  feiertageJahr(ort,jahr).forEach(f=>{if(f.datum.slice(0,7)===von.slice(0,7))ft[f.datum]=f.name;});
+  const ur=new Set();(liste||[]).forEach(u=>{if(u.von<=plusTage(von,31)&&u.bis>=von)urlaubTageListe(u.von,u.bis,ort).forEach(d=>ur.add(d));});
+  const r=[];
+  for(let d=von;d.slice(0,7)===von.slice(0,7);d=plusTage(d,1)){
+    const w=wochentag(d),t={datum:d,art:w===0||w===6?"we":ft[d]?"ft":ur.has(d)?"urlaub":"frei"};
+    if(t.art==="ft")t.name=ft[d];
+    t.einsatz=false;r.push(t);
+  }
+  const e=new Set(einsatzAmTag(orders||[],von,r[r.length-1].datum));r.forEach(t=>t.einsatz=e.has(t.datum));
+  return r;
+}
+/* Ausgewählte Urlaubstage (ISO-Daten) als Zeiträume nach Datum. Liegen zwischen zwei Tagen nur Wochenende oder Feiertage,
+   gehören sie zu einem Zeitraum. tage = Zahl der ausgewählten Tage darin. */
+function auswahlZeitraeume(tage,ort){
+  const l=[...new Set(tage||[])].filter(d=>UR_ISO.test(d)).sort(),ft=new Set(),z=[];
+  new Set(l.map(d=>+d.slice(0,4))).forEach(j=>feiertageJahr(ort,j).forEach(f=>ft.add(f.datum)));
+  const luecke=(a,b)=>{for(let d=plusTage(a,1);d<b;d=plusTage(d,1)){const w=wochentag(d);if(w>0&&w<6&&!ft.has(d))return true;}return false;};
+  l.forEach(d=>{const x=z[z.length-1];if(x&&!luecke(x.bis,d)){x.bis=d;x.tage++;}else z.push({von:d,bis:d,tage:1});});
+  return z;
+}
+/* Urlaube des Jahres nach Datum (bei gleichem Beginn nach id), je Urlaub nur die Tage, die kein früherer schon hat.
+   Schutz gegen Überschneidungen aus alten Backups: jedes Datum zählt einmal und gehört dem früheren Urlaub. */
+function urlaubTageEinmal(liste,jahr,ort){
+  const da=new Set();
+  return liste.filter(u=>u.von.slice(0,4)===String(jahr)).sort((a,b)=>a.von.localeCompare(b.von)||String(a.id).localeCompare(String(b.id)))
+    .map(u=>({u,tage:urlaubTageListe(u.von,u.bis,ort).filter(d=>!da.has(d)&&da.add(d))}));
+}
+/* Jahresübersicht: Tage je Stand, frei (darf negativ werden), Vergütung = Tage mal Satz je Urlaubstag oder null. */
+function urlaubJahr(liste,jahr,anspruch,satz,ort){
+  const r={geplant:0,beantragt:0,genehmigt:0};
+  urlaubTageEinmal(liste,jahr,ort).forEach(({u,tage})=>{r[u.stand in r?u.stand:"geplant"]+=tage.length;});
+  const tage=r.geplant+r.beantragt+r.genehmigt;
+  return {...r,tage,frei:anspruch-tage,verguetung:satz?runde2(tage*satz):null};
+}
+/* Antrag spätestens 6 Wochen vor Beginn (§ 2 Abs. 2 UrlTV). */
+function fristBis(von){return plusTage(von,-42);}
+/* Ist im Jahr schon ein Urlaub beantragt oder genehmigt? Den ersten Antrag (613) schickt jeder selbst, danach füllt die App die 627. */
+function erstAntragDa(liste,jahr){return liste.some(u=>u.von.slice(0,4)===String(jahr)&&(u.stand==="beantragt"||u.stand==="genehmigt"));}
+/* Alle geplanten, noch nicht ausgefüllten Urlaube des Jahres nach Datum, in Gruppen zu höchstens 5 (so viele Zeilen hat das
+   Formular). Schon ausgefüllte warten auf „Abgeschickt?“ und kommen nicht noch einmal in einen Antrag. */
+function antragZeilen(liste,jahr){
+  const g=liste.filter(u=>u.von.slice(0,4)===String(jahr)&&u.stand==="geplant"&&!u.ausgefuelltAm).sort((a,b)=>a.von.localeCompare(b.von)),r=[];
+  for(let i=0;i<g.length;i+=5)r.push(g.slice(i,i+5));
+  return r;
+}
+/* Tage mit Einsatz aus den Aufträgen im Zeitraum, für einen Hinweis beim Eintragen. */
+function einsatzAmTag(orders,von,bis){
+  return [...new Set(orders.flatMap(o=>(o.days||[]).map(d=>d.datum)).filter(d=>typeof d==="string"&&d>=von&&d<=bis))].sort();
+}
+/* Nächster Schritt je Urlaub für die Karte im Reiter (Variante B). erstDa===false: im Jahr ist noch nichts beantragt,
+   dann fragt die Karte, ob der Urlaub im selbst abgeschickten ersten Antrag steht. */
+function urlaubSchritt(u,heute,erstDa){
+  if(u.stand==="genehmigt")return {text:"✓ Genehmigt",klasse:"ok",knopf:"",aktion:""};
+  if(u.stand==="beantragt")return {text:"Abgeschickt, wartet auf Antwort.",klasse:"wait",knopf:"Genehmigt? Hier tippen",aktion:"genehmigt"};
+  if(u.ausgefuelltAm)return {text:"Antrag ausgefüllt am "+datumLesbar(u.ausgefuelltAm)+".",klasse:"",knopf:"Abgeschickt? Hier tippen",aktion:"beantragt"};
+  const f=fristBis(u.von),vorbei=heute>f;
+  if(erstDa===false)return {text:vorbei?"Die 6-Wochen-Frist ist vorbei. Schick den ersten Antrag so schnell wie möglich. Schon abgeschickt?"
+    :"Diesen Urlaub beantragst du selbst mit dem ersten Antrag im Jahr. Abschicken bis "+datumLesbar(f)+". Schon abgeschickt?",
+    klasse:vorbei?"warn":"",knopf:"Ja, abgeschickt",aktion:"erst"};
+  /* neben: kleiner Link für einen Urlaub, der auch im selbst abgeschickten ersten Antrag stand. */
+  const neben={text:"War im ersten Antrag? Ja, abgeschickt",aktion:"erst"};
+  return !vorbei?{text:"Noch nicht beantragt. Abschicken bis "+datumLesbar(f)+".",klasse:"",knopf:"Antrag ausfüllen lassen",aktion:"antrag",neben}
+    :{text:"Die 6-Wochen-Frist ist vorbei. Schick den Antrag so schnell wie möglich.",klasse:"warn",knopf:"Antrag ausfüllen lassen",aktion:"antrag",neben};
+}
+/* Urlaube, die „Abgeschickt?“ mitnimmt: alle noch geplanten aus derselben Datei (gleiche antragId). Ohne Kennung nur u selbst. */
+function antragGruppe(liste,u){
+  return u.antragId?liste.filter(o=>o===u||(o.antragId===u.antragId&&o.stand==="geplant"&&o.ausgefuelltAm)):[u];
+}
+/* Gibt es für den Urlaub schon einen Antrag (ausgefüllt, beantragt oder genehmigt)? */
+function antragDa(u){return u.stand!=="geplant"||!!u.ausgefuelltAm;}
+function antragZuruecksetzen(u){return Object.assign(u,{stand:"geplant",formular:"",ausgefuelltAm:"",beantragtAm:"",antragId:""});}
+/* Ab 1. Oktober im laufenden Jahr, solange Tage frei sind. */
+function verfallHinweis(jahr,heute,frei){
+  if(String(jahr)!==heute.slice(0,4)||heute.slice(5)<"10-01"||frei<=0)return "";
+  return "Achtung: Nicht beantragter Urlaub verfällt am 31. Dezember. Du hast noch "+frei+" "+(frei===1?"Tag":"Tage")+" frei.";
+}
+/* Zip ohne Fremdbibliothek: lesen über das Inhaltsverzeichnis am Ende (Größen von dort, auch bei Datendeskriptoren),
+   entpacken mit DecompressionStream("deflate-raw"), schreiben ungepackt (Methode 0, Word liest das). */
+function crc32(b){let c=-1;for(let i=0;i<b.length;i++){c^=b[i];for(let k=0;k<8;k++)c=c&1?(c>>>1)^0xEDB88320:c>>>1;}return (c^-1)>>>0;}
+async function zipLesen(u8){
+  const v=new DataView(u8.buffer,u8.byteOffset,u8.byteLength);
+  let e=u8.length-22;while(e>=0&&v.getUint32(e,true)!==0x06054b50)e--;
+  if(e<0)throw new Error("Kein Zip");
+  const anz=v.getUint16(e+10,true);let p=v.getUint32(e+16,true);const out=[],td=new TextDecoder();
+  for(let i=0;i<anz;i++){
+    const meth=v.getUint16(p+10,true),cs=v.getUint32(p+20,true),nl=v.getUint16(p+28,true),xl=v.getUint16(p+30,true),cl=v.getUint16(p+32,true),lo=v.getUint32(p+42,true);
+    const name=td.decode(u8.subarray(p+46,p+46+nl));
+    const start=lo+30+v.getUint16(lo+26,true)+v.getUint16(lo+28,true),roh=u8.slice(start,start+cs);
+    let data=roh;
+    if(meth===8)data=new Uint8Array(await new Response(new Blob([roh]).stream().pipeThrough(new DecompressionStream("deflate-raw"))).arrayBuffer());
+    else if(meth!==0)throw new Error("Zip-Methode "+meth);
+    out.push({name,data});p+=46+nl+xl+cl;
+  }
+  return out;
+}
+function zipSchreiben(eintraege){
+  const te=new TextEncoder(),teile=[],zentral=[];let off=0;
+  const kopf=(n,f)=>{const b=new Uint8Array(n),v=new DataView(b.buffer);f(v);return b;};
+  eintraege.forEach(e=>{
+    const name=te.encode(e.name),crc=crc32(e.data),len=e.data.length;
+    const lh=kopf(30,v=>{v.setUint32(0,0x04034b50,true);v.setUint16(4,20,true);v.setUint16(6,0x0800,true);v.setUint16(12,0x21,true);
+      v.setUint32(14,crc,true);v.setUint32(18,len,true);v.setUint32(22,len,true);v.setUint16(26,name.length,true);});
+    zentral.push(kopf(46,v=>{v.setUint32(0,0x02014b50,true);v.setUint16(4,20,true);v.setUint16(6,20,true);v.setUint16(8,0x0800,true);v.setUint16(14,0x21,true);
+      v.setUint32(16,crc,true);v.setUint32(20,len,true);v.setUint32(24,len,true);v.setUint16(28,name.length,true);v.setUint32(42,off,true);}),name);
+    teile.push(lh,name,e.data);off+=30+name.length+len;
+  });
+  const cdLen=zentral.reduce((s,b)=>s+b.length,0);
+  const ende=kopf(22,v=>{v.setUint32(0,0x06054b50,true);v.setUint16(8,eintraege.length,true);v.setUint16(10,eintraege.length,true);v.setUint32(12,cdLen,true);v.setUint32(16,off,true);});
+  const alle=[...teile,...zentral,ende],r=new Uint8Array(alle.reduce((s,b)=>s+b.length,0));let q=0;
+  alle.forEach(b=>{r.set(b,q);q+=b.length;});
+  return r;
+}
+/* Word-Formularfelder (FORMTEXT): Der Wert steht zwischen fldChar "separate" und "end". Gezählt wird jedes w:ffData, auch
+   Kontrollkästchen (die haben ebenfalls ein "separate"), damit die Indizes zur Tabelle im Plan passen. Kontrollkästchen
+   sind mit box:true markiert und werden von vorlageFuellen nie verändert. */
+/* Anfang des Laufs <w:r> oder <w:r …> vor Stelle e. Nicht <w:rPr> oder <w:rFonts> treffen. */
+function urLauf(xml,e){let k=e;do{k=xml.lastIndexOf("<w:r",k-1);}while(k>0&&xml[k+4]!==">"&&xml[k+4]!==" ");return k;}
+function urFelder(xml){
+  const pos=[];let i=-1;while((i=xml.indexOf("<w:ffData>",i+1))>=0)pos.push(i);
+  return pos.map((p,k)=>{const nx=k+1<pos.length?pos[k+1]:xml.length,s=xml.indexOf('w:fldCharType="separate"',p),e=xml.indexOf('w:fldCharType="end"',p);
+    return s>=0&&s<nx&&e>s?{s:xml.indexOf(">",s)+1,e:urLauf(xml,e),box:xml.slice(p,xml.indexOf("</w:ffData>",p)).includes("<w:checkBox")}:null;});
+}
+function urXml(s){return String(s).replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g,"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+function urText(s){return s.replace(/&lt;/g,"<").replace(/&gt;/g,">").replace(/&quot;/g,'"').replace(/&amp;/g,"&");}
+function felderLesen(xml){
+  return urFelder(xml).map(f=>f?[...xml.slice(f.s,f.e).matchAll(/<w:t(?: [^>]*)?>([^<]*)<\/w:t>/g)].map(m=>urText(m[1])).join(""):"");
+}
+/* werte[i] = Text für Feld i, undefined lässt das Feld, wie es ist. Von hinten, damit die Stellen gültig bleiben. */
+function vorlageFuellen(xml,werte){
+  const fs=urFelder(xml);
+  for(let i=fs.length-1;i>=0;i--){
+    const f=fs[i];if(!f||f.box||werte[i]===undefined)continue;
+    xml=urErgebnis(xml,f,werte[i]);
+  }
+  return xml;
+}
+/* Ergebnisteil f (zwischen separate und end) auf text setzen: erster w:t bekommt den Wert, übrige werden leer. */
+function urErgebnis(xml,f,text){
+  let erst=true;
+  let seg=xml.slice(f.s,f.e).replace(/<w:t(?: [^>]*)?>[^<]*<\/w:t>/g,()=>{const r=erst?'<w:t xml:space="preserve">'+urXml(text)+"</w:t>":"<w:t></w:t>";erst=false;return r;});
+  if(erst)seg+='<w:r><w:t xml:space="preserve">'+urXml(text)+"</w:t></w:r>";
+  return xml.slice(0,f.s)+seg+xml.slice(f.e);
+}
+/* Verweisfelder (REF name): Ergebnisteile aller Felder, deren Anweisung „REF name“ lautet (Anweisung über alle Läufe zusammengesetzt). */
+function urRefs(xml,name){
+  const r=[],re=new RegExp("^\\s*REF\\s+"+name.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+"(\\s|$)","i");let i=-1;
+  while((i=xml.indexOf('w:fldCharType="begin"',i+1))>=0){
+    const s=xml.indexOf('w:fldCharType="separate"',i),e=xml.indexOf('w:fldCharType="end"',i),nb=xml.indexOf('w:fldCharType="begin"',i+1);
+    if(s<0||e<s||(nb>=0&&nb<s))continue;
+    const instr=[...xml.slice(i,s).matchAll(/<w:instrText(?: [^>]*)?>([^<]*)<\/w:instrText>/g)].map(m=>urText(m[1])).join("");
+    if(re.test(instr))r.push({s:xml.indexOf(">",s)+1,e:urLauf(xml,e)});
+  }
+  return r;
+}
+function refFuellen(xml,name,text){
+  const fs=urRefs(xml,name);
+  for(let k=fs.length-1;k>=0;k--)xml=urErgebnis(xml,fs[k],text);
+  return xml;
+}
+function refLesen(xml,name){
+  const f=urRefs(xml,name)[0];
+  return f?[...xml.slice(f.s,f.e).matchAll(/<w:t(?: [^>]*)?>([^<]*)<\/w:t>/g)].map(m=>urText(m[1])).join(""):"";
+}
+function alsDokument(ct){return ct.replace("wordprocessingml.template.main+xml","wordprocessingml.document.main+xml");}
+/* „Vorname Nachname“ → „Nachname, Vorname“ wie im Formular, ein Komma bleibt, wie es ist. */
+function nameFormular(s){const t=String(s||"").trim().replace(/\s+/g," ");if(!t||t.includes(","))return t;const w=t.split(" ");return w.length<2?t:w.pop()+", "+w.join(" ");}
+function urDatum(iso){return iso.slice(8,10)+"."+iso.slice(5,7)+"."+iso.slice(0,4);}
+/* Feldwerte der 627 nach der geprüften Zuordnung (Plan, Abschnitt Feldzuordnung). p = Angaben aus den Einstellungen.
+   Leerer Fachbereich und unbenutzte Tabellenzeilen bleiben undefined: Dann bleibt der Platzhalter der Vorlage (Leerzeichen)
+   stehen und das Feld ist in Word weiter anklickbar (Schlussprüfung 23.10.2026). */
+function antragWerte(jahr,zeilen,p,heute,ort){
+  const w=[],t=4;
+  for(let r=0;r<5;r++){const u=zeilen[r];if(u){w[t+3*r]=urDatum(u.von);w[t+3*r+1]=urDatum(u.bis);w[t+3*r+2]=String(urlaubTage(u.von,u.bis,ort));}}
+  w[1]=String(jahr);w[2]=nameFormular(p.absender);w[3]=String(p.fachbereich||"").trim()||undefined;w[19]=urDatum(heute);
+  return w;
+}
+/* Vorlage 627 (Bytes) → fertige Word-Datei (Bytes). */
+async function antragDocx(vorlageBytes,jahr,zeilen,p,heute,ort){
+  const z=await zipLesen(vorlageBytes),td=new TextDecoder(),te=new TextEncoder();
+  z.forEach(e=>{
+    if(e.name==="word/document.xml")e.data=te.encode(refFuellen(vorlageFuellen(td.decode(e.data),antragWerte(jahr,zeilen,p,heute,ort)),"Name",nameFormular(p.absender)));
+    else if(/^word\/(header|footer)\d*\.xml$/.test(e.name))e.data=te.encode(refFuellen(td.decode(e.data),"Name",nameFormular(p.absender)));
+    else if(e.name==="[Content_Types].xml")e.data=te.encode(alsDokument(td.decode(e.data)));
+  });
+  return zipSchreiben(z);
+}
+/* Textwert nach RFC 5545: Backslash, Komma, Semikolon und Zeilenumbruch maskieren. */
+function icsText(t){return String(t).replace(/\\/g,"\\\\").replace(/,/g,"\\,").replace(/;/g,"\\;").replace(/\r?\n/g,"\\n");}
+/* Zeile nach RFC 5545 auf höchstens 75 Oktette (UTF-8) falten: CRLF plus Leerzeichen, nie mitten in einem Zeichen. */
+function icsFalten(zeile){
+  const te=new TextEncoder();if(te.encode(zeile).length<=75)return zeile;
+  const teile=[];let cur="",len=0,max=75;
+  for(const c of zeile){const b=te.encode(c).length;if(len+b>max){teile.push(cur);cur="";len=0;max=74;}cur+=c;len+=b;}
+  teile.push(cur);
+  return teile.join("\r\n ");
+}
+/* Kalenderdatei (RFC 5545): ein ganztägiger Termin je Urlaubstag (Montag bis Freitag ohne Feiertage), alle Urlaube des Jahres nach Datum,
+   fortlaufend nummeriert „ZDF Urlaub n von Anspruch“, darüber „ZDF Urlaub n (über Anspruch)“. Jedes Datum nur einmal, beim
+   früheren Urlaub (urlaubTageEinmal), jede Kennung nur einmal. Die Kennung urlaub-<id>-<Datum> bleibt je Tag gleich. Ohne Urlaubstag gibt es
+   keine Komponente und damit keine gültige Datei, der Aufrufer erzeugt dann keine. */
+function urlaubIcs(liste,jahr,ort,stamp,anspruch){
+  const d=iso=>iso.replace(/-/g,""),z=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//EBZ//Zeiterfassung//DE","CALSCALE:GREGORIAN"];
+  let n=0;const uids=new Set();
+  urlaubTageEinmal(liste,jahr,ort).forEach(({u,tage})=>{
+    tage.forEach(tag=>{
+      const uid="urlaub-"+u.id+"-"+d(tag)+"@ebz";if(uids.has(uid))return;uids.add(uid);
+      n++;const r=anspruch-n;
+      const rest=r>1?"Danach hast du noch "+r+" Tage frei.":r===1?"Danach hast du noch 1 Tag frei.":r===0?"Danach ist dein Urlaub für "+jahr+" aufgebraucht.":(r===-1?"Das ist 1 Tag":"Das sind "+(-r)+" Tage")+" mehr als dein Anspruch.";
+      z.push("BEGIN:VEVENT","UID:"+uid,"DTSTAMP:"+stamp,"DTSTART;VALUE=DATE:"+d(tag),"DTEND;VALUE=DATE:"+d(plusTage(tag,1)),
+        "SUMMARY:ZDF Urlaub "+n+(n>anspruch?" (über Anspruch)":" von "+anspruch),
+        "DESCRIPTION:"+icsText("Urlaubstag "+n+" von "+anspruch+" im Jahr "+jahr+". "+rest+" Stand: "+(u.stand||"geplant")+"."),
+        "TRANSP:TRANSPARENT","END:VEVENT");
+    });
+  });
+  z.push("END:VCALENDAR");
+  return z.map(icsFalten).join("\r\n")+"\r\n";
+}
+/* === URLAUB-END === */
 /* === TARIF-BEGIN === Verdienst nach Tarif (V4.1, freiwillig). Reine Rechnung ohne DOM, getestet in tests/tarif.test.mjs.
    Grundlage: PdTV 6.2 und 9.1-9.7 sowie echte ZDF-Abrechnungen Januar bis Juli 2026: Stundensatz = Tagessatz / 7,7, wie beim
    ZDF auf drei Stellen gerundet (V4.2), Mehrarbeit in halben Stunden, Zuschlag 25 % der Mehrarbeitsvergütung. Mehrarbeit und
@@ -999,7 +1335,7 @@ function applyTrip(o,trip){
 }
 
 /* ===== Routing ===== */
-let state={tab:"orders",orderId:null};
+let state={tab:"orders",orderId:null,urlaubJahr:null};
 const view=document.getElementById("view");
 function paintThemeIcon(){const b=document.getElementById("themeBtn");if(b)b.innerHTML=(S.theme==="light"?ICON_SUN:ICON_MOON);}
 function applyTheme(){const l=S.theme==="light";document.body.classList.toggle("light",l);paintThemeIcon();const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=l?"#F5F4F1":"#15171A";}
@@ -1015,9 +1351,9 @@ function renderBar(){
     paintThemeIcon();
   }
 }
-function tabsHtml(){return `<div class="segs" id="segs"><button data-tab="orders"${state.tab==="orders"?' class="on"':''}>Aufträge</button><button data-tab="stats"${state.tab==="stats"?' class="on"':''}>Statistik</button>${S.verdienstOn?`<button data-tab="verdienst"${state.tab==="verdienst"?' class="on"':''}>Verdienst</button>`:""}</div>`;}
-function bindTabs(){view.querySelectorAll("#segs button").forEach(b=>b.onclick=()=>{state.tab=b.dataset.tab;state.orderId=null;window.scrollTo(0,0);render();});}
-function render(){renderBar();if(state.orderId)return renderDetail();if(state.tab==="stats")return renderStats();if(state.tab==="verdienst"&&S.verdienstOn)return renderVerdienst();return renderOrders();}
+function tabsHtml(){return `<div class="segs" id="segs"><button data-tab="orders"${state.tab==="orders"?' class="on"':''}>Aufträge</button><button data-tab="stats"${state.tab==="stats"?' class="on"':''}>Statistik</button>${S.verdienstOn?`<button data-tab="verdienst"${state.tab==="verdienst"?' class="on"':''}>Verdienst</button>`:""}${S.status!=="fest"?`<button data-tab="urlaub"${state.tab==="urlaub"?' class="on"':''}>Urlaub</button>`:""}</div>`;}
+function bindTabs(){view.querySelectorAll("#segs button").forEach(b=>b.onclick=()=>{if(b.dataset.tab!==state.tab)state.urlaubKalJahr=null;state.tab=b.dataset.tab;state.orderId=null;window.scrollTo(0,0);render();});}
+function render(){renderBar();if(state.orderId)return renderDetail();if(state.tab==="stats")return renderStats();if(state.tab==="verdienst"&&S.verdienstOn)return renderVerdienst();if(state.tab==="urlaub"&&S.status!=="fest")return renderUrlaub();return renderOrders();}
 
 /* Fußzeile der Auftragskarte (V4.4.1): links die Nummern (nur bei offenen Aufträgen), rechts immer „Öffnen ›“.
    Das ist nur der Hinweis, antippbar bleibt die ganze Karte über data-open. */
@@ -1260,6 +1596,184 @@ function renderVerdienst(){
   bindTabs();
   const ss=document.getElementById("satzSet");if(ss)ss.onclick=()=>openSettings("verdienst");
   view.querySelectorAll("[data-vm]").forEach(r=>r.onclick=()=>openVerdienstMonat(r.dataset.vm));
+}
+/* ===== Urlaub (Spec 2026-10-23, Variante B „Schritt für Schritt“) ===== */
+function renderUrlaub(){
+  const heute=isoLocal(new Date()),jahr=state.urlaubJahr||+heute.slice(0,4),ort=urlaubOrt(S.feiertagOrt);
+  const j=urlaubJahr(DB.urlaub,jahr,S.urlaubAnspruch,S.urlaubSatz,ort),verfall=verfallHinweis(jahr,heute,j.frei);
+  const rang=u=>u.stand==="geplant"?(u.ausgefuelltAm?1:0):u.stand==="beantragt"?2:3;
+  const liste=DB.urlaub.filter(u=>u.von.slice(0,4)===String(jahr)).sort((a,b)=>rang(a)-rang(b)||a.von.localeCompare(b.von));
+  const frei=Math.max(j.frei,0),erstDa=erstAntragDa(DB.urlaub,jahr);
+  let h=`<div class="pagehead"><div class="eyebrow">${esc(headEyebrow())}</div><div class="display">Urlaub</div></div>`+tabsHtml();
+  h+=`<div class="yearnav"><button class="iconbtn" id="uPrev" aria-label="Jahr zurück">‹</button><b>Urlaub ${jahr}</b><button class="iconbtn" id="uNext" aria-label="Jahr vor">›</button></div>`;
+  h+=`<div class="hero"><div class="l">Du hast noch</div><div class="n" id="uFreiN">${frei} ${frei===1?"Tag":"Tage"}</div><div class="hsub">von ${S.urlaubAnspruch} ${S.urlaubAnspruch===1?"Urlaubstag":"Urlaubstagen"} frei.</div>
+    <div class="hsub neg" id="uMehr"></div>
+    ${j.verguetung!=null?`<div class="hsub">Dafür bekommst du ungefähr ${esc(fmtEur(j.verguetung))}.</div>`:`<button class="linkbtn left" id="uSatz">Trag deinen Betrag je Urlaubstag ein, dann siehst du hier die Vergütung ›</button>`}</div>`;
+  h+=`<div id="uKal"></div><button class="linkbtn" id="uDatum">Oder mit Datum eintragen: erster und letzter Tag ›</button>`;
+  h+=`<div class="tgbox nw" id="uVerfall"${verfall?"":" hidden"}><div class="t">${esc(verfall)}</div></div>`;
+  if(!liste.length)h+=`<div class="empty"><p>Noch kein Urlaub eingetragen.</p></div>`;
+  else h+=`<div class="cards">`+liste.map(u=>{const n=urlaubTage(u.von,u.bis,ort),ft=urlaubFeiertage(u.von,u.bis,ort),s=urlaubSchritt(u,heute,erstDa);
+    return `<div class="card ucard" data-urlaub="${esc(u.id)}"><div class="ut">${esc(zeitraumLesbar(u.von,u.bis))}</div>
+      <div class="us">${n} ${n===1?"Urlaubstag":"Urlaubstage"}${ft.length?" · "+esc(aufzaehlung(ft))+(ft.length===1?" zählt":" zählen")+" nicht":""}</div>
+      <div class="ust ${s.klasse}">${esc(s.text)}</div>
+      ${s.knopf?`<button class="btn ghost ustep" data-schritt="${s.aktion}" data-id="${esc(u.id)}">${esc(s.knopf)}</button>`:""}
+      ${s.neben?`<button class="linkbtn uneben" data-schritt="${s.neben.aktion}" data-id="${esc(u.id)}">${esc(s.neben.text)}</button>`:""}</div>`;}).join("")+`</div>`;
+  h+=`<ol class="usteps"><li>Urlaubstage im Kalender antippen</li><li>Den ersten Antrag im Jahr schickst du selbst, alle weiteren füllt die App aus</li><li>Unterschreiben, an den Fachbereich, nach der Antwort „Genehmigt“ tippen</li></ol>`;
+  if(liste.length)h+=`<button class="linkbtn" id="uIcs">In meinen Kalender übernehmen ›</button>
+    <p class="note">Jeder Urlaubstag kommt als eigener Termin „ZDF Urlaub“ in deinen Kalender. Hast du schon einmal übernommen, lösch die alten Termine vorher. Gelöschte Urlaube verschwinden dort nicht von selbst.</p>`;
+  view.innerHTML=h;bindTabs();
+  const go=d=>{state.urlaubJahr=jahr+d;render();};
+  document.getElementById("uPrev").onclick=()=>go(-1);document.getElementById("uNext").onclick=()=>go(1);
+  document.getElementById("uDatum").onclick=()=>openUrlaub(null,jahr);
+  urlaubTippKalender(jahr,ort,j,heute);
+  const us=document.getElementById("uSatz");if(us)us.onclick=()=>openSettings("urlaub");
+  const ui=document.getElementById("uIcs");if(ui)ui.onclick=()=>urlaubKalender(jahr);
+  view.querySelectorAll("[data-urlaub]").forEach(c=>c.onclick=e=>{if(e.target.closest("[data-schritt]"))return;openUrlaub(DB.urlaub.find(u=>u.id===c.dataset.urlaub),jahr);});
+  view.querySelectorAll("[data-schritt]").forEach(b=>b.onclick=()=>urlaubAktion(b.dataset.schritt,b.dataset.id,jahr));
+}
+/* Kalender zum Antippen (Nachtrag 23.10.2026 nachts). Die Auswahl lebt in state.urlaubAuswahl, bis man das Jahr wechselt oder den
+   Reiter verlässt. Ein Tipp zeichnet nur den Kalender und die große Zahl neu, damit die Seite nicht springt. */
+function urlaubTippKalender(jahr,ort,j,heute){
+  if(state.urlaubKalJahr!==jahr){state.urlaubKalJahr=jahr;state.urlaubAuswahl=new Set();state.urlaubMonat=String(jahr)===heute.slice(0,4)?+heute.slice(5,7):1;}
+  const sel=state.urlaubAuswahl,kal=document.getElementById("uKal"),A=S.urlaubAnspruch;
+  /* Tage, die inzwischen Urlaub sind (z. B. über das Sheet eingetragen), fallen aus der Auswahl. */
+  const schon=new Set(DB.urlaub.filter(u=>u.von.slice(0,4)===String(jahr)).flatMap(u=>urlaubTageListe(u.von,u.bis,ort)));
+  [...sel].forEach(d=>{if(schon.has(d)||d.slice(0,4)!==String(jahr))sel.delete(d);});
+  const zeichnen=fokus=>{
+    const m=state.urlaubMonat,tage=monatTage(jahr,m,ort,DB.urlaub,DB.orders),mn=UR_MON[m-1];
+    let k=`<div class="umon"><button class="iconbtn" id="uMPrev" aria-label="Monat zurück"${m===1?" disabled":""}>‹</button><b>${mn} ${jahr}</b><button class="iconbtn" id="uMNext" aria-label="Monat vor"${m===12?" disabled":""}>›</button></div>
+      <div class="ucal" role="group" aria-label="Urlaubstage im ${mn}">${["Mo","Di","Mi","Do","Fr","Sa","So"].map(d=>`<i aria-hidden="true">${d}</i>`).join("")}${"<span></span>".repeat(monatVersatz(jahr,m))}`;
+    tage.forEach(t=>{const an=t.art==="frei"&&sel.has(t.datum);
+      const kl=[t.art==="we"?"gr":t.art==="ft"?"ft":t.art==="urlaub"?"has":an?"sel":"",t.einsatz?"ein":""].filter(Boolean).join(" ");
+      const lab=datumLesbar(t.datum)+(t.art==="we"?", Wochenende":t.art==="ft"?", "+t.name:t.art==="urlaub"?", schon eingetragen":"")+(t.einsatz?", Einsatz":"");
+      k+=`<button type="button"${kl?` class="${kl}"`:""} data-tag="${t.datum}"${t.art==="frei"?` aria-pressed="${an}"`:" disabled"} aria-label="${esc(lab)}"${t.art==="ft"?` title="${esc(t.name)}"`:""}>${+t.datum.slice(8)}</button>`;});
+    k+=`</div><div class="uleg"><span><u class="has"></u>schon eingetragen</span><span><u class="sel"></u>ausgewählt</span><span><u class="ein"></u>Einsatz</span><span>grau: Wochenende, Feiertag</span></div>`;
+    const n=sel.size,rest=j.frei-n,z=auswahlZeitraeume(sel,ort);
+    k+=`<div class="ubar">`+(n?`<div class="z">${n} ${n===1?"Urlaubstag":"Urlaubstage"} ausgewählt</div>`
+      +(rest>0?`<div class="r">Danach hast du noch ${rest} von ${A} ${A===1?"Tag":"Tagen"} frei.</div>`
+        :rest===0?`<div class="r">Danach ist dein Urlaub für ${jahr} aufgebraucht.</div>`
+        :`<div class="r neg">${rest===-1?"Das ist 1 Tag":"Das sind "+(-rest)+" Tage"} mehr als dein Anspruch.</div>`)
+      +`<ul>${z.map(x=>`<li>${esc(zeitraumLesbar(x.von,x.bis))} · ${x.tage} ${x.tage===1?"Tag":"Tage"}</li>`).join("")}</ul><button class="btn" id="uEin">Als Urlaub eintragen</button>`
+      :`<div class="r">Tipp die Tage an, an denen du Urlaub willst.</div>`)+`</div>`;
+    kal.innerHTML=k;
+    /* Große Zahl, Satz über dem Anspruch und Verfall-Hinweis rechnen mit der Auswahl mit (Schlussprüfung 23.10.2026). */
+    const f=Math.max(rest,0);document.getElementById("uFreiN").textContent=f+" "+(f===1?"Tag":"Tage");
+    const mehr=document.getElementById("uMehr");const zuviel=-rest+" "+(rest===-1?"Tag":"Tage");mehr.textContent=rest>=0?"":n?"Mit deiner Auswahl "+(rest===-1?"ist":"sind")+" das "+zuviel+" mehr als dein Anspruch.":"Du hast "+zuviel+" mehr eingetragen als dein Anspruch.";mehr.hidden=rest>=0;
+    const vf=document.getElementById("uVerfall"),vt=verfallHinweis(jahr,heute,rest);vf.hidden=!vt;vf.firstElementChild.textContent=vt;
+    const blaettern=d=>{state.urlaubMonat=m+d;zeichnen(d<0?"uMPrev":"uMNext");};
+    document.getElementById("uMPrev").onclick=()=>blaettern(-1);document.getElementById("uMNext").onclick=()=>blaettern(1);
+    kal.querySelectorAll("button[data-tag]:not([disabled])").forEach(b=>b.onclick=()=>{const d=b.dataset.tag;sel.has(d)?sel.delete(d):sel.add(d);zeichnen("tag:"+d);});
+    const ein=document.getElementById("uEin");
+    if(ein)ein.onclick=()=>{z.forEach(x=>DB.urlaub.push({id:uid(),von:x.von,bis:x.bis,stand:"geplant",formular:"",ausgefuelltAm:"",beantragtAm:"",antragId:""}));
+      sel.clear();persist();const y=window.scrollY;render();window.scrollTo(0,y);toast("Urlaub eingetragen");};
+    /* Fokus bleibt auf dem getippten Knopf (Tastatur, VoiceOver). Ist ein Pfeil am Rand gesperrt, auf den anderen. */
+    if(fokus){let el=fokus.startsWith("tag:")?kal.querySelector(`[data-tag="${fokus.slice(4)}"]`):document.getElementById(fokus);
+      if(el&&el.disabled)el=document.getElementById(fokus==="uMPrev"?"uMNext":"uMPrev");if(el)el.focus({preventScroll:true});}
+  };
+  zeichnen();
+}
+/* Sheet „Urlaub eintragen“ bzw. „Urlaub ändern“ (Spec Abschnitt 4). u=null legt einen neuen Urlaub an. */
+function openUrlaub(u,jahr){
+  const neu=!u,ort=urlaubOrt(S.feiertagOrt);
+  const start=u||{id:uid(),von:"",bis:"",stand:"geplant",formular:"",ausgefuelltAm:"",beantragtAm:"",antragId:""};
+  let bisEd=!neu;
+  const zurueck=!neu&&antragDa(u),schon=!neu&&u.stand==="geplant";
+  openSheet(`<h3>${neu?"Urlaub eintragen":"Urlaub ändern"}</h3>
+    <div class="two"><div class="field"><label>Erster Tag</label><input type="date" id="uv" value="${esc(start.von)}"></div>
+    <div class="field"><label>Letzter Tag</label><input type="date" id="ub" value="${esc(start.bis)}"></div></div>
+    <p class="note uinfo" id="uInfo"></p><p class="note uinfo" id="uEins"></p>
+    <p class="note">Für Freie zählen Wochenenden und Feiertage nicht als Urlaubstag. Die App zählt nur Montag bis Freitag ohne Feiertage.</p>
+    <button class="btn" id="uSave" style="margin-top:16px">Speichern</button><button class="btn ghost" id="uCancel" style="margin-bottom:0">Abbrechen</button>
+    ${schon?`<button class="linkbtn" id="uSchon" style="margin:8px auto 0">Schon abgeschickt? Ja, abgeschickt</button>`:""}
+    ${zurueck?`<button class="linkbtn" id="uStand" style="margin:8px auto 0">Stand zurücksetzen auf „Noch nicht beantragt“</button>`:""}
+    ${neu?"":`<button class="btn danger" id="uDel" style="margin:16px 0 0">Urlaub löschen</button>`}`);
+  const g=id=>document.getElementById(id);
+  const info=()=>{const x={...start,von:val("uv"),bis:val("ub")},p=urlaubPruefen(x,DB.urlaub,ort),n=urlaubTage(x.von,x.bis,ort);
+    g("uInfo").textContent=p.text||("Das "+(n===1?"ist 1 Urlaubstag.":"sind "+n+" Urlaubstage."));
+    g("uInfo").classList.toggle("warnline",!!p.text);
+    const e=p.sperrt?[]:einsatzAmTag(DB.orders,x.von,x.bis);
+    g("uEins").textContent=e.length?(e.length===1?"An diesem Tag hast du einen Einsatz: ":"An diesen Tagen hast du Einsätze: ")+aufzaehlung(e.map(datumLesbar))+".":"";
+    g("uSave").disabled=p.sperrt;};
+  /* Der letzte Tag folgt dem ersten, bis man ihn selbst ändert. */
+  g("uv").oninput=g("uv").onchange=()=>{if(!bisEd||!val("ub"))g("ub").value=val("uv");info();};
+  g("ub").oninput=g("ub").onchange=()=>{bisEd=true;info();};
+  info();
+  g("uCancel").onclick=closeSheet;
+  g("uSave").onclick=()=>{const x={...start,von:val("uv"),bis:val("ub")};if(urlaubPruefen(x,DB.urlaub,ort).sperrt)return;
+    const sichern=reset=>{if(neu)DB.urlaub.push(x);else{Object.assign(u,{von:x.von,bis:x.bis});if(reset)antragZuruecksetzen(u);}
+      state.urlaubJahr=+x.von.slice(0,4);persist();closeSheet();render();toast("Urlaub gespeichert");};
+    /* Neue Tage passen nicht mehr zum Antrag: vorher fragen und den Stand zurücksetzen. Gleiche Tage speichern ohne Frage. */
+    if(zurueck&&(x.von!==u.von||x.bis!==u.bis))askConfirm("Für diesen Urlaub gibt es schon einen Antrag. Mit neuen Tagen brauchst du einen neuen Antrag. Speichern und auf „Noch nicht beantragt“ zurücksetzen?",()=>sichern(true),"Speichern","go");
+    else sichern(false);};
+  if(zurueck)g("uStand").onclick=()=>{antragZuruecksetzen(u);persist();closeSheet();render();toast("Stand zurückgesetzt");};
+  if(schon)g("uSchon").onclick=()=>{Object.assign(u,{stand:"beantragt",formular:u.formular||"613",beantragtAm:isoLocal(new Date())});persist();closeSheet();render();toast("Als abgeschickt markiert");};
+  if(!neu)g("uDel").onclick=()=>askConfirm("Diesen Urlaub löschen? Im Kalender bleibt er stehen, bis du ihn dort löschst.",()=>{
+    DB.urlaub=DB.urlaub.filter(o=>o.id!==u.id);persist();closeSheet();render();toast("Urlaub gelöscht");});
+}
+/* Knopf auf der Karte: nächster Schritt. „Abgeschickt?“ gilt für alle Urlaube aus derselben Datei (antragGruppe). */
+function urlaubAktion(aktion,id,jahr){
+  const u=DB.urlaub.find(o=>o.id===id);if(!u)return;
+  if(aktion==="antrag")return urlaubAntrag(jahr);
+  if(aktion==="erst")Object.assign(u,{stand:"beantragt",formular:"613",beantragtAm:isoLocal(new Date())});
+  else if(aktion==="beantragt"){const am=isoLocal(new Date());
+    antragGruppe(DB.urlaub,u).forEach(o=>Object.assign(o,{stand:"beantragt",beantragtAm:am}));}
+  else if(aktion==="genehmigt")u.stand="genehmigt";
+  else return;
+  persist();render();
+}
+/* Datei über das Teilen-Menü weitergeben. Muss direkt im Tipp laufen (iOS will eine frische Geste, kein await davor).
+   ok() kommt nur nach dem Teilen oder, wenn das Gerät Dateien nicht teilen kann, nach dem Download. Bricht man ab, passiert nichts.
+   Lehnt das Gerät ab (NotAllowedError oder ein anderer Fehler), sagt nochmal, was zu tun ist, und ok() bleibt aus. */
+function dateiTeilen(blob,fname,typ,ok,nochmal){
+  const file=new File([blob],fname,{type:typ});
+  let geht=false;try{geht=!!(navigator.canShare&&navigator.share&&navigator.canShare({files:[file]}));}catch(e){}
+  if(!geht){dlBlob(blob,fname);ok();return;}
+  const fehler=err=>{if(err&&err.name==="AbortError")return;console.warn(err);toast(nochmal);};
+  try{navigator.share({files:[file]}).then(ok,fehler);}catch(err){fehler(err);}
+}
+const DOCX_TYP="application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+/* Antrag ausfüllen (Spec Abschnitt 5 und Nachtrag): Formular 627 mit allen geplanten Urlauben des Jahres, je Datei höchstens 5.
+   Die Vorlage kommt aus dem Offline-Cache des Service Workers (sw.js ASSETS). Erst alle Dateien bauen, dann je Datei ein Sheet
+   mit Knopf „Antrag teilen“: Das Teilen-Menü braucht einen frischen Tipp, nach dem await gilt der erste nicht mehr.
+   Erst nach dem Teilen bekommen die Urlaube der Datei formular, ausgefuelltAm und dieselbe antragId. */
+async function urlaubAntrag(jahr){
+  /* Pflicht ist nur der Name. Fachbereich ist freiwillig (Max 23.10.2026): leer bleibt das Feld im Formular frei. */
+  if(!clean(S.absender)){toast("Für den Antrag fehlt noch dein Name. Trag ihn unter Einstellungen › Du und dein Vertrag ein.");return openSettings("vertrag");}
+  const gruppen=antragZeilen(DB.urlaub,jahr);if(!gruppen.length)return;
+  const heute=isoLocal(new Date()),p={absender:S.absender,fachbereich:S.fachbereich},dateien=[];
+  try{
+    const r=await fetch("vorlagen/627.dotx");
+    if(!r.ok)throw new Error("Vorlage 627: "+r.status);
+    const vorlage=new Uint8Array(await r.arrayBuffer());
+    for(let g=0;g<gruppen.length;g++){
+      const bytes=await antragDocx(vorlage,jahr,gruppen[g],p,heute,urlaubOrt(S.feiertagOrt));
+      dateien.push({id:uid(),zeilen:gruppen[g],blob:new Blob([bytes],{type:DOCX_TYP}),fname:"Urlaubsantrag "+jahr+(gruppen.length>1?" Teil "+(g+1):"")+".docx"});
+    }
+  }catch(e){console.error(e);toast("Der Antrag ließ sich nicht erstellen. Öffne die App einmal mit Netz und versuch es noch einmal.");return;}
+  const n=dateien.length;
+  const bereit=k=>{const d=dateien[k];
+    openSheet(`<h3>${n>1?"Teil "+(k+1)+" von "+n+" ist bereit":"Dein Antrag ist bereit"}</h3>
+    <p class="note" style="margin:-8px 0 16px">${n>1?"Du hast mehr als 5 Urlaube geplant. Sie passen nicht in ein Formular, deshalb gibt es "+n+" Anträge. ":""}Tipp auf „Antrag teilen“, dann kannst du die Datei sichern oder verschicken.</p>
+    <button class="btn" id="uTeil">Antrag teilen</button><button class="btn ghost" id="uTeilNein" style="margin-bottom:0">Später</button>`);
+    /* Kein await vor dateiTeilen: der Aufruf läuft direkt in diesem Tipp. */
+    document.getElementById("uTeil").onclick=()=>dateiTeilen(d.blob,d.fname,DOCX_TYP,()=>{
+      d.zeilen.forEach(u=>Object.assign(u,{formular:"627",ausgefuelltAm:heute,antragId:d.id}));persist();render();
+      if(k+1<n)bereit(k+1);else antragFertig(n);},"Teilen ging nicht. Tipp noch einmal auf „Antrag teilen“.");
+    document.getElementById("uTeilNein").onclick=closeSheet;};
+  bereit(0);
+}
+/* Hinweis nach dem Ausfüllen als Sheet, weil er für einen Toast zu lang ist. */
+function antragFertig(anzahl){
+  openSheet(`<h3>${anzahl>1?"Deine Anträge sind fertig":"Dein Antrag ist fertig"}</h3>
+    <p class="uhinweis">Jetzt unterschreiben, vom Fachbereich gegenzeichnen lassen und an Freie-Mitarbeiter-3.Kreis-Urlaub@zdf.de schicken. Danach auf „Abgeschickt?“ tippen.${clean(S.fachbereich)?"":" Den Fachbereich trägst du im Formular selbst ein."}</p>
+    <button class="btn" id="uOk" style="margin-bottom:0">Verstanden</button>`);
+  document.getElementById("uOk").onclick=closeSheet;
+}
+/* Kalenderdatei (Spec Abschnitt 6) mit allen Urlauben des gezeigten Jahres. */
+function urlaubKalender(jahr){
+  if(!DB.urlaub.some(u=>u.von.slice(0,4)===String(jahr)&&urlaubTage(u.von,u.bis,urlaubOrt(S.feiertagOrt))))return toast("In diesem Jahr gibt es keinen Urlaubstag für den Kalender.");
+  const stamp=new Date().toISOString().replace(/[-:]/g,"").replace(/\.\d+/,"");
+  dateiTeilen(new Blob([urlaubIcs(DB.urlaub,jahr,urlaubOrt(S.feiertagOrt),stamp,S.urlaubAnspruch)],{type:"text/calendar"}),"Urlaub "+jahr+".ics","text/calendar",()=>toast("Kalenderdatei erstellt"),"Teilen ging nicht. Tipp noch einmal auf „In meinen Kalender übernehmen“.");
 }
 function openVerdienstMonat(mk){
   const x=verdienstMonate().find(m=>m.monat===mk);if(!x)return;
@@ -1578,6 +2092,7 @@ function openSettings(ziel){
   if(ziel==="vertrag")return openVertragSettings();
   if(ziel==="mail")return openMailSettings();
   if(ziel==="verdienst")return openVerdienstSettings();
+  if(ziel==="urlaub")return openUrlaubSettings();
   if(ziel==="regeln")return openRules();
   const totDays=DB.orders.reduce((a,o)=>a+o.days.length,0);
   const prev=prevLaden();
@@ -1588,17 +2103,19 @@ function openSettings(ziel){
   const mSub=(clean(S.email)?"an "+esc(S.email):'<span class="warn">Empfänger fehlt</span>')+" · "+(clean(S.anschreiben)?"eigener Text":"Standardtext");
   const satz=[S.satzAssist?"Dreh-Assistent "+esc(fmtEur(S.satzAssist)):"",S.satzKamera?"Kamera "+esc(fmtEur(S.satzKamera)):""].filter(Boolean).join(" · ");
   const dSub=S.verdienstOn?(satz?"an · "+satz:'<span class="warn">an · Tagessätze fehlen</span>'):"aus · freiwillig";
+  const uSub=[S.urlaubAnspruch+" Tage",S.urlaubSatz?esc(fmtEur(S.urlaubSatz))+" je Tag":"",clean(S.fachbereich)?esc(S.fachbereich):""].filter(Boolean).join(" · ");
   openSheet(`<h3>Einstellungen</h3>
     <button class="setrow" id="setVertrag"><span>Du und dein Vertrag<small>${vSub}</small></span><span class="chev">›</span></button>
     <button class="setrow" id="setMail"><span>Mail an die Disposition<small>${mSub}</small></span><span class="chev">›</span></button>
     <button class="setrow" id="verdBtn"><span>Verdienst und Tagessätze<small>${dSub}</small></span><span class="chev">›</span></button>
+    ${!fest?`<button class="setrow" id="setUrlaub"><span>Urlaub und Antrag<small>${uSub}</small></span><span class="chev">›</span></button>`:""}
     <button class="setrow" id="rulesBtn"><span>Rechenregeln<small>Soll ${fmtMin(S.sollMin)} · Pause ${S.standardPause} Min · Tagegeld ab ${fmtMin(S.abwesenheitMin)}</small></span><span class="chev">›</span></button>
     <div class="section-h"><h3>Datensicherung</h3></div>
     <div class="setcard">
       <div class="stat">Letztes Backup: <b id="lastBak">${bakTxt}</b> · ${DB.orders.length} ${DB.orders.length===1?"Auftrag":"Aufträge"}, ${totDays} ${totDays===1?"Tag":"Tage"}</div>
       <div class="btnrow"><button class="btn ghost" id="bakOut" style="margin:0">Backup teilen</button><button class="btn ghost" id="bakIn" style="margin:0">Backup einlesen</button></div>
     </div>
-    ${prev?`<button class="setrow" id="bakPrev"><span>Vorherigen Stand zurückholen<small>gesichert am ${datumAus(prev.gesichertAm)||"unbekannt"} · ${prev.db.orders.length} ${prev.db.orders.length===1?"Auftrag":"Aufträge"}</small></span><span class="chev">›</span></button>`:""}
+    ${prev?`<button class="setrow" id="bakPrev"><span>Vorherigen Stand zurückholen<small>${esc(prevZeile(prev.gesichertAm,prev.db))}</small></span><span class="chev">›</span></button>`:""}
     <div class="section-h"><h3>Hilfe</h3></div>
     <button class="setrow" id="helpBtn"><span>Anleitung</span><span class="chev">›</span></button>
     <button class="setrow" id="wnBtn"><span>Was ist neu<small>Version ${APP_VERSION}</small></span><span class="chev">›</span></button>
@@ -1610,6 +2127,7 @@ function openSettings(ziel){
   document.getElementById("setVertrag").onclick=()=>openVertragSettings();
   document.getElementById("setMail").onclick=()=>openMailSettings();
   document.getElementById("verdBtn").onclick=()=>openVerdienstSettings();
+  const su=document.getElementById("setUrlaub");if(su)su.onclick=()=>openUrlaubSettings();
   document.getElementById("rulesBtn").onclick=()=>openRules();
   document.getElementById("helpBtn").onclick=openHelp;
   document.getElementById("wnBtn").onclick=()=>openWhatsNew(true);
@@ -1629,7 +2147,7 @@ function openSettings(ziel){
       if(!prevSichern(DB)){toast("Der jetzige Stand ließ sich nicht sichern. Nichts zurückgeholt.");return;}
       DB=standBereinigen(pv.db);persist();location.reload();
     },"Zurückholen","go");};
-  document.getElementById("wipe").onclick=()=>{askConfirm("Wirklich ALLE Aufträge löschen?"+(prev?" Auch der gesicherte Stand vom letzten Einlesen wird gelöscht.":""),()=>{DB.orders=[];persist();prevLoeschen();closeSheet();state.orderId=null;render();toast("Alle Daten gelöscht");});};
+  document.getElementById("wipe").onclick=()=>{askConfirm("Wirklich ALLE Aufträge und Urlaube löschen?"+(prev?" Auch der gesicherte Stand vom letzten Einlesen wird gelöscht.":""),()=>{DB.orders=[];DB.urlaub=[];persist();prevLoeschen();closeSheet();state.orderId=null;render();toast("Alle Daten gelöscht");});};
 }
 /* Unterseite „Du und dein Vertrag“ (V4.4): speichert genau absender, status, vertragstage, feiertagOrt. */
 function openVertragSettings(){
@@ -1650,6 +2168,7 @@ function openVertragSettings(){
   document.getElementById("s_back").onclick=zurueckZurUebersicht;
   document.getElementById("s_save").onclick=()=>{const tg=val("s_tage");if(tg&&parseTage(tg)==null){toast("Arbeitstage: ganze Zahl von 1 bis 366");return;}
     S.absender=val("s_name");S.status=setStatus;S.vertragstage=parseTage(tg);S.feiertagOrt=ortGueltig(val("s_ftort"));
+    if(S.status==="fest"&&state.tab==="urlaub")state.tab="orders";
     persist();render();openSettings();toast("Gespeichert");};
 }
 /* Unterseite „Mail an die Disposition“ (V4.4): speichert genau email, empfaenger, anschreiben, gruss.
@@ -1697,6 +2216,29 @@ function openVerdienstSettings(){
     S.verdienstOn=on;S.satzAssist=parseEur(val("v_assist"));S.satzKamera=parseEur(val("v_kamera"));S.funktion=fk;S.nettoQuote=parseQuote(val("v_quote"));
     if(!on&&state.tab==="verdienst")state.tab="orders";
     persist();render();openSettings();toast("Verdienst gespeichert");};
+}
+/* Unterseite „Urlaub und Antrag“: speichert urlaubAnspruch, urlaubSatz und den Fachbereich für den Antrag. */
+function openUrlaubSettings(){
+  openSheet(`<h3>Urlaub und Antrag</h3>
+    <div class="field"><label>Urlaubstage im Jahr</label><input type="text" inputmode="numeric" id="u_ansp" value="${S.urlaubAnspruch}"></div>
+    <p class="note">Laut Merkblatt sind es 31 Arbeitstage.</p>
+    <div class="field" style="margin-top:12px"><label>Betrag je Urlaubstag (Euro)</label><input type="text" inputmode="decimal" id="u_satz" placeholder="z. B. 200,00" value="${S.urlaubSatz?esc(String(S.urlaubSatz).replace(".",",")):""}"></div>
+    <p class="note">Damit zeigt die App ungefähr, was du für deinen Urlaub bekommst. Ohne Betrag fehlt nur diese Zeile.</p>
+    <div class="section-h"><h3>Für den Antrag</h3></div>
+    <div class="field"><label>Fachbereich (freiwillig)</label><input type="text" id="u_fb" placeholder="z. B. HR Sport" value="${esc(S.fachbereich)}"></div>
+    <p class="note">Trägst du hier nichts ein, bleibt das Feld im Antrag leer und du füllst es selbst aus.</p>
+    <p class="note">Dein Name kommt aus „Du und dein Vertrag“. Alles bleibt auf deinem Gerät und steht nur im Antrag.</p>
+    <button class="btn" id="u_save" style="margin-top:16px">Speichern</button><button class="btn ghost" id="u_back" style="margin-bottom:0">Zurück</button>`);
+  wacheSetzen(["u_ansp","u_satz","u_fb"]);
+  document.getElementById("u_back").onclick=zurueckZurUebersicht;
+  document.getElementById("u_save").onclick=()=>{
+    const ar=val("u_ansp").trim(),a=/^\d+$/.test(ar)?parseInt(ar,10):0;
+    if(!(a>=1&&a<=60)){toast("Urlaubstage: ganze Zahl von 1 bis 60");return;}
+    const sr=val("u_satz").trim(),sa=parseEur(sr);
+    /* parseEur rundet auf Cent: 0,004 ergibt 0, das zählt hier nicht als Betrag. */
+    if(sr!==""&&(sa===null||sa===0)){toast("Betrag je Urlaubstag: eine Zahl über 0");return;}
+    S.urlaubAnspruch=a;S.urlaubSatz=sa;S.fachbereich=clean(val("u_fb"));
+    persist();render();openSettings();toast("Einstellungen gespeichert");};
 }
 function openRules(){
   openSheet(`<h3>Rechenregeln</h3>
@@ -1787,7 +2329,8 @@ function openHelp(){
       <p>Du legst einen <b>Auftrag</b> an, das ist ein Dreh oder eine Produktion. In diesen Auftrag trägst du deine <b>Arbeitstage</b> ein. Am Ende schickst du daraus einen Stundennachweis an die Disposition, als PDF oder als E-Mail.</p>
       <p>Alles andere rechnet die App: Überstunden, Pausen und den Hinweis auf mögliches Tagegeld.</p>
       <p>Die <b>Überstunden</b> misst die App an deinem Tages-Soll. Voreingestellt sind <b>7:42 Stunden ohne Pause</b>. So steht es seit dem 01.01.2026 im Tarifvertrag für die auf Produktionsdauer Beschäftigten: 38,5 Stunden in der Woche, also 7,7 Stunden am Tag. Die Pause kommt obendrauf. Steht in deinem Vertrag etwas anderes, stellst du es unter Einstellungen › Rechenregeln ein.</p>
-      <p>Die <b>Einstellungen</b> öffnest du über das Zahnrad oben rechts in der Übersicht. Dort stehen dein Name und dein Vertrag, die Mail an die Disposition, Verdienst und Tagessätze und die Rechenregeln.</p></div>
+      <p>Die <b>Einstellungen</b> öffnest du über das Zahnrad oben rechts in der Übersicht. Dort stehen dein Name und dein Vertrag, die Mail an die Disposition, Verdienst und Tagessätze und die Rechenregeln, für Freie auch Urlaub und Antrag.</p>
+      <p>Für Freie gibt es den Reiter <b>Urlaub</b>. Dort planst du deine Urlaubstage und lässt dir den Antrag ausfüllen. Mehr dazu unter Punkt 12.</p></div>
 
     <div class="hsec"><div class="eb">1 · Auftrag anlegen</div>
       <p>Am schnellsten geht es mit der Dispo. Tippe oben unter den Reitern auf <b>PDF importieren</b> und wähle die Datei aus. Die App liest Titel, Auftragsnummer, Produktionsnummer, Ort und die Namen aller eingeteilten Personen heraus und legt dir die Drehtage gleich mit an.</p>
@@ -1859,6 +2402,16 @@ function openHelp(){
       <p>Als freier Mitarbeiter zählt der Feiertag dort, wo du arbeitest. Beim Dispo-Import erkennt die App das Land aus dem Produktionsort, im Auftrag änderst du es unter <b>Feiertage nach</b>. Erkennt sie nichts, gilt dein üblicher Arbeitsort aus <b>Einstellungen › Du und dein Vertrag</b>. Als fest Angestellter gilt immer der Dienstort, den du dort einträgst.</p>
       <p>Im Tag steht, ob er ein Feiertag ist. Stimmt das nicht, leerst du das Feld. Für ein Land, das die App nicht kennt, trägst du den Namen selbst ein. Regionale Feiertage in Spanien, etwa Gründonnerstag in den meisten Regionen, und Ortsfeiertage in Italien kennt die App nicht, die trägst du ebenfalls selbst ein.</p>
       <p class="tip">Im PDF bekommt ein Feiertag ein Sternchen beim Datum, in der Mail den Zusatz „Feiertag“. Unten stehen alle Feiertage mit Namen. So sieht die Disposition, wo der Zuschlag fällig ist.</p></div>
+
+    <div class="hsec"><div class="eb">12 · Urlaub</div>
+      <p>Für Freie gibt es den Reiter <b>Urlaub</b>. Oben steht, wie viele Urlaubstage du im Jahr noch frei hast. Mit den Pfeilen blätterst du zwischen den Jahren.</p>
+      <p>Darunter steht ein Kalender. Tipp die Tage an, an denen du Urlaub willst, und dann auf <b>Als Urlaub eintragen</b>. Wochenenden und Feiertage sind grau, du kannst sie nicht antippen. Ein Feiertag kostet dich nämlich keinen Urlaubstag. Es zählen nur deutsche Feiertage: die an deinem Ort aus <b>Einstellungen › Du und dein Vertrag</b>, liegt er im Ausland, die bundesweiten. Tage mit einem Einsatz haben einen Rahmen. Lieber mit Datum? Dann tippst du unter dem Kalender auf <b>Oder mit Datum eintragen</b> und gibst den ersten und den letzten Tag ein.</p>
+      <p>Urlaub musst du beim ZDF beantragen, und zwar spätestens <b>6 Wochen vor dem ersten Urlaubstag</b>. Bei jedem Urlaub steht, bis wann der Antrag raus muss. Den <b>ersten Antrag im Jahr</b> schickst du selbst mit dem Formular für den Jahresurlaub ab, weil dafür Nachweise dazugehören. Bei den Urlauben darin tippst du danach in der App auf <b>Ja, abgeschickt</b>. Steht vorher schon ein Urlaub als abgeschickt da, heißt der Link bei den übrigen <b>War im ersten Antrag? Ja, abgeschickt</b>.</p>
+      <p>Für alle weiteren Urlaube tippst du auf <b>Antrag ausfüllen lassen</b>. Die App füllt das echte Formular des ZDF mit allen geplanten Urlauben des Jahres aus, die noch in keinem Antrag stehen. Mit <b>Antrag teilen</b> sicherst du die Datei oder schickst sie weiter. Dann unterschreibst du den Antrag und lässt ihn vom Fachbereich gegenzeichnen, denn der Fachbereich muss von deinem Urlaub wissen. Danach geht er an Freie-Mitarbeiter-3.Kreis-Urlaub@zdf.de. Ist er abgeschickt, tippst du auf <b>Abgeschickt?</b>, und wenn die Antwort da ist, auf <b>Genehmigt?</b>. So steht bei jedem Urlaub immer der nächste Schritt.</p>
+      <p>Änderst du die Tage eines Urlaubs, für den es schon einen Antrag gibt, brauchst du einen neuen Antrag. Die App fragt deshalb nach und setzt den Urlaub auf „Noch nicht beantragt“ zurück.</p>
+      <p>Urlaub gilt nur im Kalenderjahr. Was du bis zum Jahresende nicht beantragst, <b>verfällt am 31. Dezember</b>. Ab Oktober erinnert dich die App daran, solange du noch Tage frei hast.</p>
+      <p>Unter <b>Einstellungen › Urlaub und Antrag</b> stellst du ein, wie viele Urlaubstage du im Jahr hast. Laut Merkblatt sind es 31. Trägst du einen Betrag je Urlaubstag ein, zeigt die App, was du für deinen Urlaub ungefähr bekommst. Den Fachbereich kannst du dort auch eintragen, dann steht er gleich im Antrag. Sonst füllst du ihn im Formular selbst aus.</p>
+      <p class="tip">Mit <b>In meinen Kalender übernehmen</b> kommt jeder Urlaubstag als eigener Termin in deinen Kalender, zum Beispiel „ZDF Urlaub 12 von 31“. Hast du schon einmal übernommen, lösch die alten Termine vorher. Gelöschte Urlaube verschwinden dort nicht von selbst.</p></div>
 
     <button class="btn" id="helpBack" style="margin-top:6px">Verstanden</button>`);
   document.getElementById("helpBack").onclick=()=>openSettings();

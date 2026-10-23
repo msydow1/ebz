@@ -1,6 +1,6 @@
 /* Zeiterfassung Service Worker – Offline-Cache.
    Navigation: network-first (Updates kommen an), Assets: cache-first. */
-const CACHE = "zeiterfassung-v4.4.2";
+const CACHE = "zeiterfassung-v4.5.0";
 const ASSETS = [
   "./",
   "manifest.json",
@@ -21,7 +21,8 @@ const ASSETS = [
   "vendor/inter-7.woff2",
   "vendor/pdf.min.js",
   "vendor/pdf.worker.min.js",
-  "vendor/jspdf.umd.min.js"
+  "vendor/jspdf.umd.min.js",
+  "vorlagen/627.dotx"
 ];
 
 self.addEventListener("install", e => {
