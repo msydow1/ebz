@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="Zeiterfassung">
 <meta name="theme-color" content="#15171A">
 <title>Zeiterfassung</title>
-<!-- Zeiterfassung V4.6.0 · Design "Amber Editorial" -->
+<!-- Zeiterfassung V4.6.1 · Design "Amber Editorial" -->
 <!-- impeccable-disable single-font -- Nutzer wählte beim V1.2-Redesign bewusst "Inter durchgängig" (eine Familie, tabular-nums für Zeiten) -->
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -66,7 +66,7 @@ body.light .bar{background:rgba(245,244,241,.85)}
 .note.warnline{color:var(--accent-ink);margin:-8px 0 16px}
 .vwarn{color:var(--danger);font-weight:700;white-space:nowrap}
 /* Hero */
-.hero{background:linear-gradient(135deg,var(--accent-soft),transparent);border:1px solid var(--accent-line);border-radius:16px;padding:22px 18px;margin-bottom:14px}
+.hero{background:linear-gradient(135deg,var(--accent-soft),transparent);border:1px solid var(--accent-line);border-radius:16px;padding:22px 18px;margin-bottom:14px;min-height:176px;box-sizing:border-box}/* gleich hoch in Statistik, Verdienst und Urlaub (Max 24.10.2026) */
 .hero .l{font-size:9px;font-weight:600;letter-spacing:1.4px;text-transform:uppercase;color:var(--accent-ink)}
 .hero .n{font-weight:800;font-size:46px;letter-spacing:-1.5px;line-height:1.05;margin-top:4px;color:var(--text-strong)}
 .hero.small{padding:16px 18px}
@@ -93,7 +93,8 @@ body.light .bar{background:rgba(245,244,241,.85)}
 .hero .hkopf .iconbtn:disabled{color:var(--faint);opacity:.45}
 .srow .v.klein{font-size:13px;font-weight:600;color:var(--muted);white-space:nowrap}
 .btn.wide{width:100%;margin:0 0 12px}
-.ucard{padding:14px 15px}
+.ucard{padding:14px 15px;position:relative}
+.ucard .ux{position:absolute;top:4px;right:4px;min-width:44px;min-height:44px;border:none;background:none;color:var(--muted);font-size:16px;font-family:inherit}
 .ucard .ut{font-size:15px;font-weight:700;color:var(--text-strong)}
 .ucard .us{font-size:12px;color:var(--muted);margin-top:2px}
 .ucard .ust{font-size:13px;color:var(--text);margin-top:8px}
@@ -131,7 +132,6 @@ body.light .bar{background:rgba(245,244,241,.85)}
 .ubar .r.neg{color:var(--danger)}
 .ubar ul{margin:6px 0 0;padding-left:18px;font-size:13px;color:var(--text)}
 .ubar .btn{margin:12px 0 0}
-.usteps{font-size:12px;color:var(--muted);margin:14px 0 4px;padding-left:20px;line-height:1.6}
 .card .eyeline{font-size:9px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
 .card .toprow{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
 .card .titel{font-weight:700;font-size:16px;letter-spacing:-.3px;line-height:1.25;color:var(--text-strong);margin:0;min-width:0}
@@ -296,6 +296,7 @@ body.light .btn.danger{border-color:rgba(194,78,59,.4)}
 .tgbox .t{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-size:13px;font-weight:700;color:var(--muted)}
 .tgbox .t .in{font-size:11px;font-weight:500;color:var(--muted);white-space:nowrap}
 .tgbox .why{font-size:11px;font-weight:500;color:var(--silver);margin-top:4px;line-height:1.5}
+.tgbox details.why summary{cursor:pointer;color:var(--text);min-height:32px;display:flex;align-items:center}
 .tgbox.ok{background:var(--pos-soft);border-color:var(--pos-line)}
 .tgbox.ok .t{color:var(--pos)}
 /* Nachweis-Kasten (V4.4): Amber statt Tagegeld-Grün, steht direkt nach der Pause */
@@ -377,7 +378,7 @@ body.light .btn.danger{border-color:rgba(194,78,59,.4)}
   <div class="view" id="view"></div>
   <div class="foot">
     <div class="foot-note">Daten bleiben nur auf diesem Gerät · alle Angaben ohne Gewähr</div>
-    <div class="foot-v">Zeiterfassung <b>V4.6.0</b></div>
+    <div class="foot-v">Zeiterfassung <b>V4.6.1</b></div>
   </div>
 </div>
 <input type="file" id="pdfInput" accept="application/pdf" class="hidden">
@@ -482,8 +483,13 @@ if(typeof S.fachbereich!=="string")S.fachbereich="";
    Wird einmal nach jedem Update gezeigt: Vergleich S.seenVersion gegen APP_VERSION.
    Nicht bei frischen Installationen (keine Aufträge) – ein neuer Kollege soll kein
    Changelog sehen, bevor er die App überhaupt kennt. Neue Einträge oben anfügen. */
-const APP_VERSION="4.6.0";
+const APP_VERSION="4.6.1";
 const WHATSNEW=[
+  {v:"4.6.1", t:"Aufgeräumt", items:[
+    ["Urlaub schneller","Einen eingetragenen Urlaubstag tippst du im Kalender an und löschst ihn. Weniger Text auf der Seite, die Ausnahmen zum Verfall klappst du bei Bedarf auf."],
+    ["Jahresliste in den Einstellungen","Die Jahresliste als PDF steht jetzt unter Einstellungen › Export, für jedes abgeschlossene Jahr."],
+    ["Gleich große Kästen","Der große Kasten oben ist in Statistik, Verdienst und Urlaub gleich hoch. „Du und dein Vertrag“ heißt jetzt Vertragsdaten."]
+  ]},
   {v:"4.6.0", t:"Statistik je Jahr und Feiertage in ganz Europa", items:[
     ["Statistik je Jahr","Im großen Kasten der Statistik blätterst du mit den Pfeilen durch die Jahre. Alle Zahlen, die Monate und die Aufträge gelten dann für dieses Jahr. Unten unter Pro Jahr siehst du die Jahre im Vergleich, ein Tipp öffnet das Jahr. Als freier Mitarbeiter siehst du dort auch, wie viel Urlaub du beantragt hast."],
     ["Jahresliste als PDF","In der Statistik gibt es die Jahresliste als PDF: jeder Einsatztag mit Datum, Auftrag, Ort, Einsatzzeit und Stunden, unten die Summe. Gedacht für deine Unterlagen, zum Beispiel für die Steuer."],
@@ -524,7 +530,7 @@ const WHATSNEW=[
     ["Grenzübertritt einfacher","Steht ein Tag auf Ausland, trägst du die Grenzzeiten sofort ein, ohne vorher etwas freizuschalten. Jedes Feld hat ein eigenes ✕ zum Leeren. Erkennt die App beim Import einen Ort im Ausland, starten die Tage gleich mit Ausland Ja."],
     ["Klarere Begriffe","Im Tag heißen die Zeitblöcke jetzt Einsatz, Drehzeit und Reisezeit. Für deine Überstunden zählt nur die Einsatzzeit minus Pause. Drehzeit und Reisezeit stehen im Nachweis und liegen innerhalb der Einsatzzeit."],
     ["Warum der Nachweis manchmal später endet","FLINK zieht über 9:45 Stunden immer 45 Minuten Pause ab, auch wenn du nur 30 gemacht hast. Damit deine echte Zeit ankommt, endet der Nachweis dann 15 Minuten später. Das siehst du jetzt auf der Tageskarte, zum Beispiel als „Nachweis 19:15 · +15 FLINK“, und im Tag steht direkt nach der Pause, wie FLINK rechnet."],
-    ["Einstellungen neu sortiert","Die Einstellungen sind jetzt eine Übersicht. Dein Name, die Beschäftigung und die Vertragstage stehen unter Du und dein Vertrag. Empfänger und Mail-Text findest du unter Mail an die Disposition, deine Tagessätze unter Verdienst und Tagessätze. Aus der Statistik, dem Verdienst und dem Auftrag kommst du mit einem Tipp direkt an die richtige Stelle."],
+    ["Einstellungen neu sortiert","Die Einstellungen sind jetzt eine Übersicht. Dein Name, die Beschäftigung und die Vertragstage stehen unter Vertragsdaten. Empfänger und Mail-Text findest du unter Mail an die Disposition, deine Tagessätze unter Verdienst und Tagessätze. Aus der Statistik, dem Verdienst und dem Auftrag kommst du mit einem Tipp direkt an die richtige Stelle."],
     ["Schalter reagieren zuverlässiger","Die kleinen Schalter wie entfällt und kein Dreh lassen sich leichter treffen. Ein zweiter Tipp macht nichts mehr kaputt: Schaltest du eine Fahrt wieder ein, bevor du speicherst, kommen deine vorherigen Zeiten zurück. Ist am iPhone gerade das Zeitrad offen, schließt der erste Tipp daneben nur das Rad. Tipp danach einfach noch einmal."]
   ]},
   {v:"4.3.1", t:"Einsatztage richtig gezählt, Tagegeld genauer", items:[
@@ -1715,7 +1721,7 @@ function vertragsBlockHtml(jahr){const v=vertragsTage(null,jahr);if(!v)return ""
     <div class="kpi"><div class="l">Disponiert</div><div class="n">${v.disponiert}</div></div>
   </div>`;
   const pct=x=>Math.max(0,Math.min(100,x/v.vertrag*100)),g=pct(v.geleistet),dsp=Math.min(pct(v.disponiert),100-g);
-  return `<div class="section-h tap" id="vtHead" role="button" tabindex="0"><h3>Vertragstage ${v.jahr} ›</h3><span class="tot">von ${v.vertrag}</span></div>
+  return `<div class="section-h"><h3>Vertragstage ${v.jahr}</h3><span class="tot">${v.vertrag} laut Vertrag</span></div>
   <div class="kpis">
     <div class="kpi"><div class="l">Geleistet</div><div class="n">${v.geleistet}</div></div>
     <div class="kpi"><div class="l">Disponiert</div><div class="n">${v.disponiert}</div></div>
@@ -1739,7 +1745,6 @@ function renderStats(){
     <div class="kpi posk"><div class="l">Tagegeld-Tage</div><div class="n">${r.tgTage}</div></div>
     ${uj?`<div class="kpi"><div class="l">Urlaub beantragt</div><div class="n">${uj.beantragt} <small>von ${S.urlaubAnspruch}</small></div></div>`:`<div class="kpi"><div class="l">Soll / Tag</div><div class="n">${fmtMin(S.sollMin)}</div></div>`}
   </div>`;
-  if(r.tage)h+=`<button class="btn ghost" id="sPdf">Jahresliste ${jahr} als PDF</button>`;
   h+=vertragsBlockHtml(jahr);
   /* Direkter Weg (V4.4): Freie ohne Vertragstage sehen eine ruhige Zeile, bis ein Wert gespeichert ist. */
   if(frei&&S.vertragstage==null)h+=`<button class="linkbtn left" id="vtSet">Vertragstage eintragen ›</button>`;
@@ -1748,7 +1753,7 @@ function renderStats(){
     h+=`<div class="section-h"><h3>Brückentage ${jahr}</h3><span class="tot">${esc(ortLabel(S.feiertagOrt))}</span></div>`;
     h+=bt.length?bt.map(b=>`<div class="srow"><div class="nm">${esc(aufzaehlung(b.anlass))}<small>Urlaub ${esc(zeitraumLesbar(b.von,b.bis))} · frei ${esc(zeitraumLesbar(b.freiVon,b.freiBis))}</small></div><div class="v klein">${b.urlaubstage} für ${b.freiTage}</div></div>`).join("")
       :`<p class="note">Für ${jahr} gibt es am Dienstort keine Brückentage.</p>`;
-    h+=`<p class="note">„1 für 4“ heißt: 1 Urlaubstag, 4 Tage am Stück frei. Gerechnet mit Montag bis Freitag und den Feiertagen am Dienstort aus Einstellungen › Du und dein Vertrag. Dein Dienstplan kann abweichen.</p>`;}
+    h+=`<p class="note">„1 für 4“: 1 Urlaubstag, 4 Tage am Stück frei. Dein Dienstplan kann abweichen.</p>`;}
   // Monate des gewählten Jahres, Jahre für den Vergleich
   const perMonth={},perYear={};
   DB.orders.forEach(o=>o.days.forEach(d=>{
@@ -1776,8 +1781,7 @@ function renderStats(){
   const geh=k=>{state.statJahr=jahre[i+k];render();const b=document.getElementById(k>0?"sPrev":"sNext"),a=document.getElementById(k>0?"sNext":"sPrev");
     (b&&!b.disabled?b:a).focus({preventScroll:true});};
   document.getElementById("sPrev").onclick=()=>geh(1);document.getElementById("sNext").onclick=()=>geh(-1);
-  const sp=document.getElementById("sPdf");if(sp)sp.onclick=()=>jahresPdf(jahr);
-  ["vtHead","vtSet"].forEach(id=>{const el=document.getElementById(id);if(el){el.onclick=()=>openSettings("vertrag");el.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();openSettings("vertrag");}};}});
+  ["vtSet"].forEach(id=>{const el=document.getElementById(id);if(el){el.onclick=()=>openSettings("vertrag");el.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();openSettings("vertrag");}};}});
   view.querySelectorAll("[data-jahr]").forEach(c=>c.onclick=()=>{state.statJahr=+c.dataset.jahr;window.scrollTo(0,0);render();});
   view.querySelectorAll("[data-open]").forEach(c=>c.onclick=()=>{state.orderId=c.dataset.open;window.scrollTo(0,0);render();});
 }
@@ -1829,7 +1833,7 @@ function renderVerdienst(){
     const m=ms[0];
     h+=`<div class="hero"><div class="l">${q?"Aufs Konto":"Brutto nach Tarif"} · ${esc(fmtMonth(m.monat))}</div>
       <div class="n">${q?"ca. "+fmtEurRund(m.konto):fmtEur(m.brutto)}</div>
-      <div class="hsub">${q?"Brutto "+fmtEur(m.brutto)+" · Netto-Anteil "+String(q).replace(".",",")+" %":"Trag einen Netto-Anteil ein, dann steht hier der Betrag fürs Konto."}</div></div>
+      <div class="hsub">${q?"Brutto "+fmtEur(m.brutto)+" · Netto-Anteil "+String(q).replace(".",",")+" %":"Netto-Anteil fehlt für den Betrag fürs Konto."}</div></div>
     <div class="kpis verd">
       <div class="kpi"><div class="l">Einsätze</div><div class="n">${m.einsaetze}</div></div>
       <div class="kpi"><div class="l">Mehrarbeit</div><div class="n">${fmtStd(m.mehrStd)}</div></div>
@@ -1858,29 +1862,29 @@ function renderUrlaub(){
   let h=`<div class="pagehead"><div class="eyebrow">${esc(headEyebrow())}</div><div class="display">Urlaub</div></div>`+tabsHtml();
   h+=`<div class="hero"><div class="l">Du hast ${jahr} noch</div><div class="n" id="uFreiN">${frei} ${frei===1?"Tag":"Tage"}</div><div class="hsub">von ${S.urlaubAnspruch} ${S.urlaubAnspruch===1?"Urlaubstag":"Urlaubstagen"} frei.</div>
     <div class="hsub neg" id="uMehr"></div>
-    ${j.verguetung!=null?`<div class="hsub">Dafür bekommst du ungefähr ${esc(fmtEur(j.verguetung))}.</div>`:`<button class="linkbtn left" id="uSatz">Trag deinen Betrag je Urlaubstag ein, dann siehst du hier die Vergütung ›</button>`}</div>`;
-  h+=`<div id="uKal"></div><button class="linkbtn" id="uDatum">Oder mit Datum eintragen: erster und letzter Tag ›</button>`;
+    ${j.verguetung!=null?`<div class="hsub">Dafür bekommst du ungefähr ${esc(fmtEur(j.verguetung))}.</div>`:`<button class="linkbtn left" id="uSatz">Betrag je Urlaubstag eintragen ›</button>`}</div>`;
+  h+=`<div id="uKal"></div>`;
   /* Ausnahmen laut Ergänzungs-TV Nr. 1 (2025) Nr. 4 und 5 und Merkblatt HA Personal 02/2025 (V4.6). */
-  h+=`<div class="tgbox nw" id="uVerfall"${verfall?"":" hidden"}><div class="t">${esc(verfall)}</div><div class="why">Ausnahmen: Warst du ohne eigene Schuld am Antrag gehindert, holst du ihn bis 31. März nach. Eine Übertragung ins neue Jahr gibt es nur aus dringenden Gründen mit Genehmigung, dann nimmst du den Urlaub bis 30. April.</div></div>`;
+  h+=`<div class="tgbox nw" id="uVerfall"${verfall?"":" hidden"}><div class="t">${esc(verfall)}</div><details class="why"><summary><b>Ausnahmen</b></summary>Ohne eigene Schuld am Antrag gehindert: bis 31. März nachholen. Übertragung ins neue Jahr nur aus dringenden Gründen mit Genehmigung, dann Urlaub bis 30. April nehmen.</details></div>`;
   /* Ein Block je Antrag (V4.5.1): Zeiträume als Links zum Ändern, ein Knopf für den nächsten Schritt des ganzen Antrags. */
   if(!bl.length)h+=`<div class="empty"><p>Noch kein Urlaub für ${jahr} eingetragen.</p></div>`;
   else h+=`<div class="cards">`+bl.map(b=>{const ids=esc(b.urlaube.map(u=>u.id).join(","));
-    return `<div class="card ucard"><div class="ut">${esc(b.titel)}</div><div class="us">${b.tage} ${b.tage===1?"Urlaubstag":"Urlaubstage"}</div>
+    return `<div class="card ucard"><button class="ux" data-weg="${ids}" data-titel="${esc(b.titel)}" aria-label="${esc(b.titel)} löschen">✕</button><div class="ut">${esc(b.titel)}</div><div class="us">${b.tage} ${b.tage===1?"Urlaubstag":"Urlaubstage"}</div>
       <div class="uz">${b.urlaube.map(u=>`<button class="linkbtn" data-urlaub="${esc(u.id)}">${esc(zeitraumLesbar(u.von,u.bis))} ›</button>`).join("")}</div>
       <div class="ust ${b.klasse}">${esc(b.text)}</div>
       ${b.knopf?`<button class="btn ghost ustep" data-schritt="${b.aktion}" data-ids="${ids}">${esc(b.knopf)}</button>`:""}
       ${b.neben?`<button class="linkbtn uneben" data-schritt="${b.neben.aktion}" data-ids="${ids}">${esc(b.neben.text)}</button>`:""}</div>`;}).join("")+`</div>`;
-  if(bl.some(b=>b.art!=="offen"))h+=`<p class="note">Sagt das ZDF zu einem Tag nein, tipp auf den Zeitraum. Dort nimmst du den Tag heraus. Einen anderen Tag tippst du dann im Kalender an.</p>`;
-  h+=`<ol class="usteps"><li>Urlaubstage im Kalender antippen</li><li>Den ersten Antrag im Jahr schickst du selbst, alle weiteren füllt die App aus</li><li>Unterschreiben, an den Fachbereich schicken, dann „Abgeschickt?“ tippen</li></ol>`;
   if(bl.length)h+=`<button class="linkbtn" id="uIcs">In meinen Kalender übernehmen ›</button>
-    <p class="note">Jeder Urlaubstag kommt als eigener Termin mit Nummer in deinen Kalender, zum Beispiel „ZDF Urlaub 3 von 31“. Hat sich seitdem etwas geändert, lösch erst die alten „ZDF Urlaub“-Termine im Kalender und übernimm dann neu. Sonst stimmen dort die Nummern nicht.</p>`;
+    <p class="note">Schon einmal übernommen? Erst die alten „ZDF Urlaub“-Termine löschen.</p>`;
   view.innerHTML=h;bindTabs();
-  document.getElementById("uDatum").onclick=()=>openUrlaub(null,jahr);
   urlaubTippKalender(jahr,ort,j,heute);
   const us=document.getElementById("uSatz");if(us)us.onclick=()=>openSettings("urlaub");
   const ui=document.getElementById("uIcs");if(ui)ui.onclick=()=>urlaubKalender(jahr);
   view.querySelectorAll("[data-urlaub]").forEach(c=>c.onclick=()=>openUrlaub(DB.urlaub.find(u=>u.id===c.dataset.urlaub),jahr));
   view.querySelectorAll("[data-schritt]").forEach(b=>b.onclick=()=>urlaubAktion(b.dataset.schritt,b.dataset.ids.split(","),jahr));
+  /* ✕ im Block (Max 24.10.2026): den ganzen Antrag mit allen Tagen löschen. */
+  view.querySelectorAll("[data-weg]").forEach(b=>b.onclick=()=>{const ids=b.dataset.weg.split(",");
+    askConfirm(b.dataset.titel+" mit allen Urlaubstagen löschen? Im Kalender deines iPhones bleiben die Termine stehen.",()=>{DB.urlaub=DB.urlaub.filter(u=>!ids.includes(u.id));persist();render();toast("Gelöscht");});});
 }
 /* Kalender zum Antippen (Nachtrag 23.10.2026 nachts). Die Auswahl lebt in state.urlaubAuswahl, bis man das Jahr wechselt oder den
    Reiter verlässt. Ein Tipp zeichnet nur den Kalender und die große Zahl neu, damit die Seite nicht springt. Die Monatspfeile laufen
@@ -1899,7 +1903,7 @@ function urlaubTippKalender(jahr,ort,j,heute){
     tage.forEach(t=>{const an=t.art==="frei"&&sel.has(t.datum);
       const kl=[t.art==="we"?"gr":t.art==="ft"?"ft":t.art==="urlaub"?"has":an?"sel":"",t.einsatz?"ein":""].filter(Boolean).join(" ");
       const lab=datumLesbar(t.datum)+(t.art==="we"?", Wochenende":t.art==="ft"?", "+t.name:t.art==="urlaub"?", schon eingetragen":"")+(t.einsatz?", Einsatz":"");
-      k+=`<button type="button"${kl?` class="${kl}"`:""} data-tag="${t.datum}"${t.art==="frei"?` aria-pressed="${an}"`:" disabled"} aria-label="${esc(lab)}"${t.art==="ft"?` title="${esc(t.name)}"`:""}>${+t.datum.slice(8)}</button>`;});
+      k+=`<button type="button"${kl?` class="${kl}"`:""} data-tag="${t.datum}"${t.art==="frei"?` aria-pressed="${an}"`:t.art==="urlaub"?"":" disabled"} aria-label="${esc(lab)}"${t.art==="ft"?` title="${esc(t.name)}"`:""}>${+t.datum.slice(8)}</button>`;});
     k+=`</div><div class="uleg"><span><u class="has"></u>schon eingetragen</span><span><u class="sel"></u>ausgewählt</span><span><u class="ein"></u>Einsatz</span><span>grau: Wochenende, Feiertag</span></div>`;
     const n=sel.size,rest=j.frei-n,z=auswahlZeitraeume(sel,ort);
     k+=`<div class="ubar">`+(n?`<div class="z">${n} ${n===1?"Urlaubstag":"Urlaubstage"} ausgewählt</div>`
@@ -1907,7 +1911,7 @@ function urlaubTippKalender(jahr,ort,j,heute){
         :rest===0?`<div class="r">Danach ist dein Urlaub für ${jahr} aufgebraucht.</div>`
         :`<div class="r neg">${rest===-1?"Das ist 1 Tag":"Das sind "+(-rest)+" Tage"} mehr als dein Anspruch.</div>`)
       +`<ul>${z.map(x=>`<li>${esc(zeitraumLesbar(x.von,x.bis))} · ${x.tage} ${x.tage===1?"Tag":"Tage"}</li>`).join("")}</ul><button class="btn" id="uEin">Als Urlaub eintragen</button>`
-      :`<div class="r">Tipp die Tage an, an denen du Urlaub willst.</div>`)+`</div>`;
+      :`<div class="r">Tage antippen zum Eintragen, eingetragene antippen zum Löschen.</div>`)+`</div>`;
     kal.innerHTML=k;
     /* Große Zahl, Satz über dem Anspruch und Verfall-Hinweis rechnen mit der Auswahl mit (Schlussprüfung 23.10.2026). */
     const f=Math.max(rest,0);document.getElementById("uFreiN").textContent=f+" "+(f===1?"Tag":"Tage");
@@ -1918,7 +1922,11 @@ function urlaubTippKalender(jahr,ort,j,heute){
       state.urlaubJahr=y;state.urlaubKalJahr=y;state.urlaubAuswahl=new Set();
       const sy=window.scrollY;render();window.scrollTo(0,sy);const el=document.getElementById(pfeil);if(el&&!el.disabled)el.focus({preventScroll:true});};
     document.getElementById("uMPrev").onclick=()=>blaettern(-1);document.getElementById("uMNext").onclick=()=>blaettern(1);
-    kal.querySelectorAll("button[data-tag]:not([disabled])").forEach(b=>b.onclick=()=>{const d=b.dataset.tag;sel.has(d)?sel.delete(d):sel.add(d);zeichnen("tag:"+d);});
+    kal.querySelectorAll("button[data-tag]:not([disabled])").forEach(b=>b.onclick=()=>{const d=b.dataset.tag;
+      /* Eingetragenen Tag löschen (Max 24.10.2026): wie „Tag herausnehmen“, mitten im Zeitraum wird geteilt, ein Antrag bleibt. */
+      if(b.classList.contains("has")){const u=DB.urlaub.find(x=>urlaubTageListe(x.von,x.bis,ort).includes(d));if(!u)return;
+        return askConfirm(datumLesbar(d)+" aus dem Urlaub löschen?",()=>{DB.urlaub=DB.urlaub.filter(x=>x!==u).concat(tagHerausnehmen(u,d,ort,uid()));persist();const y=window.scrollY;render();window.scrollTo(0,y);toast("Urlaubstag gelöscht");});}
+      sel.has(d)?sel.delete(d):sel.add(d);zeichnen("tag:"+d);});
     const ein=document.getElementById("uEin");
     if(ein)ein.onclick=()=>{z.forEach(x=>DB.urlaub.push({id:uid(),von:x.von,bis:x.bis,stand:"geplant",formular:"",ausgefuelltAm:"",beantragtAm:"",antragId:"",antragNr:0}));
       sel.clear();persist();const y=window.scrollY;render();window.scrollTo(0,y);toast("Urlaub eingetragen");};
@@ -2005,7 +2013,7 @@ const DOCX_TYP="application/vnd.openxmlformats-officedocument.wordprocessingml.d
    Erst nach dem Teilen bekommen die Urlaube der Datei formular, ausgefuelltAm und dieselbe antragId. */
 async function urlaubAntrag(jahr){
   /* Pflicht ist nur der Name. Fachbereich ist freiwillig (Max 23.10.2026): leer bleibt das Feld im Formular frei. */
-  if(!clean(S.absender)){toast("Für den Antrag fehlt noch dein Name. Trag ihn unter Einstellungen › Du und dein Vertrag ein.");return openSettings("vertrag");}
+  if(!clean(S.absender)){toast("Für den Antrag fehlt noch dein Name. Trag ihn unter Einstellungen › Vertragsdaten ein.");return openSettings("vertrag");}
   const gruppen=antragZeilen(DB.urlaub,jahr);if(!gruppen.length)return;
   const heute=isoLocal(new Date()),p={absender:S.absender,fachbereich:S.fachbereich},dateien=[],nr0=naechsteAntragNr(DB.urlaub,jahr);
   try{
@@ -2118,7 +2126,7 @@ function editOrder(id){
   const paintStatus=()=>document.querySelectorAll("#f_status button").forEach(b=>b.classList.toggle("on",b.dataset.s===tmpStatus));
   /* Fest angestellt: Es gilt der Dienstort aus den Einstellungen, die Auswahl im Auftrag ist gesperrt (V4.3). */
   const paintFt=()=>{const fest=tmpStatus==="fest";document.getElementById("f_ftort").disabled=fest;
-    document.getElementById("f_ftnote").textContent=fest?"Fest angestellt: Es gilt dein Dienstort aus Einstellungen › Du und dein Vertrag."
+    document.getElementById("f_ftnote").textContent=fest?"Fest angestellt: Es gilt dein Dienstort aus Einstellungen › Vertragsdaten."
       :"Es zählen die Feiertage am Arbeitsort. Sie werden im Nachweis markiert und unten aufgelistet.";};
   document.querySelectorAll("#f_status button").forEach(b=>b.onclick=()=>{tmpStatus=b.dataset.s;paintStatus();paintFt();});
   paintStatus();paintFt();
@@ -2373,6 +2381,8 @@ function openSettings(ziel){
   if(ziel==="regeln")return openRules();
   const totDays=DB.orders.reduce((a,o)=>a+o.days.length,0);
   const prev=prevLaden();
+  /* Jahresliste nur für abgeschlossene Jahre mit Einsätzen, also ab 1. Januar des Folgejahres (Max 24.10.2026). */
+  const hj=new Date().getFullYear(),exJahre=statJahre(DB.orders,hj).filter(j=>j<hj&&statJahr(DB.orders,j).tage);
   let bakTxt="noch keins";
   if(S.lastBackup){const dAgo=Math.floor((Date.now()-S.lastBackup)/864e5);bakTxt=dAgo===0?"heute":(dAgo===1?"gestern":"vor "+dAgo+" Tagen");}
   const name=clean(S.absender),fest=S.status==="fest";
@@ -2382,7 +2392,7 @@ function openSettings(ziel){
   const dSub=S.verdienstOn?(satz?"an · "+satz:'<span class="warn">an · Tagessätze fehlen</span>'):"aus · freiwillig";
   const uSub=[S.urlaubAnspruch+" Tage",S.urlaubSatz?esc(fmtEur(S.urlaubSatz))+" je Tag":"",clean(S.fachbereich)?esc(S.fachbereich):""].filter(Boolean).join(" · ");
   openSheet(`<h3>Einstellungen</h3>
-    <button class="setrow" id="setVertrag"><span>Du und dein Vertrag<small>${vSub}</small></span><span class="chev">›</span></button>
+    <button class="setrow" id="setVertrag"><span>Vertragsdaten<small>${vSub}</small></span><span class="chev">›</span></button>
     <button class="setrow" id="setMail"><span>Mail an die Disposition<small>${mSub}</small></span><span class="chev">›</span></button>
     <button class="setrow" id="verdBtn"><span>Verdienst und Tagessätze<small>${dSub}</small></span><span class="chev">›</span></button>
     ${!fest?`<button class="setrow" id="setUrlaub"><span>Urlaub und Antrag<small>${uSub}</small></span><span class="chev">›</span></button>`:""}
@@ -2392,6 +2402,8 @@ function openSettings(ziel){
       <div class="stat">Letztes Backup: <b id="lastBak">${bakTxt}</b> · ${DB.orders.length} ${DB.orders.length===1?"Auftrag":"Aufträge"}, ${totDays} ${totDays===1?"Tag":"Tage"}</div>
       <div class="btnrow"><button class="btn ghost" id="bakOut" style="margin:0">Backup teilen</button><button class="btn ghost" id="bakIn" style="margin:0">Backup einlesen</button></div>
     </div>
+    <div class="section-h"><h3>Export</h3></div>
+    ${exJahre.length?exJahre.map(j=>`<button class="setrow" data-exjahr="${j}"><span>Jahresliste ${j} als PDF</span><span class="chev">›</span></button>`).join(""):`<p class="note">Die Jahresliste gibt es ab 1. Januar für das Jahr davor.</p>`}
     ${prev?`<button class="setrow" id="bakPrev"><span>Vorherigen Stand zurückholen<small>${esc(prevZeile(prev.gesichertAm,prev.db))}</small></span><span class="chev">›</span></button>`:""}
     <div class="section-h"><h3>Hilfe</h3></div>
     <button class="setrow" id="helpBtn"><span>Anleitung</span><span class="chev">›</span></button>
@@ -2417,6 +2429,7 @@ function openSettings(ziel){
     else toast(url);
   };
   document.getElementById("bakOut").onclick=exportBackup;
+  document.querySelectorAll("[data-exjahr]").forEach(b=>b.onclick=()=>jahresPdf(+b.dataset.exjahr));
   document.getElementById("bakIn").onclick=()=>document.getElementById("backupInput").click();
   const bp=document.getElementById("bakPrev");
   if(bp)bp.onclick=()=>{const pv=prevLaden();if(!pv)return;
@@ -2428,17 +2441,17 @@ function openSettings(ziel){
   document.getElementById("wipe").onclick=()=>{const na=DB.orders.length,nt=DB.orders.reduce((a,o)=>a+o.days.length,0),nu=DB.urlaub.length;
     askConfirm("Wirklich alles löschen: "+na+" "+(na===1?"Auftrag":"Aufträge")+" mit "+nt+" "+(nt===1?"Tag":"Tagen")+" und "+nu+" "+(nu===1?"Urlaub":"Urlaube")+"?"+(prev?" Auch der gesicherte Stand vom letzten Einlesen wird gelöscht.":""),()=>{DB.orders=[];DB.urlaub=[];persist();prevLoeschen();closeSheet();state.orderId=null;render();toast("Alle Daten gelöscht");});};
 }
-/* Unterseite „Du und dein Vertrag“ (V4.4): speichert genau absender, status, vertragstage, feiertagOrt. */
+/* Unterseite „Vertragsdaten“ (V4.4): speichert genau absender, status, vertragstage, feiertagOrt. */
 function openVertragSettings(){
   let setStatus=S.status||"frei";
-  openSheet(`<h3>Du und dein Vertrag</h3>
+  openSheet(`<h3>Vertragsdaten</h3>
     <div class="field"><label>Dein Name</label><input type="text" class="txt" id="s_name" value="${esc(S.absender||"")}" placeholder="Vorname Nachname" autocapitalize="words">
-      <p class="note">Steht auf deinen Nachweisen. Mit ihm findet dich der Dispo-Import.</p></div>
-    <div class="field"><label>Beschäftigung (Vorgabe für neue Aufträge)</label><div class="toggles" id="s_status"><button data-s="frei">Freier Mitarbeiter</button><button data-s="fest">Fest angestellt</button></div></div>
-    <div class="field"><label>Arbeitstage laut Vertrag (pro Jahr)</label><input type="text" inputmode="numeric" id="s_tage" value="${S.vertragstage||""}" placeholder="leer = ohne Vertragstage">
-      <p class="note">Die Zahl gilt für freie Mitarbeiter und steht in deinem Vertrag. Die App zählt, wie viele davon im laufenden Jahr geleistet und disponiert sind. Fest Angestellte sehen ihre Einsatztage ohne diese Zahl.</p></div>
-    <div class="field"><label>Üblicher Arbeitsort / Dienstort (Feiertage)</label><select id="s_ftort">${ftOptionen(ortGueltig(S.feiertagOrt))}</select>
-      <p class="note">Freie: Vorgabe für Aufträge ohne eigenen Arbeitsort. Fest Angestellte: dein Dienstort, er gilt für alle Aufträge.</p></div>
+      <p class="note">Wie auf der Dispo.</p></div>
+    <div class="field"><label>Beschäftigung</label><div class="toggles" id="s_status"><button data-s="frei">Freier Mitarbeiter</button><button data-s="fest">Fest angestellt</button></div></div>
+    <div class="field"><label>Vertragstage im Jahr</label><input type="text" inputmode="numeric" id="s_tage" value="${S.vertragstage||""}" placeholder="nur für Freie">
+      <p class="note">Steht in deinem Vertrag. Die Statistik zählt mit.</p></div>
+    <div class="field"><label>Arbeitsort für Feiertage</label><select id="s_ftort">${ftOptionen(ortGueltig(S.feiertagOrt))}</select>
+      <p class="note">Fest angestellt: dein Dienstort.</p></div>
     <button class="btn" id="s_save">Speichern</button><button class="btn ghost" id="s_back" style="margin-bottom:0">Zurück</button>`);
   const paintSetStatus=()=>document.querySelectorAll("#s_status button").forEach(b=>b.classList.toggle("on",b.dataset.s===setStatus));
   document.querySelectorAll("#s_status button").forEach(b=>b.onclick=()=>{setStatus=b.dataset.s;paintSetStatus();});
@@ -2458,7 +2471,7 @@ function openMailSettings(){
     <div class="field"><label>Empfänger-E-Mail</label><input type="email" class="txt" id="s_mail" value="${esc(S.email||"")}" placeholder="empfangsadresse@…"></div>
     <div class="field"><label>Empfänger-Name (Anrede in der Mail)</label><input type="text" class="txt" id="s_empf" value="${esc(S.empfaenger||"")}" placeholder="Name"></div>
     <div class="field"><label>Mail-Text (optional)</label><textarea class="txt" id="s_anschr" rows="4" placeholder="${platz}">${esc(S.anschreiben||"")}</textarea>
-      <p class="note">Leer lassen heißt: Es gilt der graue Standardtext. Platzhalter, die du nutzen kannst: <b>{name}</b> · <b>{produktion}</b> · <b>{auftrag}</b> · <b>{tage}</b></p></div>
+      <p class="note">Leer: grauer Standardtext. Platzhalter: <b>{name}</b> · <b>{produktion}</b> · <b>{auftrag}</b> · <b>{tage}</b></p></div>
     <div class="field"><label>Grußformel (optional)</label><input type="text" class="txt" id="s_gruss" value="${esc(S.gruss||"")}" placeholder="Viele liebe Grüße"></div>
     <button class="btn" id="s_save">Speichern</button><button class="btn ghost" id="s_back" style="margin-bottom:0">Zurück</button>`);
   wacheSetzen(["s_mail","s_empf","s_anschr","s_gruss"]);
@@ -2502,11 +2515,10 @@ function openUrlaubSettings(){
     <div class="field"><label>Urlaubstage im Jahr</label><input type="text" inputmode="numeric" id="u_ansp" value="${S.urlaubAnspruch}"></div>
     <p class="note">Laut Merkblatt sind es 31 Arbeitstage.</p>
     <div class="field" style="margin-top:12px"><label>Betrag je Urlaubstag (Euro)</label><input type="text" inputmode="decimal" id="u_satz" placeholder="z. B. 200,00" value="${S.urlaubSatz?esc(String(S.urlaubSatz).replace(".",",")):""}"></div>
-    <p class="note">Damit zeigt die App ungefähr, was du für deinen Urlaub bekommst. Ohne Betrag fehlt nur diese Zeile.</p>
+    <p class="note">Für die ungefähre Vergütung.</p>
     <div class="section-h"><h3>Für den Antrag</h3></div>
     <div class="field"><label>Fachbereich (freiwillig)</label><input type="text" id="u_fb" placeholder="z. B. HR Sport" value="${esc(S.fachbereich)}"></div>
-    <p class="note">Trägst du hier nichts ein, bleibt das Feld im Antrag leer und du füllst es selbst aus.</p>
-    <p class="note">Dein Name kommt aus „Du und dein Vertrag“. Alles bleibt auf deinem Gerät und steht nur im Antrag.</p>
+    <p class="note">Leer lassen: im Antrag selbst ausfüllen. Den Namen nimmt die App aus „Vertragsdaten“.</p>
     <button class="btn" id="u_save" style="margin-top:16px">Speichern</button><button class="btn ghost" id="u_back" style="margin-bottom:0">Zurück</button>`);
   wacheSetzen(["u_ansp","u_satz","u_fb"]);
   document.getElementById("u_back").onclick=zurueckZurUebersicht;
@@ -2590,7 +2602,7 @@ function openWhatsNew(alle){
    (personMatch) und steht auf den Nachweisen. "weiter" läuft nach Speichern oder Später (Was ist neu oder schließen). */
 function openNameFrage(weiter){
   openSheet(`<h3>Wer nutzt die App?</h3>
-    <p class="note" style="margin:-8px 0 16px">Trag deinen Namen so ein, wie er auf der Dispo steht. Damit wählt dich der Import selbst aus, und er steht auf deinen Nachweisen. Ändern kannst du ihn jederzeit unter Einstellungen › Du und dein Vertrag.</p>
+    <p class="note" style="margin:-8px 0 16px">Trag deinen Namen so ein, wie er auf der Dispo steht. Damit wählt dich der Import selbst aus, und er steht auf deinen Nachweisen. Ändern kannst du ihn jederzeit unter Einstellungen › Vertragsdaten.</p>
     <div class="field"><label>Dein Name</label><input type="text" class="txt" id="n_name" placeholder="Vorname Nachname" autocomplete="name" autocapitalize="words" enterkeyhint="done"></div>
     <button class="btn" id="n_save">Speichern</button><button class="btn ghost" id="n_later" style="margin-bottom:0">Später</button>`);
   document.getElementById("n_save").onclick=()=>{const v=clean(val("n_name"));if(!v){toast("Trag bitte deinen Namen ein");return;}
@@ -2613,9 +2625,9 @@ function openHelp(){
 
     <div class="hsec"><div class="eb">1 · Auftrag anlegen</div>
       <p>Am schnellsten geht es mit der Dispo. Tippe oben unter den Reitern auf <b>PDF importieren</b> und wähle die Datei aus. Die App liest Titel, Auftragsnummer, Produktionsnummer, Ort und die Namen aller eingeteilten Personen heraus und legt dir die Drehtage gleich mit an.</p>
-      <p>Die App sucht dich über deinen Namen aus Einstellungen › Du und dein Vertrag und wählt dich vor. Findet sie dich nicht, ist niemand ausgewählt, und du tippst an, wer du bist. Danach prüfst du die <b>Reiseart</b>. Einzeltage heißt, du fährst jeden Tag hin und zurück. Mehrtägig heißt, du übernachtest vor Ort. Nennt die Dispo einen An- oder Rückreisetag, ist Mehrtägig schon vorgewählt. Die Vorschau zeigt dir jeden Tag mit Jahr und bei Mehrtägig mit Tagestyp. Den Tagestyp einzelner Tage änderst du danach im Tag.</p>
+      <p>Die App sucht dich über deinen Namen aus Einstellungen › Vertragsdaten und wählt dich vor. Findet sie dich nicht, ist niemand ausgewählt, und du tippst an, wer du bist. Danach prüfst du die <b>Reiseart</b>. Einzeltage heißt, du fährst jeden Tag hin und zurück. Mehrtägig heißt, du übernachtest vor Ort. Nennt die Dispo einen An- oder Rückreisetag, ist Mehrtägig schon vorgewählt. Die Vorschau zeigt dir jeden Tag mit Jahr und bei Mehrtägig mit Tagestyp. Den Tagestyp einzelner Tage änderst du danach im Tag.</p>
       <p>Ohne Dispo geht es genauso über <b>Auftrag anlegen</b>. Dann trägst du die Tage von Hand ein.</p>
-      <p>Im Auftrag stellst du unter <b>Beschäftigung</b> ein, ob du dort frei oder fest arbeitest. Vorgewählt ist, was in Einstellungen › Du und dein Vertrag steht. Bei Freien verlängert der Nachweis das Einsatzende um den Teil der Pause, den FLINK zu viel abzieht (Abschnitt 3).</p>
+      <p>Im Auftrag stellst du unter <b>Beschäftigung</b> ein, ob du dort frei oder fest arbeitest. Vorgewählt ist, was in Einstellungen › Vertragsdaten steht. Bei Freien verlängert der Nachweis das Einsatzende um den Teil der Pause, den FLINK zu viel abzieht (Abschnitt 3).</p>
       <p class="tip">Die Dispo kommt per Mail? Tippe das PDF an, dann auf Teilen und auf In Dateien sichern. Danach findest du es im Import ganz oben unter Zuletzt benutzt.</p></div>
 
     <div class="hsec"><div class="eb">2 · Einen Tag erfassen</div>
@@ -2673,20 +2685,20 @@ function openHelp(){
       <p class="tip">Das ZDF zahlt nachträglich, meist ein bis zwei Monate später und oft in mehreren Teilbeträgen. Urlaubsentgelt ist nicht enthalten. Nichts davon erscheint im Nachweis.</p></div>
 
     <div class="hsec"><div class="eb">10 · Vertragstage</div>
-      <p>In deinem Vertrag steht, an wie vielen Tagen im Jahr du eingesetzt werden kannst. Trag diese Zahl unter <b>Einstellungen › Du und dein Vertrag</b> bei <b>Arbeitstage laut Vertrag</b> ein. Dann zeigt dir die App in der Statistik und oben in den Aufträgen, wie viele Tage du im laufenden Jahr schon geleistet hast, wie viele bereits disponiert sind und wie viele noch frei bleiben.</p>
+      <p>In deinem Vertrag steht, an wie vielen Tagen im Jahr du eingesetzt werden kannst. Trag diese Zahl unter <b>Einstellungen › Vertragsdaten</b> bei <b>Arbeitstage laut Vertrag</b> ein. Dann zeigt dir die App in der Statistik und oben in den Aufträgen, wie viele Tage du im laufenden Jahr schon geleistet hast, wie viele bereits disponiert sind und wie viele noch frei bleiben.</p>
       <p>Gezählt wird jeder Tag aus deinen Aufträgen, auch aus abgerechneten, egal ob der Auftrag frei oder fest ist. Geleistet sind die Tage bis heute, disponiert die Tage danach. Stehen zwei Aufträge am selben Tag, zählt der Tag einmal. Urlaubstage zählt die App nicht mit. Die Kachel „Tage“ oben in den Aufträgen zählt dagegen alle Tage der offenen Aufträge über alle Jahre, deshalb weichen die beiden Zahlen oft voneinander ab.</p>
       <p>Bist du fest angestellt, brauchst du keine Vertragstage einzutragen. Die App zeigt dir dann unter <b>Einsatztage</b>, wie viele Tage du im laufenden Jahr geleistet hast und wie viele disponiert sind.</p>
       <p class="tip">Am 1. Januar beginnt die Zählung von vorn. Liegst du über der Zahl aus dem Vertrag, steht das rot in der Statistik.</p></div>
 
     <div class="hsec"><div class="eb">11 · Feiertage</div>
       <p>Die App kennt die gesetzlichen Feiertage in Deutschland je Bundesland, in der Schweiz je Kanton, in allen übrigen EU-Ländern, in Großbritannien (England und Wales, Schottland, Nordirland), Norwegen und Andorra. Oster- und Pfingstsonntag zählen immer, weil der Tarif sie ausdrücklich nennt. Fällt ein Feiertag aufs Wochenende und das Land gibt dafür einen freien Montag, gilt der Zuschlag trotzdem am eigentlichen Tag.</p>
-      <p>Als freier Mitarbeiter zählt der Feiertag dort, wo du arbeitest. Beim Dispo-Import erkennt die App das Land aus dem Produktionsort, im Auftrag änderst du es unter <b>Feiertage nach</b>. Erkennt sie nichts, gilt dein üblicher Arbeitsort aus <b>Einstellungen › Du und dein Vertrag</b>. Als fest Angestellter gilt immer der Dienstort, den du dort einträgst.</p>
+      <p>Als freier Mitarbeiter zählt der Feiertag dort, wo du arbeitest. Beim Dispo-Import erkennt die App das Land aus dem Produktionsort, im Auftrag änderst du es unter <b>Feiertage nach</b>. Erkennt sie nichts, gilt dein üblicher Arbeitsort aus <b>Einstellungen › Vertragsdaten</b>. Als fest Angestellter gilt immer der Dienstort, den du dort einträgst.</p>
       <p>Im Tag steht, ob er ein Feiertag ist. Stimmt das nicht, leerst du das Feld. Für ein Land, das die App nicht kennt, trägst du den Namen selbst ein. Regionale Feiertage in Spanien, etwa Gründonnerstag in den meisten Regionen, und Ortsfeiertage in Italien kennt die App nicht, die trägst du ebenfalls selbst ein.</p>
       <p class="tip">Im PDF bekommt ein Feiertag ein Sternchen beim Datum, in der Mail den Zusatz „Feiertag“. Unten stehen alle Feiertage mit Namen. So sieht die Disposition, wo der Zuschlag fällig ist.</p></div>
 
     <div class="hsec"><div class="eb">12 · Urlaub</div>
       <p>Für Freie gibt es den Reiter <b>Urlaub</b>. Oben steht, wie viele Urlaubstage du im Jahr noch frei hast. Die Pfeile über dem Kalender blättern durch dieses und das nächste Jahr, die Zahl oben gilt für das gezeigte Jahr.</p>
-      <p>Darunter steht ein Kalender. Tipp die Tage an, an denen du Urlaub willst, und dann auf <b>Als Urlaub eintragen</b>. Wochenenden und Feiertage sind grau, du kannst sie nicht antippen. Ein Feiertag kostet dich nämlich keinen Urlaubstag. Es zählen nur deutsche Feiertage: die an deinem Ort aus <b>Einstellungen › Du und dein Vertrag</b>, liegt er im Ausland, die bundesweiten. Tage mit einem Einsatz haben einen Rahmen. Lieber mit Datum? Dann tippst du unter dem Kalender auf <b>Oder mit Datum eintragen</b> und gibst den ersten und den letzten Tag ein.</p>
+      <p>Darunter steht ein Kalender. Tipp die Tage an, an denen du Urlaub willst, und dann auf <b>Als Urlaub eintragen</b>. Wochenenden und Feiertage sind grau, du kannst sie nicht antippen. Ein Feiertag kostet dich nämlich keinen Urlaubstag. Es zählen nur deutsche Feiertage: die an deinem Ort aus <b>Einstellungen › Vertragsdaten</b>, liegt er im Ausland, die bundesweiten. Tage mit einem Einsatz haben einen Rahmen. Einen eingetragenen Tag tippst du an, um ihn zu löschen.</p>
       <p>Urlaub musst du beim ZDF beantragen, und zwar spätestens <b>6 Wochen vor dem ersten Urlaubstag</b>. Unter dem Kalender steht ein Block für alles, was noch nicht beantragt ist, mit der Frist, und darunter ein Block je Antrag. Den <b>ersten Antrag im Jahr</b> schickst du selbst mit dem Formular für den Jahresurlaub ab, weil dafür Nachweise dazugehören. Er ist Antrag 1. Danach tippst du in der App auf <b>Ja, abgeschickt</b>. Stand ein Urlaub später auch darin, tippst du auf seinen Zeitraum und dort auf <b>Schon abgeschickt?</b>.</p>
       <p>Für alle weiteren Urlaube tippst du auf <b>Antrag ausfüllen lassen</b>. Die App füllt das echte Formular des ZDF mit allen geplanten Urlauben des Jahres aus, die noch in keinem Antrag stehen. Die Anträge bekommen ab 2 eine Nummer, die Datei heißt zum Beispiel „Urlaubsantrag 2026 Nr 2“. Mit <b>Antrag teilen</b> sicherst du die Datei oder schickst sie weiter. Dann unterschreibst du den Antrag und lässt ihn vom Fachbereich gegenzeichnen, denn der Fachbereich muss von deinem Urlaub wissen. Danach geht er an Freie-Mitarbeiter-3.Kreis-Urlaub@zdf.de. Ist er abgeschickt, tippst du im Block auf <b>Abgeschickt?</b>. Das gilt für den ganzen Antrag.</p>
       <p>Lehnt das ZDF einen Tag ab, tippst du im Block auf den Zeitraum und unter <b>Einen Tag herausnehmen</b> auf den Tag. Der Antrag bleibt, denn ein Tag weniger braucht keinen neuen. Einen anderen Tag tippst du danach im Kalender an, dafür füllt die App einen neuen Antrag aus. Machst du einen Urlaub nur kürzer, bleibt der Antrag auch. Kommen neue Tage dazu, fragt die App nach und setzt den Urlaub auf „Noch nicht beantragt“ zurück.</p>
@@ -2696,7 +2708,7 @@ function openHelp(){
 
     <div class="hsec"><div class="eb">13 · Statistik</div>
       <p>Die <b>Statistik</b> zeigt immer ein Jahr. Mit den Pfeilen im großen Kasten blätterst du zwischen den Jahren. Darunter stehen Netto-Arbeitszeit, Arbeitstage, Tagegeld-Tage und als freier Mitarbeiter der beantragte Urlaub, dann die Vertragstage, die Monate und die Aufträge des Jahres. Unter <b>Pro Jahr</b> vergleichst du die Jahre.</p>
-      <p>Mit <b>Jahresliste als PDF</b> bekommst du alle Einsatztage des Jahres mit Datum, Auftrag, Ort, Einsatzzeit und Stunden. Die Liste ist für deine Unterlagen gedacht und enthält keine Überstunden und kein Tagegeld.</p>
+      <p>Die <b>Jahresliste als PDF</b> findest du in den Einstellungen unter Export, für jedes abgeschlossene Jahr ab dem 1. Januar danach. Darin alle Einsatztage mit Datum, Auftrag, Ort, Einsatzzeit und Stunden, ohne Überstunden und Tagegeld.</p>
       <p class="tip">Fest Angestellte sehen dort auch die <b>Brückentage</b> am Dienstort. „1 für 4“ heißt: ein Urlaubstag, vier Tage am Stück frei. Gerechnet wird mit Montag bis Freitag, dein Dienstplan kann abweichen.</p></div>
 
     <button class="btn" id="helpBack" style="margin-top:6px">Verstanden</button>`);
@@ -3054,7 +3066,7 @@ function confirmImport(p,fname){
      plausibel aus, Name und Reisezeiten wären aber die eines Kollegen. */
   const meinName=clean(S.absender);
   const treffer=personMatch(persons,meinName);impSel=treffer;
-  const pHinweis=treffer>=0?"Vorauswahl nach deinem Namen.":(!meinName?"Tipp an, wer du bist. Mit deinem Namen unter Einstellungen › Du und dein Vertrag wählt die App dich selbst aus."
+  const pHinweis=treffer>=0?"Vorauswahl nach deinem Namen.":(!meinName?"Tipp an, wer du bist. Mit deinem Namen unter Einstellungen › Vertragsdaten wählt die App dich selbst aus."
     :`Die App findet ${esc(meinName)} auf dieser Dispo nicht eindeutig. Tipp an, wer du bist.`);
   let impTrip=null,tripTouched=false;
   const defTrip=()=>reiseVorwahl(p.ablauf);
