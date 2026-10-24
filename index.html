@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="Zeiterfassung">
 <meta name="theme-color" content="#15171A">
 <title>Zeiterfassung</title>
-<!-- Zeiterfassung V4.6.2 · Design "Amber Editorial" -->
+<!-- Zeiterfassung V4.7.0 · Design "Amber Editorial" -->
 <!-- impeccable-disable single-font -- Nutzer wählte beim V1.2-Redesign bewusst "Inter durchgängig" (eine Familie, tabular-nums für Zeiten) -->
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -106,6 +106,8 @@ body.light .bar{background:rgba(245,244,241,.85)}
 .ucard .uz{display:flex;flex-wrap:wrap;gap:0 14px;margin-top:4px}
 .ucard .uz .linkbtn{margin:0;padding:8px 0;min-height:36px;font-size:14px}
 .utage{margin:4px 0 2px}
+.sigpad{display:block;width:100%;aspect-ratio:3/1;background:#fff;border-radius:12px;touch-action:none;margin:0 0 12px}
+.sigbild{display:block;width:60%;aspect-ratio:3/1;background:#fff;border-radius:10px;margin-top:6px}
 .utage .chips button{min-height:44px;min-width:64px}
 .tgbox+.cards{margin-top:12px}
 .note.uinfo{font-size:13px;color:var(--text);margin:-4px 0 6px}
@@ -380,7 +382,7 @@ body.light .btn.danger{border-color:rgba(194,78,59,.4)}
   <div class="view" id="view"></div>
   <div class="foot">
     <div class="foot-note">Daten bleiben nur auf diesem Gerät · alle Angaben ohne Gewähr</div>
-    <div class="foot-v">Zeiterfassung <b>V4.6.2</b></div>
+    <div class="foot-v">Zeiterfassung <b>V4.7.0</b></div>
   </div>
 </div>
 <input type="file" id="pdfInput" accept="application/pdf" class="hidden">
@@ -480,13 +482,19 @@ S.feiertagOrt??="DE";  /* Feiertage (V4.3): üblicher Arbeitsort bzw. Dienstort.
 if(!(Number.isInteger(S.urlaubAnspruch)&&S.urlaubAnspruch>=1&&S.urlaubAnspruch<=60))S.urlaubAnspruch=31;
 if(typeof S.urlaubSatz!=="number"||!isFinite(S.urlaubSatz)||S.urlaubSatz<=0)S.urlaubSatz=null;
 if(typeof S.fachbereich!=="string")S.fachbereich="";
+if(typeof S.fbMail!=="string")S.fbMail="";
+if(typeof S.unterschrift!=="string"||!S.unterschrift.startsWith("data:image/png;base64,"))S.unterschrift="";
 
 /* ===== Was ist neu =====
    Wird einmal nach jedem Update gezeigt: Vergleich S.seenVersion gegen APP_VERSION.
    Nicht bei frischen Installationen (keine Aufträge) – ein neuer Kollege soll kein
    Changelog sehen, bevor er die App überhaupt kennt. Neue Einträge oben anfügen. */
-const APP_VERSION="4.6.2";
+const APP_VERSION="4.7.0";
 const WHATSNEW=[
+  {v:"4.7.0", t:"Antrag unterschrieben als PDF", items:[
+    ["Unterschrift","Unterschreib einmal mit dem Finger unter Einstellungen › Urlaub und Antrag. Sie steht dann auf jedem weiteren Antrag."],
+    ["Als PDF an die Teamleitung","Der Antrag sieht aus wie das Formular des ZDF und geht als PDF per Mail an deine Teamleitung, mit fertigem Text. Die Adresse hinterlegst du einmal."]
+  ]},
   {v:"4.6.2", t:"Erster Antrag aus der App", items:[
     ["Auch der erste Antrag","Die App füllt jetzt auch deinen ersten Urlaubsantrag im Jahr aus. Anschrift, Telefon und Seite 2 mit den Nachweisen ergänzt du selbst."],
     ["Ruhiger","Der große Kasten oben ist schlanker und überall gleich hoch. Den Hinweis zum Verfall gibt es nur noch unter „Ausnahmen“ im Urlaub-Kasten."]
@@ -1299,6 +1307,16 @@ function antragWerte(jahr,zeilen,p,heute,ort){
   return w;
 }
 /* Vorlage 627 (Bytes) → fertige Word-Datei (Bytes). */
+/* Mail an die Teamleitung zum Antrag als PDF (V4.7, Text von Max 24.10.2026). */
+function antragMailText(jahr,zeilen,name){
+  return "Hallo,\n\nanbei mein Urlaubsantrag für "+aufzaehlung(zeilen.map(u=>zeitraumLesbar(u.von,u.bis)))+" "+jahr+
+    " mit der Bitte um Unterschrift und Weiterleitung an Freie-Mitarbeiter-3.Kreis-Urlaub@zdf.de.\n\nMit freundlichen Grüßen"+(String(name||"").trim()?"\n"+String(name).trim():"");
+}
+/* Antrag 627 als PDF (V4.7): Hintergrund ist das leere Originalformular, mit Word gerendert (vorlagen/627.jpg). Darüber die Werte aus
+   antragWerte an den Feldpositionen, gemessen mit pdftotext -bbox an einer Word-Ausgabe mit Markierungen (pt, links und oben, Arial 11).
+   name: der Name rechts neben der Unterschriftszeile (REF-Feld), sig: Fläche für die Unterschrift über der Zeile. */
+const F627={1:[359.4,146.2],2:[187,256.2],3:[187,281.4],19:[131.3,548.5],20:[237.6,666.3],name:[420.8,565.3],
+  zx:[74.6,205.7,333.4],zy:[373,393,412.6,432.6,452.5],sig:[305,524,120,40]};
 /* Felder des ersten Antrags (613): 1 Name, 3 Fachbereich, 7 Jahr, 8 bis 22 die Zeilen, 23 und 42 Datum. Anschrift, Telefon und Seite 2
    (Einkünfte, Nachweise) füllt man selbst aus. */
 function werte613(w){const r=[];r[1]=w[2];r[3]=w[3];r[7]=w[1];for(let i=0;i<15;i++)r[8+i]=w[4+i];r[23]=w[19];r[42]=w[19];return r;}
@@ -2004,14 +2022,25 @@ function urlaubAktion(aktion,ids,jahr){
 /* Datei über das Teilen-Menü weitergeben. Muss direkt im Tipp laufen (iOS will eine frische Geste, kein await davor).
    ok() kommt nur nach dem Teilen oder, wenn das Gerät Dateien nicht teilen kann, nach dem Download. Bricht man ab, passiert nichts.
    Lehnt das Gerät ab (NotAllowedError oder ein anderer Fehler), sagt nochmal, was zu tun ist, und ok() bleibt aus. */
-function dateiTeilen(blob,fname,typ,ok,nochmal){
+function dateiTeilen(blob,fname,typ,ok,nochmal,extra){
   const file=new File([blob],fname,{type:typ});
   let geht=false;try{geht=!!(navigator.canShare&&navigator.share&&navigator.canShare({files:[file]}));}catch(e){}
   if(!geht){dlBlob(blob,fname);ok();return;}
   const fehler=err=>{if(err&&err.name==="AbortError")return;console.warn(err);toast(nochmal);};
-  try{navigator.share({files:[file]}).then(ok,fehler);}catch(err){fehler(err);}
+  try{navigator.share({files:[file],...extra}).then(ok,fehler);}catch(err){fehler(err);}
 }
 const DOCX_TYP="application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+/* Antrag 627 als PDF mit Unterschrift (V4.7): das Originalformular als Bild, Werte und Unterschrift an den Stellen aus F627. */
+function antragPdf(bild,jahr,zeilen,p,heute,ort,sig){
+  const {jsPDF}=window.jspdf,doc=new jsPDF({unit:"pt",format:"a4"}),w=antragWerte(jahr,zeilen,p,heute,ort);
+  doc.addImage(bild,"JPEG",0,0,595.44,841.92);doc.setFont("helvetica","normal");doc.setFontSize(11);doc.setTextColor(0,0,0);
+  const t=(v,x,y)=>{if(v)doc.text(String(v),x,y+10);};/* +10: von der Oberkante zur Grundlinie bei 11 pt */
+  [1,2,3,19,20].forEach(i=>t(w[i],F627[i][0],F627[i][1]));
+  for(let r=0;r<5;r++)for(let c=0;c<3;c++)t(w[4+3*r+c],F627.zx[c],F627.zy[r]);
+  t(w[2],F627.name[0],F627.name[1]);
+  if(sig)doc.addImage(sig,"PNG",...F627.sig);
+  return doc.output("blob");
+}
 /* Antrag ausfüllen (Spec Abschnitt 5 und Nachtrag): Formular 627 mit allen geplanten Urlauben des Jahres, je Datei höchstens 5.
    Die Vorlage kommt aus dem Offline-Cache des Service Workers (sw.js ASSETS). Erst alle Dateien bauen, dann je Datei ein Sheet
    mit Knopf „Antrag teilen“: Das Teilen-Menü braucht einen frischen Tipp, nach dem await gilt der erste nicht mehr.
@@ -2023,32 +2052,42 @@ async function urlaubAntrag(jahr){
   const heute=isoLocal(new Date()),p={absender:S.absender,fachbereich:S.fachbereich},dateien=[],nr0=naechsteAntragNr(DB.urlaub,jahr);
   /* Ohne ersten Antrag im Jahr wird die erste Datei das Formular 613 (Nr 1), weitere 627 ab Nr 2 (V4.6.2). */
   const erst=!erstAntragDa(DB.urlaub,jahr);
+  /* Ab V4.7 kommen die weiteren Anträge (627) als PDF mit Unterschrift, dafür braucht es die gespeicherte Unterschrift. */
+  if(gruppen.length>(erst?1:0)&&!S.unterschrift){toast("Für den Antrag fehlt deine Unterschrift. Unterschreib einmal unter Urlaub und Antrag.");return openSettings("urlaub");}
   try{
     const vorlagen={};
-    for(const f of erst?["613","627"]:["627"]){const r=await fetch("vorlagen/"+f+".dotx");if(!r.ok)throw new Error("Vorlage "+f+": "+r.status);vorlagen[f]=new Uint8Array(await r.arrayBuffer());}
+    const noetig=(erst?["613.dotx"]:[]).concat(gruppen.length>(erst?1:0)?["627.jpg"]:[]);
+    for(const f of noetig){const r=await fetch("vorlagen/"+f);if(!r.ok)throw new Error("Vorlage "+f+": "+r.status);vorlagen[f]=new Uint8Array(await r.arrayBuffer());}
     for(let g=0;g<gruppen.length;g++){
-      const form=erst&&g===0?"613":"627",nr=form==="613"?1:nr0+g-(erst?1:0);
-      const bytes=await antragDocx(vorlagen[form],jahr,gruppen[g],p,heute,urlaubOrt(S.feiertagOrt),form);
-      /* Nummer im Dateinamen, damit ein zweiter Antrag den ersten nicht überschreibt (Max 23.10.2026). */
-      dateien.push({id:uid(),nr,form,zeilen:gruppen[g],blob:new Blob([bytes],{type:DOCX_TYP}),fname:"Urlaubsantrag "+jahr+" Nr "+nr+".docx"});
+      const form=erst&&g===0?"613":"627",nr=form==="613"?1:nr0+g-(erst?1:0),ort=urlaubOrt(S.feiertagOrt);
+      /* Der erste Antrag bleibt Word zum Ergänzen, weitere als PDF mit Unterschrift (Max 24.10.2026). Nummer im Dateinamen (23.10.). */
+      const blob=form==="613"?new Blob([await antragDocx(vorlagen["613.dotx"],jahr,gruppen[g],p,heute,ort,form)],{type:DOCX_TYP})
+        :antragPdf(vorlagen["627.jpg"],jahr,gruppen[g],p,heute,ort,S.unterschrift);
+      dateien.push({id:uid(),nr,form,zeilen:gruppen[g],blob,typ:form==="613"?DOCX_TYP:"application/pdf",fname:"Urlaubsantrag "+jahr+" Nr "+nr+(form==="613"?".docx":".pdf")});
     }
   }catch(e){console.error(e);toast("Der Antrag ließ sich nicht erstellen. Öffne die App einmal mit Netz und versuch es noch einmal.");return;}
   const n=dateien.length;
-  const bereit=k=>{const d=dateien[k];
+  const bereit=k=>{const d=dateien[k],pdf=d.form==="627";
     openSheet(`<h3>Antrag ${d.nr} ist bereit</h3>
-    <p class="note" style="margin:-8px 0 16px">${n>1?"Du hast mehr als 5 Urlaube geplant. Sie passen nicht in ein Formular, deshalb gibt es "+n+" Anträge. ":""}Tipp auf „Antrag teilen“, dann kannst du die Datei sichern oder verschicken.</p>
+    <p class="note" style="margin:-8px 0 16px">${n>1?"Du hast mehr als 5 Urlaube geplant. Sie passen nicht in ein Formular, deshalb gibt es "+n+" Anträge. ":""}${pdf?(S.fbMail?"Tipp auf „Antrag teilen“ und wähl Mail. Die Adresse der Teamleitung ist kopiert, füg sie als Empfänger ein.":"Tipp auf „Antrag teilen“ und wähl Mail an deine Teamleitung im Fachbereich."):"Tipp auf „Antrag teilen“, dann kannst du die Datei sichern oder verschicken."}</p>
     <button class="btn" id="uTeil">Antrag teilen</button><button class="btn ghost" id="uTeilNein" style="margin-bottom:0">Später</button>`);
     /* Kein await vor dateiTeilen: der Aufruf läuft direkt in diesem Tipp. */
-    document.getElementById("uTeil").onclick=()=>dateiTeilen(d.blob,d.fname,DOCX_TYP,()=>{
+    document.getElementById("uTeil").onclick=()=>{
+      /* Adresse vor dem Teilen kopieren, ohne zu warten: Das Teilen-Menü braucht den frischen Tipp. */
+      if(pdf&&S.fbMail&&navigator.clipboard)navigator.clipboard.writeText(S.fbMail).catch(()=>{});
+      dateiTeilen(d.blob,d.fname,d.typ,()=>{
       d.zeilen.forEach(u=>Object.assign(u,{formular:d.form,ausgefuelltAm:heute,antragId:d.id,antragNr:d.nr}));persist();render();
-      if(k+1<n)bereit(k+1);else antragFertig(n,dateien.some(x=>x.form==="613"));},"Teilen ging nicht. Tipp noch einmal auf „Antrag teilen“.");
+      if(k+1<n)bereit(k+1);else antragFertig(n,dateien.some(x=>x.form==="613"),dateien.some(x=>x.form==="627"));},"Teilen ging nicht. Tipp noch einmal auf „Antrag teilen“.",
+      pdf?{title:"Urlaubsantrag "+jahr+" Nr "+d.nr,text:antragMailText(jahr,d.zeilen,S.absender)}:undefined);};
     document.getElementById("uTeilNein").onclick=closeSheet;};
   bereit(0);
 }
 /* Hinweis nach dem Ausfüllen als Sheet, weil er für einen Toast zu lang ist. */
-function antragFertig(anzahl,erst){
+function antragFertig(anzahl,erst,pdf){
+  const t=[erst?"Beim ersten Antrag ergänzt du Anschrift, Telefon und Seite 2 mit den Nachweisen selbst, unterschreibst, lässt ihn vom Fachbereich gegenzeichnen und schickst ihn an Freie-Mitarbeiter-3.Kreis-Urlaub@zdf.de."+(clean(S.fachbereich)?"":" Den Fachbereich trägst du im Formular selbst ein."):"",
+    pdf?"Deine Teamleitung unterschreibt den Antrag und leitet ihn weiter.":"","Danach auf „Abgeschickt?“ tippen."].filter(Boolean).join(" ");
   openSheet(`<h3>${anzahl>1?"Deine Anträge sind fertig":"Dein Antrag ist fertig"}</h3>
-    <p class="uhinweis">${erst?"Beim ersten Antrag ergänzt du Anschrift, Telefon und Seite 2 mit den Nachweisen selbst. ":""}Dann unterschreiben, vom Fachbereich gegenzeichnen lassen und an Freie-Mitarbeiter-3.Kreis-Urlaub@zdf.de schicken. Danach auf „Abgeschickt?“ tippen.${clean(S.fachbereich)?"":" Den Fachbereich trägst du im Formular selbst ein."}</p>
+    <p class="uhinweis">${esc(t)}</p>
     <button class="btn" id="uOk" style="margin-bottom:0">Verstanden</button>`);
   document.getElementById("uOk").onclick=closeSheet;
 }
@@ -2526,8 +2565,13 @@ function openUrlaubSettings(){
     <div class="section-h"><h3>Für den Antrag</h3></div>
     <div class="field"><label>Fachbereich (freiwillig)</label><input type="text" id="u_fb" placeholder="z. B. HR Sport" value="${esc(S.fachbereich)}"></div>
     <p class="note">Leer lassen: im Antrag selbst ausfüllen. Den Namen nimmt die App aus „Vertragsdaten“.</p>
+    <div class="field" style="margin-top:12px"><label>Mail der Teamleitung</label><input type="email" class="txt" id="u_fbmail" placeholder="teamleitung@zdf.de" value="${esc(S.fbMail)}"></div>
+    <p class="note">Bekommt deinen Antrag zum Unterschreiben und leitet ihn weiter.</p>
+    <div class="field" style="margin-top:12px"><label>Deine Unterschrift</label>${S.unterschrift?`<img src="${S.unterschrift}" alt="Deine Unterschrift" class="sigbild">`:`<p class="note">Noch keine. Sie steht auf jedem Antrag als PDF.</p>`}
+      <button class="btn ghost" id="u_sig" style="margin:6px 0 0">${S.unterschrift?"Neu unterschreiben":"Unterschreiben"}</button></div>
     <button class="btn" id="u_save" style="margin-top:16px">Speichern</button><button class="btn ghost" id="u_back" style="margin-bottom:0">Zurück</button>`);
-  wacheSetzen(["u_ansp","u_satz","u_fb"]);
+  wacheSetzen(["u_ansp","u_satz","u_fb","u_fbmail"]);
+  document.getElementById("u_sig").onclick=openUnterschrift;
   document.getElementById("u_back").onclick=zurueckZurUebersicht;
   document.getElementById("u_save").onclick=()=>{
     const ar=val("u_ansp").trim(),a=/^\d+$/.test(ar)?parseInt(ar,10):0;
@@ -2535,8 +2579,32 @@ function openUrlaubSettings(){
     const sr=val("u_satz").trim(),sa=parseEur(sr);
     /* parseEur rundet auf Cent: 0,004 ergibt 0, das zählt hier nicht als Betrag. */
     if(sr!==""&&(sa===null||sa===0)){toast("Betrag je Urlaubstag: eine Zahl über 0");return;}
-    S.urlaubAnspruch=a;S.urlaubSatz=sa;S.fachbereich=clean(val("u_fb"));
+    const fm=clean(val("u_fbmail"));if(fm&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(fm)){toast("Mail der Teamleitung: bitte eine gültige Adresse");return;}
+    S.urlaubAnspruch=a;S.urlaubSatz=sa;S.fachbereich=clean(val("u_fb"));S.fbMail=fm;
     persist();render();openSettings();toast("Einstellungen gespeichert");};
+}
+/* Unterschrift mit dem Finger (V4.7): nur auf dem Gerät gespeichert (S.unterschrift, PNG), steht auf jedem Antrag als PDF. */
+function openUnterschrift(){
+  openSheet(`<h3>Unterschrift</h3><p class="note" style="margin:-8px 0 8px">Mit dem Finger im weißen Feld unterschreiben.</p>
+    <canvas id="sigPad" class="sigpad" aria-label="Feld für deine Unterschrift"></canvas>
+    <div class="btnrow"><button class="btn ghost" id="sigNeu" style="margin:0">Löschen</button><button class="btn" id="sigOk" style="margin:0">Übernehmen</button></div>
+    <button class="btn ghost" id="sigZurueck" style="margin:10px 0 0">Zurück</button>`);
+  const c=document.getElementById("sigPad"),x=c.getContext("2d");
+  /* Größe erst setzen, wenn das Feld sichtbar ist (beim Öffnen läuft das Sheet noch ein). */
+  const groesse=()=>{const dpr=window.devicePixelRatio||1,r=c.getBoundingClientRect();if(!r.width)return;
+    c.width=r.width*dpr;c.height=r.height*dpr;x.scale(dpr,dpr);x.lineWidth=2.4;x.lineCap=x.lineJoin="round";x.strokeStyle="#111";};
+  groesse();
+  let zieht=false,leer=true;
+  const pos=e=>{const b=c.getBoundingClientRect();return [e.clientX-b.left,e.clientY-b.top];};
+  /* Das Sheet schließt per Wisch nach unten: Berührungen im Feld nicht weitergeben. */
+  ["touchstart","touchmove"].forEach(t=>c.addEventListener(t,e=>e.stopPropagation(),{passive:true}));
+  c.onpointerdown=e=>{if(leer)groesse();zieht=true;leer=false;c.setPointerCapture(e.pointerId);x.beginPath();x.moveTo(...pos(e));};
+  c.onpointermove=e=>{if(!zieht)return;x.lineTo(...pos(e));x.stroke();};
+  c.onpointerup=c.onpointercancel=()=>{zieht=false;};
+  document.getElementById("sigNeu").onclick=()=>{x.clearRect(0,0,c.width,c.height);leer=true;};
+  document.getElementById("sigZurueck").onclick=openUrlaubSettings;
+  document.getElementById("sigOk").onclick=()=>{if(leer){toast("Bitte erst unterschreiben");return;}
+    S.unterschrift=c.toDataURL("image/png");persist();openUrlaubSettings();toast("Unterschrift gespeichert");};
 }
 function openRules(){
   openSheet(`<h3>Rechenregeln</h3>
@@ -2707,10 +2775,10 @@ function openHelp(){
       <p>Für Freie gibt es den Reiter <b>Urlaub</b>. Oben steht, wie viele Urlaubstage du im Jahr noch frei hast. Die Pfeile über dem Kalender blättern durch dieses und das nächste Jahr, die Zahl oben gilt für das gezeigte Jahr.</p>
       <p>Darunter steht ein Kalender. Tipp die Tage an, an denen du Urlaub willst, und dann auf <b>Als Urlaub eintragen</b>. Wochenenden und Feiertage sind grau, du kannst sie nicht antippen. Ein Feiertag kostet dich nämlich keinen Urlaubstag. Es zählen nur deutsche Feiertage: die an deinem Ort aus <b>Einstellungen › Vertragsdaten</b>, liegt er im Ausland, die bundesweiten. Tage mit einem Einsatz haben einen Rahmen. Einen eingetragenen Tag tippst du an, um ihn zu löschen.</p>
       <p>Urlaub musst du beim ZDF beantragen, und zwar spätestens <b>6 Wochen vor dem ersten Urlaubstag</b>. Unter dem Kalender steht ein Block für alles, was noch nicht beantragt ist, mit der Frist, und darunter ein Block je Antrag. Den <b>ersten Antrag im Jahr</b> schickst du selbst mit dem Formular für den Jahresurlaub ab, weil dafür Nachweise dazugehören. Er ist Antrag 1. Danach tippst du in der App auf <b>Ja, abgeschickt</b>. Stand ein Urlaub später auch darin, tippst du auf seinen Zeitraum und dort auf <b>Schon abgeschickt?</b>.</p>
-      <p>Für alle weiteren Urlaube tippst du auf <b>Antrag ausfüllen lassen</b>. Die App füllt das echte Formular des ZDF mit allen geplanten Urlauben des Jahres aus, die noch in keinem Antrag stehen. Die Anträge bekommen ab 2 eine Nummer, die Datei heißt zum Beispiel „Urlaubsantrag 2026 Nr 2“. Mit <b>Antrag teilen</b> sicherst du die Datei oder schickst sie weiter. Dann unterschreibst du den Antrag und lässt ihn vom Fachbereich gegenzeichnen, denn der Fachbereich muss von deinem Urlaub wissen. Danach geht er an Freie-Mitarbeiter-3.Kreis-Urlaub@zdf.de. Ist er abgeschickt, tippst du im Block auf <b>Abgeschickt?</b>. Das gilt für den ganzen Antrag.</p>
+      <p>Für alle weiteren Urlaube tippst du auf <b>Antrag ausfüllen lassen</b>. Die App füllt das echte Formular des ZDF mit allen geplanten Urlauben des Jahres aus, die noch in keinem Antrag stehen. Die Anträge bekommen ab 2 eine Nummer, die Datei heißt zum Beispiel „Urlaubsantrag 2026 Nr 2“. Ab Antrag 2 ist die Datei ein PDF mit deiner Unterschrift. Mit <b>Antrag teilen</b> wählst du Mail, der Text steht schon drin, die Adresse deiner Teamleitung liegt in der Zwischenablage. Die Teamleitung unterschreibt und leitet den Antrag an Freie-Mitarbeiter-3.Kreis-Urlaub@zdf.de weiter. Ist er abgeschickt, tippst du im Block auf <b>Abgeschickt?</b>. Das gilt für den ganzen Antrag.</p>
       <p>Lehnt das ZDF einen Tag ab, tippst du im Block auf den Zeitraum und unter <b>Einen Tag herausnehmen</b> auf den Tag. Der Antrag bleibt, denn ein Tag weniger braucht keinen neuen. Einen anderen Tag tippst du danach im Kalender an, dafür füllt die App einen neuen Antrag aus. Machst du einen Urlaub nur kürzer, bleibt der Antrag auch. Kommen neue Tage dazu, fragt die App nach und setzt den Urlaub auf „Noch nicht beantragt“ zurück.</p>
       <p>Urlaub gilt nur im Kalenderjahr. Was du bis zum Jahresende nicht beantragst, <b>verfällt am 31. Dezember</b>. Die Ausnahmen stehen oben im Urlaub-Kasten unter <b>Ausnahmen</b>. Es gibt zwei Ausnahmen: Warst du ohne eigene Schuld daran gehindert, den Antrag zu stellen, holst du ihn bis zum 31. März nach. Und das ZDF kann den Urlaub aus dringenden betrieblichen oder persönlichen Gründen ins neue Jahr übertragen, das muss genehmigt werden. Dann beantragst du ihn in den ersten drei Monaten und nimmst ihn bis spätestens 30. April.</p>
-      <p>Unter <b>Einstellungen › Urlaub und Antrag</b> stellst du ein, wie viele Urlaubstage du im Jahr hast. Laut Merkblatt sind es 31. Trägst du einen Betrag je Urlaubstag ein, zeigt die App, was du für deinen Urlaub ungefähr bekommst. Den Fachbereich kannst du dort auch eintragen, dann steht er gleich im Antrag. Sonst füllst du ihn im Formular selbst aus.</p>
+      <p>Unter <b>Einstellungen › Urlaub und Antrag</b> stellst du ein, wie viele Urlaubstage du im Jahr hast. Laut Merkblatt sind es 31. Trägst du einen Betrag je Urlaubstag ein, zeigt die App, was du für deinen Urlaub ungefähr bekommst. Dort trägst du auch den Fachbereich, die Mail deiner Teamleitung und einmal deine Unterschrift ein. Die Unterschrift bleibt nur auf deinem Handy.</p>
       <p class="tip">Mit <b>In meinen Kalender übernehmen</b> zeigt dein iPhone deine Urlaubstage, mit <b>Alle hinzufügen</b> kommt jeder als eigener Termin in deinen Kalender, zum Beispiel „ZDF Urlaub 12 von 31“. Hat sich seitdem etwas geändert, lösch erst die alten „ZDF Urlaub“-Termine im Kalender und übernimm dann neu. Vorhandene Termine ändert dein iPhone dabei nicht, sonst stimmen die Nummern nicht mehr.</p></div>
 
     <div class="hsec"><div class="eb">13 · Statistik</div>
