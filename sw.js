@@ -1,6 +1,6 @@
 /* Zeiterfassung Service Worker – Offline-Cache.
    Navigation: network-first (Updates kommen an), Assets: cache-first. */
-const CACHE = "zeiterfassung-v4.7.0";
+const CACHE = "zeiterfassung-v4.7.1";
 const ASSETS = [
   "./",
   "manifest.json",
@@ -22,7 +22,6 @@ const ASSETS = [
   "vendor/pdf.min.js",
   "vendor/pdf.worker.min.js",
   "vendor/jspdf.umd.min.js",
-  "vorlagen/613.dotx",
   "vorlagen/627.jpg"
 ];
 
