@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="Zeiterfassung">
 <meta name="theme-color" content="#15171A">
 <title>Zeiterfassung</title>
-<!-- Zeiterfassung V4.7.2 · Design "Amber Editorial" -->
+<!-- Zeiterfassung V4.7.3 · Design "Amber Editorial" -->
 <!-- impeccable-disable single-font -- Nutzer wählte beim V1.2-Redesign bewusst "Inter durchgängig" (eine Familie, tabular-nums für Zeiten) -->
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -19,8 +19,8 @@
 <script src="vendor/jspdf.umd.min.js"></script>
 <style>
 /* ===== Tokens (Handoff "Amber Editorial") ===== */
-:root{--bg:#15171A;--surface:#1E2228;--surface-2:#262B31;--field:#22262C;--field-input:#34393F;--line:#2A2F35;--line-strong:#3A4048;--text:#E8E8E8;--text-strong:#FFFFFF;--muted:#8A9099;--silver:#C3C3C3;--faint:#6E747B;--accent:#FA7D19;--accent-soft:rgba(250,125,25,.14);--accent-line:rgba(250,125,25,.28);--accent-ink:#B8925F;--pos:#54BE86;--pos-soft:rgba(84,190,134,.14);--pos-line:rgba(84,190,134,.40);--info:#6B87A2;--info-soft:rgba(107,135,162,.14);--info-line:rgba(107,135,162,.32);--danger:#E0705C;--on-accent:#15171A;--glow:0 8px 24px rgba(250,125,25,.30);--cardshadow:none;--holo-1:#FA7D19;--holo-2:#FFC08A;--holo-3:#F2A9CF;--holo-4:#B6A8F4;--holo-5:#8ED8EA;--urlaub-has-bg:rgba(250,125,25,.14);--urlaub-has-fg:#FA7D19}
-body.light{--bg:#F5F4F1;--surface:#FFFFFF;--surface-2:#EFEDE8;--field:#E9E7E1;--field-input:#E9E7E1;--line:#DEDBD3;--line-strong:#C9C5BC;--text:#28251F;--text-strong:#141210;--muted:#7A756C;--silver:#545048;--faint:#9B968C;--accent:#E86F0C;--accent-soft:rgba(232,111,12,.12);--accent-line:rgba(232,111,12,.30);--accent-ink:#B07A3C;--pos:#1E9E60;--pos-soft:rgba(30,158,96,.12);--pos-line:rgba(30,158,96,.45);--info:#49688C;--info-soft:rgba(73,104,140,.10);--info-line:rgba(73,104,140,.30);--danger:#C24E3B;--on-accent:#FFFFFF;--glow:0 8px 24px rgba(232,111,12,.32);--cardshadow:0 2px 14px rgba(0,0,0,.05);--holo-1:#E86F0C;--holo-2:#E8955A;--holo-3:#C9679D;--holo-4:#7C6AD0;--holo-5:#3C9DB8;--urlaub-has-bg:#94520C;--urlaub-has-fg:#FFFFFF}
+:root{--bg:#15171A;--surface:#1E2228;--surface-2:#262B31;--field:#22262C;--field-input:#34393F;--line:#2A2F35;--line-strong:#3A4048;--text:#E8E8E8;--text-strong:#FFFFFF;--muted:#9399A2;--silver:#C3C3C3;--faint:#858B93;--accent:#FA7D19;--accent-text:#FA7D19;--accent-soft:rgba(250,125,25,.14);--accent-line:rgba(250,125,25,.28);--accent-ink:#B8925F;--pos:#54BE86;--pos-soft:rgba(84,190,134,.14);--pos-line:rgba(84,190,134,.40);--info:#6B87A2;--info-soft:rgba(107,135,162,.14);--info-line:rgba(107,135,162,.32);--danger:#E0705C;--on-accent:#15171A;--glow:0 8px 24px rgba(250,125,25,.30);--cardshadow:none;--holo-1:#FA7D19;--holo-2:#FFC08A;--holo-3:#F2A9CF;--holo-4:#B6A8F4;--holo-5:#8ED8EA;--urlaub-has-bg:rgba(250,125,25,.14);--urlaub-has-fg:#FA7D19}
+body.light{--bg:#F5F4F1;--surface:#FFFFFF;--surface-2:#EFEDE8;--field:#E9E7E1;--field-input:#E9E7E1;--line:#DEDBD3;--line-strong:#C9C5BC;--text:#28251F;--text-strong:#141210;--muted:#66615A;--silver:#545048;--faint:#716C64;--accent:#E86F0C;--accent-text:#9E4D06;--accent-soft:rgba(232,111,12,.12);--accent-line:rgba(232,111,12,.30);--accent-ink:#7E5F36;--pos:#177A4A;--pos-soft:rgba(30,158,96,.12);--pos-line:rgba(30,158,96,.45);--info:#49688C;--info-soft:rgba(73,104,140,.10);--info-line:rgba(73,104,140,.30);--danger:#B0412F;--on-accent:#FFFFFF;--glow:0 8px 24px rgba(232,111,12,.32);--cardshadow:0 2px 14px rgba(0,0,0,.05);--holo-1:#E86F0C;--holo-2:#E8955A;--holo-3:#C9679D;--holo-4:#7C6AD0;--holo-5:#3C9DB8;--urlaub-has-bg:#94520C;--urlaub-has-fg:#FFFFFF}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;padding:0;max-width:100%;overflow-x:hidden}
 body{background:var(--bg);color:var(--text);font-family:"Inter",-apple-system,system-ui,sans-serif;font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
@@ -32,10 +32,11 @@ body.light .bar{background:rgba(245,244,241,.85)}
 .brand{display:flex;align-items:center;gap:10px;flex:1;min-width:0;color:var(--text)}
 .brand svg{width:28px;height:28px;flex:none;display:block}
 .brand-name{font-weight:700;font-size:16px;line-height:1;letter-spacing:-.3px;color:var(--text-strong);white-space:nowrap}
-.eyebrow{font-size:9px;font-weight:600;letter-spacing:1.4px;text-transform:uppercase;color:var(--muted)}
+.eyebrow{font-size:11px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--muted)}
 .iconbtn{width:36px;height:36px;border-radius:10px;border:none;background:transparent;color:var(--muted);display:flex;align-items:center;justify-content:center;flex:none;padding:0}
 .iconbtn:active{background:var(--surface)}
-.backlink{background:none;border:none;color:var(--accent);font-family:inherit;font-size:13px;font-weight:600;padding:0}
+.backlink{background:none;border:none;color:var(--accent-text);font-family:inherit;font-size:13px;font-weight:600;padding:0;position:relative;touch-action:manipulation}
+.backlink::after{content:"";position:absolute;inset:-14px -12px}/* V4.7.3: Tippfläche 44 px wie .iconbtn, Optik gleich */
 /* View */
 .view{padding:22px 20px calc(env(safe-area-inset-bottom) + 44px);animation:fade .25s ease}
 @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
@@ -47,8 +48,8 @@ body.light .bar{background:rgba(245,244,241,.85)}
 .kpis.two{grid-template-columns:1fr 1fr}
 .kpis.verd .kpi{display:flex;flex-direction:column;justify-content:space-between}
 .kpis.verd .kpi .n{font-size:19px;white-space:nowrap}
-.kpi{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:13px 12px;min-width:0}
-.kpi .l{font-size:9px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted)}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:13px 10px;min-width:0}
+.kpi .l{font-size:11px;font-weight:600;letter-spacing:0;text-transform:uppercase;color:var(--muted)}
 .kpi .n{font-weight:800;font-size:22px;margin-top:3px;color:var(--text-strong)}
 .kpi .n small{font-size:13px;font-weight:600;color:var(--muted)}
 .kpi.acc{background:var(--accent-soft);border-color:var(--accent-line)}
@@ -57,7 +58,7 @@ body.light .bar{background:rgba(245,244,241,.85)}
 .kpi.posk .n{color:var(--pos)}
 .kpi.warnk{border-color:var(--danger)}
 .kpi.warnk .l,.kpi.warnk .n{color:var(--danger)}
-.kpi.warnk .l{letter-spacing:.8px;white-space:nowrap}/* "Über Vertrag" passt so auch bei 375 px in eine Zeile */
+.kpi.warnk .l{letter-spacing:.3px;white-space:nowrap}/* "Über Vertrag" passt so auch bei 375 px in eine Zeile */
 .vbar{display:flex;height:6px;border-radius:3px;background:var(--line);overflow:hidden;margin:-6px 0 14px}
 .vbar span{display:block;height:100%}
 .vbar .g{background:var(--accent)}
@@ -67,7 +68,7 @@ body.light .bar{background:rgba(245,244,241,.85)}
 .vwarn{color:var(--danger);font-weight:700;white-space:nowrap}
 /* Hero */
 .hero{background:linear-gradient(135deg,var(--accent-soft),transparent);border:1px solid var(--accent-line);border-radius:16px;padding:22px 18px;margin-bottom:14px;padding:18px}
-.hero .l{font-size:9px;font-weight:600;letter-spacing:1.4px;text-transform:uppercase;color:var(--accent-ink)}
+.hero .l{font-size:11px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--accent-ink)}
 .hero .n{font-weight:800;font-size:46px;letter-spacing:-1.5px;line-height:1.05;margin-top:4px;color:var(--text-strong)}
 .hero.small{padding:16px 18px}
 .hero.small .n{font-size:30px;letter-spacing:-1px}
@@ -91,7 +92,7 @@ body.light .bar{background:rgba(245,244,241,.85)}
 .hero .linkbtn.left{margin:-6px 0 -14px}
 .hero .hkopf{display:flex;align-items:center;justify-content:space-between;margin-right:-8px}
 .hero .hkopf .pfeile{display:flex;margin:-16px 0}/* 44-px-Pfeile ohne zusätzliche Höhe: Kasten so hoch wie in Verdienst und Urlaub */
-.hero .hkopf .iconbtn{color:var(--accent);font-size:22px;font-family:inherit;min-width:44px;min-height:44px}
+.hero .hkopf .iconbtn{color:var(--accent-text);font-size:22px;font-family:inherit;min-width:44px;min-height:44px}
 .hero .hkopf .iconbtn:disabled{color:var(--faint);opacity:.45}
 .srow .v.klein{font-size:13px;font-weight:600;color:var(--muted);white-space:nowrap}
 .btn.wide{width:100%;margin:0 0 12px}
@@ -115,7 +116,7 @@ body.light .bar{background:rgba(245,244,241,.85)}
 .note.uinfo.warnline{color:var(--accent-ink)}
 .uhinweis{font-size:14px;line-height:1.55;color:var(--text);margin:-4px 0 18px;overflow-wrap:anywhere}
 .umon{display:flex;justify-content:space-between;align-items:center;margin:4px 0 8px;font-size:16px;font-weight:700;color:var(--text-strong)}
-.umon .iconbtn{color:var(--accent);font-size:22px;font-family:inherit}
+.umon .iconbtn{color:var(--accent-text);font-size:22px;font-family:inherit}
 .umon .iconbtn:disabled{color:var(--faint);opacity:.45}
 .ucal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;text-align:center}
 .ucal i{font-style:normal;font-size:11px;font-weight:600;color:var(--muted);padding-bottom:2px}
@@ -136,16 +137,16 @@ body.light .bar{background:rgba(245,244,241,.85)}
 .ubar .r.neg{color:var(--danger)}
 .ubar ul{margin:6px 0 0;padding-left:18px;font-size:13px;color:var(--text)}
 .ubar .btn{margin:12px 0 0}
-.card .eyeline{font-size:9px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.card .eyeline{font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
 .card .toprow{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
 .card .titel{font-weight:700;font-size:16px;letter-spacing:-.3px;line-height:1.25;color:var(--text-strong);margin:0;min-width:0}
 .card .num{font-weight:800;font-size:20px;flex:none}
 .cardgrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;border-top:1px solid var(--line);margin-top:12px;padding-top:12px}
-.cardgrid .l{font-size:9px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted)}
+.cardgrid .l{font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--muted)}
 .cardgrid .v{font-weight:700;font-size:15px;margin-top:2px;color:var(--text-strong)}
 .cardgrid.big .v{font-size:16px}
 .cardfoot{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:11px;font-weight:500;color:var(--faint);margin-top:12px}
-.cardfoot .open{margin-left:auto;font-size:12px;font-weight:600;color:var(--accent);white-space:nowrap}
+.cardfoot .open{margin-left:auto;font-size:12px;font-weight:600;color:var(--accent-text);white-space:nowrap}
 .cards.done .cardfoot{margin-top:10px}
 .cards.done .cardfoot .open{color:var(--muted)}
 .cards.done .titel{color:var(--muted)}
@@ -168,6 +169,7 @@ body.light .bar{background:rgba(245,244,241,.85)}
 .day .ot{font-weight:800;font-size:16px}
 .dayDel{width:30px;height:30px;border-radius:8px;border:none;background:transparent;color:var(--danger);display:flex;align-items:center;justify-content:center;flex:none;padding:0}
 .dayDel:active{background:rgba(224,112,92,.15)}
+.dayDel{position:relative;touch-action:manipulation}.dayDel::after{content:"";position:absolute;inset:-7px}/* V4.7.3: 44 px, bleibt im Abstand von 10 px zur Überstundenzahl */
 .day .line{font-size:12px;font-weight:500;color:var(--silver);margin-top:4px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 /* Key/Value */
 .kv{margin:14px 0 0}
@@ -181,7 +183,7 @@ body.light .bar{background:rgba(245,244,241,.85)}
 .btn.ghost{background:transparent;color:var(--text);border:1px solid var(--line-strong);box-shadow:none;font-weight:600;padding:13px;border-radius:12px}
 .btn.ghost:active{background:var(--surface);filter:none}
 .btn.danger{background:transparent;color:var(--danger);border:1px solid rgba(224,112,92,.4);box-shadow:none;font-weight:600;padding:13px;border-radius:12px}
-body.light .btn.danger{border-color:rgba(194,78,59,.4)}
+body.light .btn.danger{border-color:rgba(176,65,47,.4)}
 .btn.info{background:var(--info);color:#fff;box-shadow:none;border-radius:8px;padding:9px;font-size:12px;margin:0}
 .btnrow{display:flex;gap:10px}
 .btnrow .btn{margin-bottom:10px}
@@ -189,9 +191,9 @@ body.light .btn.danger{border-color:rgba(194,78,59,.4)}
 .topbtns .btn{margin:0;padding:13px 6px;border-radius:12px;white-space:nowrap}
 .sub{font-size:11px;color:var(--faint);text-align:center;margin:2px 0 18px;line-height:1.5}
 /* Chips */
-.chip{font-size:10px;font-weight:600;padding:3px 8px;border-radius:7px;background:var(--field);color:var(--muted);border:1px solid var(--line);flex:none}
+.chip{font-size:11px;font-weight:600;padding:3px 8px;border-radius:7px;background:var(--field);color:var(--muted);border:1px solid var(--line);flex:none}
 .chip.pos{background:var(--pos-soft);border-color:var(--pos-line);color:var(--pos)}
-.chip.nw{background:var(--accent-soft);border-color:var(--accent-line);color:var(--accent)}
+.chip.nw{background:var(--accent-soft);border-color:var(--accent-line);color:var(--accent-text)}
 .chips{display:flex;flex-wrap:wrap;gap:8px}
 .chips button{border:1px solid var(--line);background:var(--field);color:var(--muted);font-family:inherit;font-size:12px;font-weight:600;padding:9px 11px;border-radius:8px}
 .chips button.on{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
@@ -234,12 +236,12 @@ body.light .btn.danger{border-color:rgba(194,78,59,.4)}
 /* Timeboxen */
 .timebox{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
 .timebox.acc{background:var(--accent-soft);border-color:var(--accent-line)}
-.timebox .tl{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:9px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+.timebox .tl{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
 .timebox.acc .tl{color:var(--accent-ink)}
-.timebox .tl .hint{font-size:10px;font-weight:500;letter-spacing:0;text-transform:none;color:var(--muted)}
+.timebox .tl .hint{font-size:11px;font-weight:500;letter-spacing:0;text-transform:none;color:var(--muted)}
 .tfield{background:var(--field-input);border:1px solid var(--line-strong);border-radius:10px;padding:7px 6px 5px;text-align:center;min-width:0}
 .timebox.acc .tfield{background:var(--surface)}
-.tfield .tlbl{display:block;font-size:9px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted)}
+.tfield .tlbl{display:block;font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--muted)}
 .tfield input{width:100%;min-width:0;border:none;background:transparent;color:var(--text-strong);font-family:inherit;font-size:19px;font-weight:700;text-align:center;padding:2px 0 0;font-variant-numeric:tabular-nums;-webkit-appearance:none;appearance:none}
 .tfield input:focus{outline:none}
 .tfield input:disabled{color:var(--faint);opacity:1}
@@ -254,9 +256,9 @@ body.light .btn.danger{border-color:rgba(194,78,59,.4)}
 /* Mini-Segment + entfällt */
 .mseg{display:flex;background:var(--field);border-radius:8px;padding:3px;gap:2px}
 .timebox.acc .mseg{background:var(--surface)}
-.mseg button{border:none;background:transparent;color:var(--muted);font-family:inherit;font-size:10px;font-weight:700;padding:5px 9px;border-radius:6px;letter-spacing:0;text-transform:none}
+.mseg button{border:none;background:transparent;color:var(--muted);font-family:inherit;font-size:11px;font-weight:700;padding:5px 9px;border-radius:6px;letter-spacing:0;text-transform:none}
 .mseg button.on{background:var(--surface-2);color:var(--text-strong)}
-.offbtn{border:1px solid var(--line);background:var(--field);color:var(--muted);font-family:inherit;font-size:10px;font-weight:700;padding:4px 9px;border-radius:7px}
+.offbtn{border:1px solid var(--line);background:var(--field);color:var(--muted);font-family:inherit;font-size:11px;font-weight:700;padding:4px 9px;border-radius:7px}
 .offbtn.on{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
 /* Grenzübertritt (V4.4): ✕ je Feld nur mit Wert, „nicht erfasst“ bei leerem Feld. Die zentrierte Zeit bleibt frei. */
 .gfield{position:relative}
@@ -288,10 +290,10 @@ body.light .btn.danger{border-color:rgba(194,78,59,.4)}
 .timebox .note.endehw{color:var(--accent-ink);margin-top:10px}
 /* Calc-Kachel */
 .calc{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin:4px 0 12px}
-.calc .clbl{font-size:9px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+.calc .clbl{font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
 .calc .r{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
 .calc hr{border:none;height:1px;background:var(--line);margin:11px 0}
-.calc .c .l{font-size:9px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--muted)}
+.calc .c .l{font-size:11px;font-weight:600;letter-spacing:.3px;text-transform:uppercase;color:var(--muted)}
 .calc .c .n{font-weight:700;font-size:16px;margin-top:2px;color:var(--text-strong)}
 .calc .c .n.big{font-size:17px;font-weight:800}
 .calc .tarifz{font-size:12px;font-weight:600;color:var(--silver)}
@@ -308,7 +310,7 @@ body.light .btn.danger{border-color:rgba(194,78,59,.4)}
 .nwwrap:empty{margin:0}
 .tgbox.nw{background:var(--accent-soft);border-color:var(--accent-line)}
 .tgbox.nw .t{color:var(--text-strong)}
-.tgbox.nw .t .in{color:var(--accent);font-weight:700}
+.tgbox.nw .t .in{color:var(--accent-text);font-weight:700}
 /* Dispo-Zeile */
 .dispoinfo{font-size:12px;color:var(--silver);background:var(--info-soft);border:1px solid var(--info-line);border-radius:10px;padding:9px 12px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;gap:10px}
 .dispoinfo button{background:var(--info);border:none;color:#fff;font-family:inherit;font-size:11px;font-weight:600;padding:5px 10px;border-radius:7px;flex:none}
@@ -317,14 +319,14 @@ body.light .btn.danger{border-color:rgba(194,78,59,.4)}
 .setrow:active{background:var(--surface-2)}
 .setrow>span:first-child{flex:1;min-width:0}
 .setrow small{display:block;font-size:11px;font-weight:500;color:var(--faint);margin-top:2px;overflow-wrap:anywhere}
-.setrow small .warn{color:var(--accent)}
+.setrow small .warn{color:var(--accent-text)}
 .setrow .chev{color:var(--line-strong);font-size:15px;flex:none}
 .setcard{background:var(--surface);border-radius:12px;padding:14px 15px;margin-bottom:8px}
 .setcard .stat{font-size:12px;font-weight:500;color:var(--silver);margin-bottom:10px}
 .setcard .field:last-of-type{margin-bottom:0}
 /* Anleitung */
 .hsec{background:var(--surface);border-radius:14px;padding:16px;margin-bottom:10px}
-.hsec .eb{font-size:9px;font-weight:600;letter-spacing:1.4px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:8px}
+.hsec .eb{font-size:11px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:8px}
 .hsec p{margin:0 0 10px;font-size:13px;font-weight:500;line-height:1.65;color:var(--silver)}
 .hsec p:last-child{margin-bottom:0}
 .hsec .tip{background:var(--field);border-radius:10px;padding:10px 12px;font-size:12.5px;color:var(--muted);margin-top:12px}
@@ -359,7 +361,7 @@ body.light .btn.danger{border-color:rgba(194,78,59,.4)}
 .note{font-size:11px;color:var(--faint);line-height:1.5;margin:8px 0 0}
 .note b{color:var(--muted);font-weight:600}
 /* Direkte Wege in die Einstellungen (V4.4): ruhige Textlinks mit 44 px Tippfläche */
-.linkbtn{display:block;margin:0 auto 18px;background:none;border:none;color:var(--accent);font-family:inherit;font-size:12px;font-weight:600;padding:14px 8px;min-height:44px;touch-action:manipulation}
+.linkbtn{display:block;margin:0 auto 18px;background:none;border:none;color:var(--accent-text);font-family:inherit;font-size:12px;font-weight:600;padding:14px 8px;min-height:44px;touch-action:manipulation}
 .linkbtn.left{margin:-8px 0 8px;padding:14px 0;text-align:left}
 .linkbtn:active{opacity:.7}
 .section-h.tap{cursor:pointer;padding:14px 0;margin:10px 0 -10px;touch-action:manipulation}
@@ -370,9 +372,9 @@ body.light .btn.danger{border-color:rgba(194,78,59,.4)}
 .empty .big{font-size:40px;margin-bottom:12px}
 .empty p{font-size:14px;font-weight:500;line-height:1.6;margin:0}
 .foot{text-align:center;padding:10px 20px calc(env(safe-area-inset-bottom) + 18px)}
-.foot-note{font-size:10.5px;color:var(--faint);line-height:1.5}
+.foot-note{font-size:11px;color:var(--faint);line-height:1.5}
 .foot-v{font-size:11px;font-weight:600;color:var(--faint);margin-top:8px}
-.foot-v b{color:var(--accent);font-weight:700}
+.foot-v b{color:var(--accent-text);font-weight:700}
 @media (prefers-reduced-motion:reduce){.view,.scrim,.scrim.on,.scrim.out,.sheet,.sheet.out,.cscrim.on,.cscrim.out,.cdlg,.cscrim.out .cdlg,.toast{animation-duration:0s!important;transition-duration:0s!important}}
 </style>
 </head>
@@ -382,7 +384,7 @@ body.light .btn.danger{border-color:rgba(194,78,59,.4)}
   <div class="view" id="view"></div>
   <div class="foot">
     <div class="foot-note">Daten bleiben nur auf diesem Gerät · alle Angaben ohne Gewähr</div>
-    <div class="foot-v">Zeiterfassung <b>V4.7.2</b></div>
+    <div class="foot-v">Zeiterfassung <b>V4.7.3</b></div>
   </div>
 </div>
 <input type="file" id="pdfInput" accept="application/pdf" class="hidden">
@@ -489,8 +491,12 @@ if(typeof S.unterschrift!=="string"||!S.unterschrift.startsWith("data:image/png;
    Wird einmal nach jedem Update gezeigt: Vergleich S.seenVersion gegen APP_VERSION.
    Nicht bei frischen Installationen (keine Aufträge) – ein neuer Kollege soll kein
    Changelog sehen, bevor er die App überhaupt kennt. Neue Einträge oben anfügen. */
-const APP_VERSION="4.7.2";
+const APP_VERSION="4.7.3";
 const WHATSNEW=[
+  {v:"4.7.3", t:"Besser lesbar", items:[
+    ["Schrift und Farben","Kleine Beschriftungen sind größer, und im hellen Modus sind Texte und Links kräftiger. So liest sich die App auch draußen in der Sonne."],
+    ["Leichter zu treffen","„‹ Aufträge“ oben und das Löschen eines Tags reagieren auf eine größere Fläche."]
+  ]},
   {v:"4.7.2", t:"Mailtext wieder drin", items:[
     ["Antrag per Mail","Beim Teilen geht der Mailtext wieder mit dem PDF mit, die Mail ist nicht mehr leer."]
   ]},
@@ -2608,7 +2614,7 @@ function openRules(){
   openSheet(`<h3>Rechenregeln</h3>
     <p class="note" style="margin:-8px 0 16px">Gilt für alle Tage. Bestehende Einträge werden neu berechnet.</p>
     <div class="setcard" style="margin-bottom:14px">
-      <div class="stat" style="text-transform:uppercase;letter-spacing:1.2px;font-size:9px;font-weight:600;color:var(--muted)">Soll pro Tag</div>
+      <div class="stat" style="text-transform:uppercase;letter-spacing:.5px;font-size:11px;font-weight:600;color:var(--muted)">Soll pro Tag</div>
       <div class="two">
         <div class="tfield"><span class="tlbl">Stunden</span><input type="number" id="s_h" min="0" max="14" value="${Math.floor(S.sollMin/60)}"></div>
         <div class="tfield"><span class="tlbl">Minuten</span><input type="number" id="s_m" min="0" max="59" value="${S.sollMin%60}"></div>
