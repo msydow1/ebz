@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="Zeiterfassung">
 <meta name="theme-color" content="#15171A">
 <title>Zeiterfassung</title>
-<!-- Zeiterfassung V4.8.0 · Design "Amber Editorial" -->
+<!-- Zeiterfassung V4.9.0 · Design "Amber Editorial" -->
 <!-- impeccable-disable single-font -- Nutzer wählte beim V1.2-Redesign bewusst "Inter durchgängig" (eine Familie, tabular-nums für Zeiten) -->
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -90,6 +90,8 @@ body.light .bar{background:rgba(245,244,241,.85)}
 .cards.done .card{background:var(--surface-2);box-shadow:none}
 .cards.done .card:active{background:var(--surface)}
 .section-h+.cards{margin-top:8px}
+/* Suche, Sortierung und Jahr über der Liste (V4.9) */
+.listtools{margin:0 0 14px}.listtools .two{margin-top:8px}
 /* Reiter Urlaub (Spec 2026-10-23, Variante B) */
 .hero .hsub.neg{color:var(--danger)}
 .hero .hsub[hidden],.tgbox[hidden]{display:none}
@@ -399,7 +401,7 @@ body.gross .chip{flex:0 1 auto;white-space:normal}body.gross .tgbox .t{flex-wrap
   <div class="view" id="view"></div>
   <div class="foot">
     <div class="foot-note">Daten bleiben nur auf diesem Gerät · alle Angaben ohne Gewähr</div>
-    <div class="foot-v">Zeiterfassung <b>V4.8.0</b></div>
+    <div class="foot-v">Zeiterfassung <b>V4.9.0</b></div>
   </div>
 </div>
 <input type="file" id="pdfInput" accept="application/pdf" class="hidden">
@@ -509,8 +511,14 @@ if(typeof S.unterschrift!=="string"||!S.unterschrift.startsWith("data:image/png;
    Wird einmal nach jedem Update gezeigt: Vergleich S.seenVersion gegen APP_VERSION.
    Nicht bei frischen Installationen (keine Aufträge) – ein neuer Kollege soll kein
    Changelog sehen, bevor er die App überhaupt kennt. Neue Einträge oben anfügen. */
-const APP_VERSION="4.8.0";
+const APP_VERSION="4.9.0";
 const WHATSNEW=[
+  {v:"4.9.0", t:"Tagegeld richtig und Aufträge sortieren", items:[
+    ["Tagegeld","Für das Tagegeld zählt die Zeit ab der Abfahrt am Studio, bis ihr wieder da seid. Die App nimmt dafür jetzt den Beginn deiner Anreise und das Ende deiner Rückreise. Bisher hat sie ab Einsatzbeginn gerechnet und dadurch manchmal Tagegeld angezeigt, obwohl es knapp nicht gereicht hat."],
+    ["Aufträge sortieren","Über deinen Aufträgen kannst du jetzt wählen, wie sie sortiert sind: die neuesten oder die ältesten zuerst, oder die mit den meisten Stunden oder Überstunden. Die App merkt sich deine Wahl."],
+    ["Nur ein Jahr ansehen","Wählst du ein Jahr aus, siehst du nur die Aufträge aus diesem Jahr."],
+    ["Auftrag suchen","Im Suchfeld findest du einen Auftrag über seinen Titel, den Ort oder die Auftragsnummer, zum Beispiel „Wengen“."]
+  ]},
   {v:"4.8.0", t:"Einfacher zu bedienen", items:[
     ["Hell oder dunkel","Die App ist jetzt hell oder dunkel, so wie du es an deinem iPhone eingestellt hast. Mit dem Knopf oben neben dem Zahnrad kannst du weiterhin selbst umschalten."],
     ["Größere Schrift","Hast du an deinem iPhone eine größere Schrift eingestellt, ist sie jetzt auch in der App größer. Außerdem kannst du mit zwei Fingern hineinzoomen."],
@@ -706,11 +714,14 @@ function dayCalc(d){
   const pauseMin=d.pause?(S.standardPause||0):0;
   const netto=span==null?null:Math.max(0,span-pauseMin);
   const ot=netto==null?null:netto-S.sollMin;
+  /* Tagegeld (V4.9, DV-RK § 2 Abs. 3, Max und Louis 03.11.2026): Die Reise beginnt und endet am Studio, es zählt also die Abfahrt
+     (Beginn der Anreise) bis zur Rückkehr (Ende der Rückreise), nicht der ganze Einsatz. Fehlt eine Fahrt, gilt dafür der Einsatz. */
+  const absence=dur(hm2min(d.anreise||d.einsatz),hm2min(d.rueck||d.ende));
   let tg;
   if(d.uebernachtung) tg={state:"ue"};
   else if(d.ausland) tg={state:"ausland"};
-  else if(span==null) tg={state:"none"};
-  else if(span>S.abwesenheitMin) tg={state:"ok"};
+  else if(absence==null) tg={state:"none"};
+  else if(absence>S.abwesenheitMin) tg={state:"ok"};
   else tg={state:"under"};
   const fp=flinkPause(span);
   /* Korrektur = was FLINK abzieht minus die tatsaechlich gemachte Pause.
@@ -727,7 +738,7 @@ function dayCalc(d){
   let korr=span==null?0:Math.max(0,fp-pauseMin);
   if(span!=null){for(let i=0;i<3;i++){const k=Math.max(0,flinkPause(span+korr)-pauseMin);if(k===korr)break;korr=k;}}
   const flinkNw=span==null?0:flinkPause(span+korr);   /* was FLINK vom Nachweis abzieht */
-  return {span,az,pause:pauseMin,pauseJa:!!d.pause,netto,ot,absence:span,tg,flink:fp,flinkNw,korr};
+  return {span,az,pause:pauseMin,pauseJa:!!d.pause,netto,ot,absence,tg,flink:fp,flinkNw,korr};
 }
 /* Einsatzende für den Nachweis. Bei freien Mitarbeitern wird es um die Differenz
    verschoben, die FLINK zu viel (oder zu wenig) abzieht – damit nach dessen Automatik
@@ -1640,6 +1651,22 @@ function cardFoot(o,mitNr){
 /* Betrag der Kachel „Plus zum Tagessatz“ (V4.4.1): mit „+“, wenn er gerundet über 0 liegt. */
 function plusEur(n){return (Math.round(n)>0?"+":"")+fmtEurRund(n);}
 
+/* Sortieren, Jahr und Suche in der Auftragsliste (V4.9, Wunsch Louis 03.11.2026). Reine Funktionen, getestet in tests/liste.test.mjs.
+   wert(o) liefert {datum, netto, ot}: datum = erster Tag als ISO-Datum ("" ohne Tage), netto und ot in Minuten.
+   Aufträge ohne Datum stehen immer am Ende. Bei gleichen Stunden entscheidet das Datum, neueste zuerst. */
+const LISTE_SORT=[["neu","Neueste zuerst"],["alt","Älteste zuerst"],["std","Meiste Stunden"],["ot","Meiste Überstunden"]];
+function listeSortieren(liste,art,wert){
+  const w=new Map(liste.map(o=>[o,wert(o)]));
+  const neu=(a,b)=>(w.get(b).datum||"").localeCompare(w.get(a).datum||"");
+  const f=art==="alt"?(a,b)=>(w.get(a).datum||"9999").localeCompare(w.get(b).datum||"9999")
+    :art==="std"?(a,b)=>((w.get(b).netto||0)-(w.get(a).netto||0))||neu(a,b)
+    :art==="ot"?(a,b)=>((w.get(b).ot||0)-(w.get(a).ot||0))||neu(a,b):neu;
+  return liste.slice().sort(f);}
+function listeFiltern(liste,suche,jahr,wert){
+  const q=String(suche||"").trim().toLocaleLowerCase("de");
+  return liste.filter(o=>(!jahr||(wert(o).datum||"").slice(0,4)===jahr)&&(!q||[o.titel,o.produktionsort,o.auftragsnr,o.prodNummer,o.kostentraeger].some(x=>String(x||"").toLocaleLowerCase("de").includes(q))));}
+function listeJahre(liste,wert){return [...new Set(liste.map(o=>(wert(o).datum||"").slice(0,4)).filter(Boolean))].sort().reverse();}
+
 /* ===== Auftragsliste ===== */
 function renderOrders(){
   const active=DB.orders.filter(o=>!o.abgerechnet).slice().sort(byDate);
@@ -1666,25 +1693,15 @@ function renderOrders(){
       <p class="note">Die Dispo kommt per Mail? Tippe das PDF an, dann auf Teilen und auf In Dateien sichern. Danach findest du es unter PDF importieren.</p>
       <button class="btn ghost" id="leerBackup" style="max-width:260px;margin:12px auto 0">Backup einlesen</button></div>`;
   }else{
-    const cardHtml=o=>{
-      const ot=orderOT(o),tgd=orderTGdays(o);
-      return `<div class="card" data-open="${o.id}">
-      <div class="eyeline">${esc(rangeOrt(o))}</div>
-      <div class="toprow"><p class="titel">${esc(o.titel||"Ohne Titel")}</p><div class="num ${otClass(ot)}">${fmtSigned(ot)}</div></div>
-      <div class="cardgrid">
-        <div><div class="l">Tage</div><div class="v">${o.days.length}</div></div>
-        <div><div class="l">Netto</div><div class="v">${fmtMin(orderNetto(o))}</div></div>
-        <div><div class="l">Tagegeld</div><div class="v" style="color:${tgd>0?'var(--pos)':'var(--muted)'}">${tgd>0?tgd+"×":"—"}</div></div>
-      </div>
-      ${cardFoot(o,true)}</div>`;};
-    const doneHtml=o=>{
-      const ot=orderOT(o);
-      return `<div class="card" data-open="${o.id}">
-      <div class="eyeline">${esc(rangeOrt(o))}</div>
-      <div class="toprow"><p class="titel">${esc(o.titel||"Ohne Titel")}</p><div class="num">${fmtSigned(ot)}</div></div>${cardFoot(o,false)}</div>`;};
-    if(active.length)h+=`<div class="cards">${active.map(cardHtml).join("")}</div>`;
-    else h+=`<div class="empty" style="padding:36px 20px"><div class="big">🗂</div><p>Kein aktiver Auftrag.</p></div>`;
-    if(done.length){h+=`<div class="section-h"><h3>Abgerechnet</h3><span class="tot">${done.length}</span></div><div class="cards done">${done.map(doneHtml).join("")}</div>`;}
+    /* Werkzeugleiste ab zwei Aufträgen: Suche, Sortierung (gemerkt in S.listSort) und Jahr (nur bis zum Neuladen). */
+    if(DB.orders.length>1){
+      const jahre=listeJahre(DB.orders,listeWert);
+      if(state.listJahr&&!jahre.includes(state.listJahr))state.listJahr="";
+      h+=`<div class="field listtools"><input type="search" id="lSuche" class="txt" placeholder="Suchen: Titel, Ort oder Nummer" aria-label="Aufträge suchen" value="${esc(state.suche||"")}" autocomplete="off" enterkeyhint="search">
+        <div class="two"><select id="lSort" aria-label="Sortierung">${LISTE_SORT.map(([k,t])=>`<option value="${k}"${k===listSort()?" selected":""}>${t}</option>`).join("")}</select>
+        <select id="lJahr" aria-label="Jahr"><option value="">Alle Jahre</option>${jahre.map(j=>`<option${j===state.listJahr?" selected":""}>${j}</option>`).join("")}</select></div></div>`;
+    }
+    h+=`<div id="olist"></div>`;
   }
   view.innerHTML=h;
   bindTabs();
@@ -1694,7 +1711,45 @@ function renderOrders(){
   const rb=document.getElementById("remBak");if(rb)rb.onclick=exportBackup;
   const rl=document.getElementById("remLater");if(rl)rl.onclick=()=>{S.bakSnooze=Date.now();persist();render();};
   const io=document.getElementById("instOk");if(io)io.onclick=()=>{S.instOk=true;persist();render();};
-  view.querySelectorAll("[data-open]").forEach(c=>c.onclick=()=>{state.orderId=c.dataset.open;window.scrollTo(0,0);render();});
+  const ls=document.getElementById("lSuche");if(ls)ls.oninput=()=>{state.suche=ls.value;paintListe();};
+  const lo=document.getElementById("lSort");if(lo)lo.onchange=()=>{S.listSort=lo.value;persist();paintListe();};
+  const lj=document.getElementById("lJahr");if(lj)lj.onchange=()=>{state.listJahr=lj.value;paintListe();};
+  if(DB.orders.length)paintListe();
+}
+const listeWert=o=>({datum:orderDate(o),netto:orderNetto(o),ot:orderOT(o)});
+function listSort(){return LISTE_SORT.some(([k])=>k===S.listSort)?S.listSort:"neu";}
+/* Zeichnet nur die Karten neu, damit das Suchfeld beim Tippen den Fokus behält. */
+function paintListe(){
+  const el=document.getElementById("olist");if(!el)return;
+  const gefiltert=listeFiltern(DB.orders,state.suche,state.listJahr,listeWert),filter=!!(String(state.suche||"").trim()||state.listJahr);
+  const sortiert=listeSortieren(gefiltert,listSort(),listeWert);
+  const active=sortiert.filter(o=>!o.abgerechnet),done=sortiert.filter(o=>o.abgerechnet);
+  const cardHtml=o=>{
+    const ot=orderOT(o),tgd=orderTGdays(o);
+    return `<div class="card" data-open="${o.id}">
+    <div class="eyeline">${esc(rangeOrt(o))}</div>
+    <div class="toprow"><p class="titel">${esc(o.titel||"Ohne Titel")}</p><div class="num ${otClass(ot)}">${fmtSigned(ot)}</div></div>
+    <div class="cardgrid">
+      <div><div class="l">Tage</div><div class="v">${o.days.length}</div></div>
+      <div><div class="l">Netto</div><div class="v">${fmtMin(orderNetto(o))}</div></div>
+      <div><div class="l">Tagegeld</div><div class="v" style="color:${tgd>0?'var(--pos)':'var(--muted)'}">${tgd>0?tgd+"×":"—"}</div></div>
+    </div>
+    ${cardFoot(o,true)}</div>`;};
+  const doneHtml=o=>{
+    const ot=orderOT(o);
+    return `<div class="card" data-open="${o.id}">
+    <div class="eyeline">${esc(rangeOrt(o))}</div>
+    <div class="toprow"><p class="titel">${esc(o.titel||"Ohne Titel")}</p><div class="num">${fmtSigned(ot)}</div></div>${cardFoot(o,false)}</div>`;};
+  let h="";
+  if(filter&&!sortiert.length)h=`<div class="empty" style="padding:36px 20px"><p>Kein Auftrag passt dazu.</p><button class="btn ghost" id="lAlle" style="max-width:220px;margin:14px auto 0">Alle zeigen</button></div>`;
+  else{
+    if(active.length)h+=`<div class="cards">${active.map(cardHtml).join("")}</div>`;
+    else if(!filter)h+=`<div class="empty" style="padding:36px 20px"><div class="big">🗂</div><p>Kein aktiver Auftrag.</p></div>`;
+    if(done.length)h+=`<div class="section-h"><h3>Abgerechnet</h3><span class="tot">${done.length}</span></div><div class="cards done">${done.map(doneHtml).join("")}</div>`;
+  }
+  el.innerHTML=h;
+  const la=document.getElementById("lAlle");if(la)la.onclick=()=>{state.suche="";state.listJahr="";render();};
+  el.querySelectorAll("[data-open]").forEach(c=>c.onclick=()=>{state.orderId=c.dataset.open;window.scrollTo(0,0);render();});
 }
 
 /* ===== Detail ===== */
@@ -2395,11 +2450,11 @@ function editDay(orderId,dayId){
       else{fb.innerHTML=`<div class="tgbox"><div class="t"><span>So steht es im Nachweis: wie eingetragen</span><span class="in">FLINK ${mm(c.flink)}</span></div><div class="why">${c.flink>0&&c.flink===c.pause?"Deine Pause und der FLINK-Abzug sind gleich, die Pause steckt in der Arbeitszeit. Kein Ausgleich nötig.":(c.flink===0?"Bis "+fmtMin(S.flink30)+" Std zieht FLINK keine Pause ab.":"Kein Ausgleich nötig.")}</div></div>`;}
     }
     const box=g("tgbox");const t=c.tg;
-    if(t.state==="ok"){box.innerHTML=`<div class="tgbox ok"><div class="t"><span>Tagegeld: 14,00 €</span><span class="in">nur intern</span></div><div class="why">Abwesenheit ${fmtMin(c.absence)} h · über der Schwelle von ${fmtMin(S.abwesenheitMin)} h, eintägig, Inland. Bitte selbst beantragen, binnen sechs Monaten. Stellt die Produktion Essen, kürzt das ZDF: Frühstück 5,60 €, Mittag- und Abendessen je 11,20 €.</div></div>`;}
+    if(t.state==="ok"){box.innerHTML=`<div class="tgbox ok"><div class="t"><span>Tagegeld: 14,00 €</span><span class="in">nur intern</span></div><div class="why">Unterwegs ${fmtMin(c.absence)} h, von der Abfahrt bis zur Rückkehr. Das ist mehr als ${fmtMin(S.abwesenheitMin)} h, eintägig, im Inland. Bitte selbst beantragen, binnen sechs Monaten. Stellt die Produktion Essen, kürzt das ZDF: Frühstück 5,60 €, Mittag- und Abendessen je 11,20 €.</div></div>`;}
     else{
       const why=t.state==="ue"?"Mehrtägige Reise mit Übernachtung: Das Tagegeld kommt automatisch über die Dienstreise-Abrechnung, 14 € für An- und Abreisetag, 28 € für volle Tage. Beantragen musst du hier nichts."
         :t.state==="ausland"?"Auslandsreise: Der Spesensatz ist Ländersache und wird über den Reisedienst abgerechnet. Deshalb steht hier kein Betrag."
-        :t.state==="under"?`Abwesenheit ${fmtMin(c.absence)} h liegt unter der Schwelle von ${fmtMin(S.abwesenheitMin)} h.`+(c.absence>=S.abwesenheitMin-60?" Zählt deine Anfahrt von zu Hause dazu, kann es trotzdem reichen: Gerechnet wird ab der Abfahrt von der Wohnung.":"")
+        :t.state==="under"?`Unterwegs ${fmtMin(c.absence)} h, von der Abfahrt bis zur Rückkehr. Für Tagegeld müssen es mehr als ${fmtMin(S.abwesenheitMin)} h sein.`+(c.absence>=S.abwesenheitMin-60?" Bist du direkt von zu Hause losgefahren, zählt die Zeit ab deiner Wohnung. Dann kann es trotzdem reichen.":"")
         :"Zeiten eintragen.";
       box.innerHTML=`<div class="tgbox"><div class="t"><span>${t.state==="ue"?"Tagegeld über die Reiseabrechnung":"Kein Tagegeld"}</span><span class="in">nur intern</span></div><div class="why">${why}</div></div>`;
     }
@@ -2777,7 +2832,7 @@ function openHelp(){
       <p class="tip">Das gilt nur für freie Mitarbeiter. Fest Angestellte bekommen den Nachweis mit den unveränderten Zeiten.</p></div>
 
     <div class="hsec"><div class="eb">4 · Tagegeld</div>
-      <p>Selbst beantragen musst du Tagegeld <b>nur bei Einzeltagen</b>: eintägig unterwegs, im Inland und länger als 8 Stunden abwesend. Dann beträgt es <b>14 Euro</b>. Das ist die Verpflegungspauschale aus dem Einkommensteuergesetz, auf die die Reisekosten-Regelung des ZDF verweist. Genau genommen zählen die 8 Stunden ab der Abfahrt von deiner Wohnung, die App nimmt dafür die Einsatzzeit. Liegt ein Tag knapp darunter, weist sie dich darauf hin.</p>
+      <p>Selbst beantragen musst du Tagegeld <b>nur bei Einzeltagen</b>: eintägig unterwegs, im Inland und länger als 8 Stunden abwesend. Dann beträgt es <b>14 Euro</b>. Das ist die Verpflegungspauschale aus dem Einkommensteuergesetz, auf die die Reisekosten-Regelung des ZDF verweist. Die 8 Stunden zählen ab der Abfahrt am Studio bis du wieder dort bist. Die App nimmt dafür den Beginn deiner Anreise und das Ende deiner Rückreise. Fährst du ausnahmsweise direkt von zu Hause los, zählt die Zeit ab deiner Wohnung. Liegt ein Tag knapp darunter, weist die App dich darauf hin.</p>
       <p>Bei einer mehrtägigen Reise mit Übernachtung kommt das Tagegeld <b>automatisch über die Dienstreise-Abrechnung</b>: 14 Euro für den An- und den Abreisetag, 28 Euro für jeden vollen Tag dazwischen. Beantragen musst du dort nichts. Im Ausland richtet sich der Satz nach dem jeweiligen Land und wird über den Reisedienst abgewickelt, deshalb nennt die App dort keinen Betrag.</p>
       <p>Stellt die Produktion Essen, kürzt das ZDF das Tagegeld: um 5,60 Euro für ein Frühstück und um je 11,20 Euro für Mittag- und Abendessen. Das gilt auch, wenn du das Essen ohne triftigen Grund nicht nimmst. Mit Mittagessen bleiben vom Einzeltag also 2,80 Euro.</p>
       <p>Der grüne Hinweis ist nur für dich gedacht. Er taucht weder im PDF noch in der Mail auf. Denk daran: Der Antrag muss innerhalb von sechs Monaten raus.</p></div>
