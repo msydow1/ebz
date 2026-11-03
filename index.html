@@ -90,8 +90,8 @@ body.light .bar{background:rgba(245,244,241,.85)}
 .cards.done .card{background:var(--surface-2);box-shadow:none}
 .cards.done .card:active{background:var(--surface)}
 .section-h+.cards{margin-top:8px}
-/* Suche, Sortierung und Jahr über der Liste (V4.9) */
-.listtools{margin:0 0 14px}.listtools .two{margin-top:8px}
+/* Sortierung und Jahr über der Liste (V4.9) */
+.listtools{margin:0 0 14px}.listtools .two{grid-template-columns:1fr auto;gap:8px}.listtools select{padding-left:12px;padding-right:28px}
 /* Reiter Urlaub (Spec 2026-10-23, Variante B) */
 .hero .hsub.neg{color:var(--danger)}
 .hero .hsub[hidden],.tgbox[hidden]{display:none}
@@ -516,8 +516,7 @@ const WHATSNEW=[
   {v:"4.9.0", t:"Tagegeld richtig und Aufträge sortieren", items:[
     ["Tagegeld","Für das Tagegeld zählt die Zeit ab der Abfahrt am Studio, bis ihr wieder da seid. Die App nimmt dafür jetzt den Beginn deiner Anreise und das Ende deiner Rückreise. Bisher hat sie ab Einsatzbeginn gerechnet und dadurch manchmal Tagegeld angezeigt, obwohl es knapp nicht gereicht hat."],
     ["Aufträge sortieren","Über deinen Aufträgen kannst du jetzt wählen, wie sie sortiert sind: die neuesten oder die ältesten zuerst, oder die mit den meisten Stunden oder Überstunden. Die App merkt sich deine Wahl."],
-    ["Nur ein Jahr ansehen","Wählst du ein Jahr aus, siehst du nur die Aufträge aus diesem Jahr."],
-    ["Auftrag suchen","Im Suchfeld findest du einen Auftrag über seinen Titel, den Ort oder die Auftragsnummer, zum Beispiel „Wengen“."]
+    ["Nur ein Jahr ansehen","Wählst du ein Jahr aus, siehst du nur die Aufträge aus diesem Jahr."]
   ]},
   {v:"4.8.0", t:"Einfacher zu bedienen", items:[
     ["Hell oder dunkel","Die App ist jetzt hell oder dunkel, so wie du es an deinem iPhone eingestellt hast. Mit dem Knopf oben neben dem Zahnrad kannst du weiterhin selbst umschalten."],
@@ -1651,7 +1650,7 @@ function cardFoot(o,mitNr){
 /* Betrag der Kachel „Plus zum Tagessatz“ (V4.4.1): mit „+“, wenn er gerundet über 0 liegt. */
 function plusEur(n){return (Math.round(n)>0?"+":"")+fmtEurRund(n);}
 
-/* Sortieren, Jahr und Suche in der Auftragsliste (V4.9, Wunsch Louis 03.11.2026). Reine Funktionen, getestet in tests/liste.test.mjs.
+/* Sortieren und Jahr in der Auftragsliste (V4.9, Wunsch Louis 03.11.2026). Die Suche ist wieder raus (Max 03.11.). Reine Funktionen, getestet in tests/liste.test.mjs.
    wert(o) liefert {datum, netto, ot}: datum = erster Tag als ISO-Datum ("" ohne Tage), netto und ot in Minuten.
    Aufträge ohne Datum stehen immer am Ende. Bei gleichen Stunden entscheidet das Datum, neueste zuerst. */
 const LISTE_SORT=[["neu","Neueste zuerst"],["alt","Älteste zuerst"],["std","Meiste Stunden"],["ot","Meiste Überstunden"]];
@@ -1662,9 +1661,7 @@ function listeSortieren(liste,art,wert){
     :art==="std"?(a,b)=>((w.get(b).netto||0)-(w.get(a).netto||0))||neu(a,b)
     :art==="ot"?(a,b)=>((w.get(b).ot||0)-(w.get(a).ot||0))||neu(a,b):neu;
   return liste.slice().sort(f);}
-function listeFiltern(liste,suche,jahr,wert){
-  const q=String(suche||"").trim().toLocaleLowerCase("de");
-  return liste.filter(o=>(!jahr||(wert(o).datum||"").slice(0,4)===jahr)&&(!q||[o.titel,o.produktionsort,o.auftragsnr,o.prodNummer,o.kostentraeger].some(x=>String(x||"").toLocaleLowerCase("de").includes(q))));}
+function listeFiltern(liste,jahr,wert){return jahr?liste.filter(o=>(wert(o).datum||"").slice(0,4)===jahr):liste;}
 function listeJahre(liste,wert){return [...new Set(liste.map(o=>(wert(o).datum||"").slice(0,4)).filter(Boolean))].sort().reverse();}
 
 /* ===== Auftragsliste ===== */
@@ -1693,12 +1690,11 @@ function renderOrders(){
       <p class="note">Die Dispo kommt per Mail? Tippe das PDF an, dann auf Teilen und auf In Dateien sichern. Danach findest du es unter PDF importieren.</p>
       <button class="btn ghost" id="leerBackup" style="max-width:260px;margin:12px auto 0">Backup einlesen</button></div>`;
   }else{
-    /* Werkzeugleiste ab zwei Aufträgen: Suche, Sortierung (gemerkt in S.listSort) und Jahr (nur bis zum Neuladen). */
+    /* Werkzeugleiste ab zwei Aufträgen: Sortierung (gemerkt in S.listSort) und Jahr (nur bis zum Neuladen). */
     if(DB.orders.length>1){
       const jahre=listeJahre(DB.orders,listeWert);
       if(state.listJahr&&!jahre.includes(state.listJahr))state.listJahr="";
-      h+=`<div class="field listtools"><input type="search" id="lSuche" class="txt" placeholder="Suchen: Titel, Ort oder Nummer" aria-label="Aufträge suchen" value="${esc(state.suche||"")}" autocomplete="off" enterkeyhint="search">
-        <div class="two"><select id="lSort" aria-label="Sortierung">${LISTE_SORT.map(([k,t])=>`<option value="${k}"${k===listSort()?" selected":""}>${t}</option>`).join("")}</select>
+      h+=`<div class="field listtools"><div class="two"><select id="lSort" aria-label="Sortierung">${LISTE_SORT.map(([k,t])=>`<option value="${k}"${k===listSort()?" selected":""}>${t}</option>`).join("")}</select>
         <select id="lJahr" aria-label="Jahr"><option value="">Alle Jahre</option>${jahre.map(j=>`<option${j===state.listJahr?" selected":""}>${j}</option>`).join("")}</select></div></div>`;
     }
     h+=`<div id="olist"></div>`;
@@ -1711,17 +1707,16 @@ function renderOrders(){
   const rb=document.getElementById("remBak");if(rb)rb.onclick=exportBackup;
   const rl=document.getElementById("remLater");if(rl)rl.onclick=()=>{S.bakSnooze=Date.now();persist();render();};
   const io=document.getElementById("instOk");if(io)io.onclick=()=>{S.instOk=true;persist();render();};
-  const ls=document.getElementById("lSuche");if(ls)ls.oninput=()=>{state.suche=ls.value;paintListe();};
   const lo=document.getElementById("lSort");if(lo)lo.onchange=()=>{S.listSort=lo.value;persist();paintListe();};
   const lj=document.getElementById("lJahr");if(lj)lj.onchange=()=>{state.listJahr=lj.value;paintListe();};
   if(DB.orders.length)paintListe();
 }
 const listeWert=o=>({datum:orderDate(o),netto:orderNetto(o),ot:orderOT(o)});
 function listSort(){return LISTE_SORT.some(([k])=>k===S.listSort)?S.listSort:"neu";}
-/* Zeichnet nur die Karten neu, damit das Suchfeld beim Tippen den Fokus behält. */
+/* Zeichnet nur die Karten neu, die Auswahlfelder oben bleiben stehen. */
 function paintListe(){
   const el=document.getElementById("olist");if(!el)return;
-  const gefiltert=listeFiltern(DB.orders,state.suche,state.listJahr,listeWert),filter=!!(String(state.suche||"").trim()||state.listJahr);
+  const gefiltert=listeFiltern(DB.orders,state.listJahr,listeWert),filter=!!state.listJahr;
   const sortiert=listeSortieren(gefiltert,listSort(),listeWert);
   const active=sortiert.filter(o=>!o.abgerechnet),done=sortiert.filter(o=>o.abgerechnet);
   const cardHtml=o=>{
@@ -1748,7 +1743,7 @@ function paintListe(){
     if(done.length)h+=`<div class="section-h"><h3>Abgerechnet</h3><span class="tot">${done.length}</span></div><div class="cards done">${done.map(doneHtml).join("")}</div>`;
   }
   el.innerHTML=h;
-  const la=document.getElementById("lAlle");if(la)la.onclick=()=>{state.suche="";state.listJahr="";render();};
+  const la=document.getElementById("lAlle");if(la)la.onclick=()=>{state.listJahr="";render();};
   el.querySelectorAll("[data-open]").forEach(c=>c.onclick=()=>{state.orderId=c.dataset.open;window.scrollTo(0,0);render();});
 }
 
