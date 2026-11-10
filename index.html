@@ -2410,7 +2410,8 @@ function editDay(orderId,dayId){
     /* Zeiten prüfen (Review A6): Hinweis beim Tippen, Speichern bleibt möglich. */
     const zh=g("zeitHinweis"),zt=dayFlags({einsatz:val("d_einsatz"),ende:val("d_ende"),anreise:val("d_anreise"),anreiseEnde:val("d_anreiseEnde"),drehbeginn:val("d_drehbeginn"),drehende:val("d_drehende"),rueckBeginn:val("d_rueckBeginn"),rueck:val("d_rueck")});
     zh.hidden=!zt;zh.firstElementChild.textContent=zt?"Zeiten prüfen: "+zt:"";
-    const c=dayCalc({einsatz:val("d_einsatz"),ende:val("d_ende"),drehbeginn:val("d_drehbeginn"),drehende:val("d_drehende"),pause:tmpPause,uebernachtung:tmpUE,ausland:tmpAL});
+    /* Anreise und Rückreise müssen mit, sonst rechnet der Tagegeld-Kasten ab Einsatzbeginn und widerspricht dem gespeicherten Tag (Fehler in V4.9.0, behoben 10.11.2026). */
+    const c=dayCalc({einsatz:val("d_einsatz"),ende:val("d_ende"),anreise:val("d_anreise"),rueck:val("d_rueck"),drehbeginn:val("d_drehbeginn"),drehende:val("d_drehende"),pause:tmpPause,uebernachtung:tmpUE,ausland:tmpAL});
     g("calc").innerHTML=`<div class="clbl">Rechnung</div>
       <div class="r">
         <div class="c"><div class="l">Einsatz</div><div class="n">${fmtMin(c.span)}</div></div>
