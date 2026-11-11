@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="Zeiterfassung">
 <meta name="theme-color" content="#15171A">
 <title>Zeiterfassung</title>
-<!-- Zeiterfassung V4.10.0 · Design "Amber Editorial" -->
+<!-- Zeiterfassung V5.0.0 · Design "Amber Editorial" -->
 <!-- impeccable-disable single-font -- Nutzer wählte beim V1.2-Redesign bewusst "Inter durchgängig" (eine Familie, tabular-nums für Zeiten) -->
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -19,8 +19,8 @@
 <script src="vendor/jspdf.umd.min.js"></script>
 <style>
 /* ===== Tokens (Handoff "Amber Editorial") ===== */
-:root{--bg:#15171A;--surface:#1E2228;--surface-2:#262B31;--field:#22262C;--field-input:#34393F;--line:#2A2F35;--line-strong:#3A4048;--text:#E8E8E8;--text-strong:#FFFFFF;--muted:#9399A2;--silver:#C3C3C3;--faint:#858B93;--accent:#FA7D19;--accent-text:#FA7D19;--accent-soft:rgba(250,125,25,.14);--accent-line:rgba(250,125,25,.28);--accent-ink:#B8925F;--pos:#54BE86;--pos-soft:rgba(84,190,134,.14);--pos-line:rgba(84,190,134,.40);--info:#6B87A2;--info-soft:rgba(107,135,162,.14);--info-line:rgba(107,135,162,.32);--danger:#E0705C;--warn:#E3B341;--on-accent:#15171A;--glow:0 8px 24px rgba(250,125,25,.30);--cardshadow:none;--holo-1:#FA7D19;--holo-2:#FFC08A;--holo-3:#F2A9CF;--holo-4:#B6A8F4;--holo-5:#8ED8EA;--urlaub-has-bg:rgba(250,125,25,.14);--urlaub-has-fg:#FA7D19}
-body.light{--bg:#F5F4F1;--surface:#FFFFFF;--surface-2:#EFEDE8;--field:#E9E7E1;--field-input:#E9E7E1;--line:#DEDBD3;--line-strong:#C9C5BC;--text:#28251F;--text-strong:#141210;--muted:#66615A;--silver:#545048;--faint:#716C64;--accent:#E86F0C;--accent-text:#9E4D06;--accent-soft:rgba(232,111,12,.12);--accent-line:rgba(232,111,12,.30);--accent-ink:#7E5F36;--pos:#177A4A;--pos-soft:rgba(30,158,96,.12);--pos-line:rgba(30,158,96,.45);--info:#49688C;--info-soft:rgba(73,104,140,.10);--info-line:rgba(73,104,140,.30);--danger:#B0412F;--warn:#7A5B00;--on-accent:#FFFFFF;--glow:0 8px 24px rgba(232,111,12,.32);--cardshadow:0 2px 14px rgba(0,0,0,.05);--holo-1:#E86F0C;--holo-2:#E8955A;--holo-3:#C9679D;--holo-4:#7C6AD0;--holo-5:#3C9DB8;--urlaub-has-bg:#94520C;--urlaub-has-fg:#FFFFFF}
+:root{--bg:#15171A;--surface:#1E2228;--surface-2:#262B31;--field:#22262C;--field-input:#34393F;--line:#2A2F35;--line-strong:#3A4048;--text:#E8E8E8;--text-strong:#FFFFFF;--muted:#9399A2;--silver:#C3C3C3;--faint:#858B93;--accent:#FA7D19;--accent-text:#FA7D19;--accent-soft:rgba(250,125,25,.14);--accent-line:rgba(250,125,25,.28);--accent-ink:#B8925F;--pos:#54BE86;--pos-soft:rgba(84,190,134,.14);--pos-line:rgba(84,190,134,.40);--info:#6B87A2;--info-soft:rgba(107,135,162,.14);--info-line:rgba(107,135,162,.32);--danger:#E0705C;--warn:#E3B341;--on-accent:#15171A;--glow:0 8px 24px rgba(250,125,25,.30);--cardshadow:none;--holo-1:#FA7D19;--holo-2:#FFC08A;--holo-3:#F2A9CF;--holo-4:#B6A8F4;--holo-5:#8ED8EA;--urlaub-has-bg:rgba(250,125,25,.14);--urlaub-has-fg:#FA7D19;--bar-bg:rgba(21,23,26,.82)}
+body.light{--bg:#F5F4F1;--surface:#FFFFFF;--surface-2:#EFEDE8;--field:#E9E7E1;--field-input:#E9E7E1;--line:#DEDBD3;--line-strong:#C9C5BC;--text:#28251F;--text-strong:#141210;--muted:#66615A;--silver:#545048;--faint:#716C64;--accent:#E86F0C;--accent-text:#9E4D06;--accent-soft:rgba(232,111,12,.12);--accent-line:rgba(232,111,12,.30);--accent-ink:#7E5F36;--pos:#177A4A;--pos-soft:rgba(30,158,96,.12);--pos-line:rgba(30,158,96,.45);--info:#49688C;--info-soft:rgba(73,104,140,.10);--info-line:rgba(73,104,140,.30);--danger:#B0412F;--warn:#7A5B00;--on-accent:#FFFFFF;--glow:0 8px 24px rgba(232,111,12,.32);--cardshadow:0 2px 14px rgba(0,0,0,.05);--holo-1:#E86F0C;--holo-2:#E8955A;--holo-3:#C9679D;--holo-4:#7C6AD0;--holo-5:#3C9DB8;--urlaub-has-bg:#94520C;--urlaub-has-fg:#FFFFFF;--bar-bg:rgba(245,244,241,.85)}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 /* Dynamic Type (V4.8, Apple-Audit): Schriftgrößen in rem, die Wurzel folgt der Textgröße von iOS. Bei der iOS-Vorgabe sind das
    17 px, dann sieht alles aus wie bis V4.7 (rem = alte px ÷ 17). Ohne -apple-system-body (Mac, andere Browser) bleibt es bei 17 px. */
@@ -30,8 +30,7 @@ html,body{margin:0;padding:0;max-width:100%;overflow-x:hidden}
 body{background:var(--bg);color:var(--text);font-family:"Inter",-apple-system,system-ui,sans-serif;font-size:0.882rem;line-height:1.45;-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
 .app{max-width:560px;margin:0 auto;min-height:100vh}
 /* Bar */
-.bar{position:sticky;top:0;z-index:30;background:rgba(21,23,26,.82);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);padding:calc(env(safe-area-inset-top) + 14px) 20px 12px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;min-height:58px}
-body.light .bar{background:rgba(245,244,241,.85)}
+.bar{position:sticky;top:0;z-index:30;background:var(--bar-bg);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);padding:calc(env(safe-area-inset-top) + 14px) 20px 12px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;min-height:58px}
 /* Logo V4.0 (Richtung 3c "Spanne Hologramm"): Zeiger auf Dienstbeginn in currentColor, Bogen = gelaufene Zeit */
 .brand{display:flex;align-items:center;gap:10px;flex:1;min-width:0;color:var(--text)}
 .brand svg{width:28px;height:28px;flex:none;display:block}
@@ -53,7 +52,7 @@ body.light .bar{background:rgba(245,244,241,.85)}
 .kpis.verd .kpi{display:flex;flex-direction:column;justify-content:space-between}
 .kpis.verd .kpi .n{font-size:1.118rem;white-space:nowrap}
 .kpi{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:13px 10px;min-width:0}
-.kpi .l{font-size:0.647rem;font-weight:600;letter-spacing:0;text-transform:uppercase;color:var(--muted)}
+.kpi .l{font-size:0.647rem;font-weight:600;letter-spacing:0;text-transform:uppercase;color:var(--muted);overflow-wrap:anywhere;-webkit-hyphens:auto;hyphens:auto}/* V5.0: bei 320 px und großer Schrift trennt „Über-stunden“, statt aus der Kachel zu laufen */
 .kpi .n{font-weight:800;font-size:1.294rem;margin-top:3px;color:var(--text-strong)}
 .kpi .n small{font-size:0.765rem;font-weight:600;color:var(--muted)}
 .kpi.acc{background:var(--accent-soft);border-color:var(--accent-line)}
@@ -79,10 +78,17 @@ body.light .bar{background:rgba(245,244,241,.85)}
 .hero .hsub{font-size:0.706rem;font-weight:500;color:var(--muted);margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}/* eine Zeile: alle großen Kästen gleich hoch (Max 24.10.2026) */
 .hero .hsub .ausn{border:none;background:none;padding:0;font:inherit;font-weight:700;color:var(--accent-ink);cursor:pointer}
 .hero .hausn{font-size:0.706rem;color:var(--muted);margin-top:8px;line-height:1.5}
-/* Segment-Tabs */
-.segs{display:flex;background:var(--field);border-radius:12px;padding:4px;margin:0 0 18px}
-.segs button{flex:1;padding:10px 0;border:none;border-radius:9px;background:transparent;color:var(--muted);font-family:inherit;font-size:0.765rem;font-weight:700}
-.segs button.on{background:var(--accent);color:var(--on-accent)}
+/* Reiter-Leiste unten (V5.0): fest am unteren Rand wie in iOS-Apps, auch in der Auftragsansicht. Hintergrund und Blur wie .bar
+   (--bar-bg). Liegt über dem Inhalt (z-index 40), aber unter Sheet (.scrim 50), Meldung (80) und Rückfrage (120). --tabh ist die Höhe
+   ohne den iOS-Rand unten, daran hängen Fußzeile und Meldung. Die Wörter wachsen mit großer iOS-Schrift nur bis 13 px, wie in iOS,
+   damit vier Reiter auch bei 320 px passen und die Leiste gleich hoch bleibt. */
+:root{--tabh:50px}
+.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:40;max-width:560px;margin:0 auto;display:flex;background:var(--bar-bg);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+.tabbar button{flex:1 1 0;min-width:0;min-height:49px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:5px 2px 4px;border:none;background:none;color:var(--muted);font-family:inherit;font-size:min(0.647rem,13px);font-weight:600;line-height:1.2;touch-action:manipulation}
+.tabbar button[aria-current="page"]{color:var(--accent-text)}
+.tabbar button:active{opacity:.7}
+.tabbar svg{width:22px;height:22px;flex:none;display:block}
+.tabbar span{max-width:100%;overflow-wrap:anywhere;text-align:center}
 /* Auftragskarten */
 .cards{display:flex;flex-direction:column;gap:10px;margin-bottom:10px}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:var(--cardshadow);cursor:pointer}
@@ -102,16 +108,21 @@ body.light .bar{background:rgba(245,244,241,.85)}
 .hero .hkopf .iconbtn:disabled{color:var(--faint);opacity:.45}
 .srow .v.klein{font-size:0.765rem;font-weight:600;color:var(--muted);white-space:nowrap}
 .btn.wide{width:100%;margin:0 0 12px}
-.ucard{padding:14px 15px;position:relative}
-.ucard .ux{position:absolute;top:4px;right:4px;min-width:44px;min-height:44px;border:none;background:none;color:var(--muted);font-size:0.941rem;font-family:inherit}
+.ucard{padding:14px 15px;position:relative;cursor:default}
+.ucard:active{background:var(--surface)}/* V5.0: der Block selbst ist nicht antippbar, nur seine Zeilen und Knöpfe */
+/* V5.0: Papierkorb statt ✕ (✕ heißt in iOS Schließen), rot wie beim Arbeitstag, Tippfläche 44 px. */
+.ucard .ux{position:absolute;top:4px;right:4px;width:44px;height:44px;border:none;border-radius:10px;background:none;color:var(--danger);display:flex;align-items:center;justify-content:center;padding:0;touch-action:manipulation}
+.ucard .ux:active{background:var(--surface-2)}
 .ucard .ut{font-size:0.882rem;font-weight:700;color:var(--text-strong)}
 .ucard .us{font-size:0.706rem;color:var(--muted);margin-top:2px}
 .ucard .ust{font-size:0.765rem;color:var(--text);margin-top:8px}
 .ucard .ust.ok{color:var(--pos)}.ucard .ust.wait{color:var(--accent-ink)}.ucard .ust.warn{color:var(--warn)}
 .ucard .ustep{width:100%;margin:10px 0 0}
 .ucard .linkbtn.uneben{margin:2px auto -10px}
-.ucard .uz{display:flex;flex-wrap:wrap;gap:0 14px;margin-top:4px}
-.ucard .uz .linkbtn{margin:0;padding:8px 0;min-height:36px;font-size:0.824rem}
+.ucard .uz{display:flex;flex-wrap:wrap;gap:0 14px;margin-top:0}
+.ucard .uz .linkbtn{margin:0;padding:12px 0;min-height:44px;font-size:0.824rem;border-radius:8px}/* V5.0: 44 statt 36 px, die 8 px kommen aus den Abständen davor und danach */
+.ucard .uz+.ust{margin-top:4px}
+.ucard .uz .linkbtn:active{opacity:1;background:var(--surface-2);box-shadow:-6px 0 0 var(--surface-2),6px 0 0 var(--surface-2)}
 .utage{margin:4px 0 2px}
 .sigpad{display:block;width:100%;aspect-ratio:3/1;background:#fff;border-radius:12px;touch-action:none;margin:0 0 12px}
 .sigbild{display:block;width:60%;aspect-ratio:3/1;background:#fff;border-radius:10px;margin-top:6px}
@@ -127,6 +138,7 @@ body.light .bar{background:rgba(245,244,241,.85)}
 .ucal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;text-align:center}
 .ucal i{font-style:normal;font-size:0.647rem;font-weight:600;color:var(--muted);padding-bottom:2px}
 .ucal button{min-width:0;min-height:44px;padding:0;border:none;border-radius:10px;background:var(--surface);color:var(--text);font-family:inherit;font-size:0.824rem;font-weight:600;font-variant-numeric:tabular-nums;opacity:1;touch-action:manipulation;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+.ucal button{position:relative}.ucal button::after{content:"";position:absolute;inset:-2px}/* V5.0: Tippfläche bis zur Mitte der 4-px-Fuge, bei 320 px sind die Tage sonst nur 37 px breit */
 .ucal button:active{background:var(--surface-2)}
 .ucal button:disabled{cursor:default}
 .ucal button.gr,.ucal button.ft{background:transparent;color:var(--faint)}
@@ -176,6 +188,10 @@ body.light .bar{background:rgba(245,244,241,.85)}
 .dayDel{width:30px;height:30px;border-radius:8px;border:none;background:transparent;color:var(--danger);display:flex;align-items:center;justify-content:center;flex:none;padding:0}
 .dayDel:active{background:rgba(224,112,92,.15)}
 .dayDel{position:relative;touch-action:manipulation}.dayDel::after{content:"";position:absolute;inset:-7px}/* V4.7.3: 44 px, bleibt im Abstand von 10 px zur Überstundenzahl */
+/* V5.0: Druck-Feedback für antippbare Zeilen (Tag im Auftrag, Statistik, Verdienst), Farbe wie .card:active. Der Schatten zieht die
+   Fläche 10 px über den Text hinaus, ohne etwas zu verschieben. Der Papierkorb färbt die Tageszeile nicht mit. */
+.day:active,.srow[data-open]:active,.srow[data-jahr]:active,.srow[data-vm]:active{background:var(--surface-2);box-shadow:-10px 0 0 var(--surface-2),10px 0 0 var(--surface-2)}
+.day:has(.dayDel:active){background:none;box-shadow:none}
 .day .line{font-size:0.706rem;font-weight:500;color:var(--silver);margin-top:4px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 /* Key/Value */
 .kv{margin:14px 0 0}
@@ -212,6 +228,10 @@ body.light .btn.danger{border-color:rgba(176,65,47,.4)}
 .remind b{display:block;font-size:0.706rem;font-weight:600;color:var(--info);margin-bottom:3px}
 .remind p{margin:0 0 10px;font-size:0.647rem;color:var(--silver);line-height:1.5}
 .remind .btn.ghost{margin:0;padding:9px;font-size:0.706rem;border-radius:8px}
+/* V5.0 (Zugänglichkeit): Knöpfe im Hinweis mit 44 px Tippfläche. In der Reihe sind jetzt beide 44 px hoch (vorher „Backup teilen“
+   34 px mit 10 px Luft darunter, der Kasten bleibt gleich hoch). „Verstanden“ wächst unsichtbar. */
+.remind .btnrow .btn{margin:0;min-height:44px}
+.remind>.btn{position:relative}.remind>.btn::after{content:"";position:absolute;inset:-5px 0}
 /* Sheet */
 .scrim{position:fixed;inset:0;background:rgba(10,9,8,.55);z-index:50;display:none;backdrop-filter:blur(3px)}
 .scrim.on{display:block;animation:fadein .25s ease}
@@ -222,6 +242,11 @@ body.light .btn.danger{border-color:rgba(176,65,47,.4)}
 .savebar{position:sticky;bottom:0;z-index:2;margin:14px -20px 0;padding:10px 20px calc(env(safe-area-inset-bottom) + 10px);background:var(--bg);border-top:1px solid var(--line)}
 .savebar .btn{margin:0}
 .sheet.mitleiste .savebar~.btnrow{padding:12px 0 calc(env(safe-area-inset-bottom) + 24px)}
+/* V5.0: Unter der Leiste steht Abbrechen über die volle Breite, darunter mit Abstand der rote Löschen-Knopf allein, im Tag und im
+   Auftrag an derselben Stelle. So liegt Löschen nie direkt neben Abbrechen. */
+.btnrow.stapel{display:block}
+.btnrow.stapel .btn{margin:0}
+.btnrow.stapel .btn.danger{margin-top:16px}
 @keyframes up{from{transform:translateY(100%)}to{transform:none}}
 @keyframes down{to{transform:translateY(100%)}}
 @keyframes fadein{from{opacity:0}to{opacity:1}}
@@ -269,6 +294,13 @@ label.tfield{display:block;cursor:text;-webkit-user-select:none;user-select:none
 .tfield input{width:100%;min-width:0;border:none;background:transparent;color:var(--text-strong);font-family:inherit;font-size:max(16px,1.118rem);font-weight:700;text-align:center;padding:2px 0 0;font-variant-numeric:tabular-nums;-webkit-appearance:none;appearance:none}
 .tfield input:focus{outline:none}
 .tfield input:disabled{color:var(--faint);opacity:1}
+/* V5.0: Gesperrte Kachel (nach „entfällt“ oder „kein Dreh“) ist sichtbar gedämpft und nennt den Grund als Platzhalter, Muster wie
+   .gleer beim Grenzübertritt. Vorher sah das leere, gesperrte Feld aus wie ein freies. Rein über :has, ohne :has (altes iOS) bleibt
+   es wie bisher. --muted auf --surface: 5,6 : 1 dunkel, 6,1 : 1 hell. */
+.tfield .tleer{display:none}
+.tfield:has(input:disabled){position:relative;background:transparent;border-style:dashed;cursor:default}
+.tfield:has(input:disabled) input{color:transparent;-webkit-text-fill-color:transparent}
+.tfield:has(input:disabled) .tleer{display:block;position:absolute;left:0;right:0;bottom:8px;font-size:0.765rem;font-weight:500;color:var(--muted);pointer-events:none}
 /* Native Uhr-Symbol raus: kostet Breite (RZ-Felder wurden abgeschnitten) und der Handoff zeigt reine Zahlen */
 .tfield input::-webkit-calendar-picker-indicator{display:none;-webkit-appearance:none}
 .tfield input::-webkit-date-and-time-value{text-align:center}
@@ -291,7 +323,7 @@ label.tfield{display:block;cursor:text;-webkit-user-select:none;user-select:none
 .gfield:not(.voll) input{color:transparent}
 .gclr{position:absolute;right:4px;bottom:7px;width:24px;height:24px;border-radius:12px;border:1px solid var(--line-strong);background:var(--surface-2);color:var(--muted);font-family:inherit;font-size:0.706rem;font-weight:700;padding:0;display:none;align-items:center;justify-content:center;touch-action:manipulation}
 .gfield.voll .gclr{display:flex}
-.gclr::after{content:"";position:absolute;inset:-10px -4px -10px -10px}
+.gclr::after{content:"";position:absolute;inset:-11px -9px -11px -13px}/* V5.0: 44 x 44 px. Nach links nur 13 px, damit die Ziffern frei bleiben, der Rest reicht in die Fuge neben der Kachel */
 .gclr:active{background:var(--surface-2);color:var(--text-strong)}
 /* Ja/Nein-Segmente */
 .toggles{display:flex;background:var(--field);border-radius:10px;padding:4px;gap:4px}
@@ -303,12 +335,24 @@ label.tfield{display:block;cursor:text;-webkit-user-select:none;user-select:none
 /* Tippflächen (V4.4): unsichtbar auf mindestens 44 px, die Optik bleibt gleich. Die Fläche ragt nie in ein Nachbarziel:
    im Mini-Segment nur nach oben, unten und außen, bei den Ja/Nein-Knöpfen höchstens 2 px seitlich. */
 .offbtn,.mseg button,.toggles button,.iconbtn{position:relative;touch-action:manipulation;-webkit-user-select:none;user-select:none}
-.offbtn::after{content:"";position:absolute;inset:-11px -10px}
+.offbtn::after{content:"";position:absolute;inset:-12px -10px}
 .mseg button::after{content:"";position:absolute;inset:-11px 0}
 .mseg button:first-child::after{left:-10px}
 .mseg button:last-child::after{right:-10px}
 .toggles button::after{content:"";position:absolute;inset:-5px -2px}
 .iconbtn::after{content:"";position:absolute;inset:-4px}
+/* V5.0 (Zugänglichkeit): die übrigen Ziele unter 44 px, gemessen bei 375 px. Optik gleich, die Fläche wächst unsichtbar und reicht nie
+   in das sichtbare Feld eines Nachbarn: Chips haben 8 px Abstand (5 oben, 4 unten), „übernehmen“ bleibt in seiner Zeile, die
+   Knöpfe der Rückfrage wachsen nur nach oben und unten. Der Tagestyp hat kleinere Schrift als die anderen Ja/Nein-Knöpfe. */
+.chips button,.dispoinfo button,.crow .btn,.hero .hsub .ausn{position:relative;touch-action:manipulation}
+.chips button::after{content:"";position:absolute;inset:-6px -1px -5px}
+.dispoinfo button::after{content:"";position:absolute;inset:-11px -12px -11px -10px}
+.typseg button::after{inset:-6px -2px}
+.crow .btn::after{content:"";position:absolute;inset:-3px 0}
+/* „Ausnahmen“ steht in einer Zeile mit overflow:hidden, die ein ::after abschneidet. Die Zeile bekommt deshalb Innenabstand und holt
+   ihn außen wieder ab, so bleibt der Kasten gleich hoch. */
+.hero .hsub.tap{padding:14px 0;margin:-8px 0 -14px}
+.hero .hsub .ausn::after{content:"";position:absolute;inset:-14px -10px}
 .offbtn:not(.on):active,.mseg button:active,.toggles button:not(.on):active{background:var(--surface-2);color:var(--text-strong)}
 .offbtn.on:active,.toggles button.on:active{filter:brightness(.9)}
 .timebox .note.endehw{color:var(--accent-ink);margin-top:10px}
@@ -348,6 +392,7 @@ label.tfield{display:block;cursor:text;-webkit-user-select:none;user-select:none
 .setcard{background:var(--surface);border-radius:12px;padding:14px 15px;margin-bottom:8px}
 .setcard .stat{font-size:0.706rem;font-weight:500;color:var(--silver);margin-bottom:10px}
 .setcard .field:last-of-type{margin-bottom:0}
+.setcard .btnrow .btn{padding-left:6px;padding-right:6px}/* V5.0: Platz für das Teilen-Symbol, „Backup teilen“ bleibt einzeilig */
 /* Anleitung */
 .hsec{background:var(--surface);border-radius:14px;padding:16px;margin-bottom:10px}
 .hsec .eb{font-size:0.647rem;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--accent-ink);margin-bottom:8px}
@@ -379,8 +424,36 @@ label.tfield{display:block;cursor:text;-webkit-user-select:none;user-select:none
 /* Nicht-destruktive Bestätigung (z. B. Reiseart umstellen): Amber statt Rot */
 .crow .btn.do.go{background:var(--accent);color:var(--on-accent)}
 /* Toast */
-.toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 46px);transform:translateX(-50%) translateY(20px);width:min(520px,calc(100% - 40px));background:var(--field);border:1px solid var(--accent-line);color:var(--text);padding:13px 15px;border-radius:12px;font-size:0.706rem;font-weight:600;text-align:center;z-index:80;opacity:0;transition:.3s;pointer-events:none;box-shadow:0 10px 40px rgba(0,0,0,.4)}
+.toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + var(--tabh) + 12px);transform:translateX(-50%) translateY(20px);width:min(520px,calc(100% - 40px));background:var(--field);border:1px solid var(--accent-line);color:var(--text);padding:13px 15px;border-radius:12px;font-size:0.706rem;font-weight:600;text-align:center;z-index:80;opacity:0;transition:.3s;pointer-events:none;box-shadow:0 10px 40px rgba(0,0,0,.4)}
 .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+/* V5.0: Meldung mit Knopf („Rückgängig“). Nur so lange antippbar, wie sie zu sehen ist, der Knopf hat 44 px Tippfläche. */
+.toast.mit{display:flex;align-items:center;gap:4px;padding:0 0 0 15px;text-align:left}
+.toast.mit.on button{pointer-events:auto}/* nur der Knopf fängt Tipps, der Rest der Meldung lässt sie durch */
+.toast.mit span{flex:1;min-width:0;padding:13px 0}
+.toast.mit button{flex:none;min-width:44px;min-height:44px;padding:0 15px;border:none;background:none;color:var(--accent-text);font-family:inherit;font-size:0.765rem;font-weight:700;touch-action:manipulation}
+.toast.mit button:active{opacity:.7}
+/* V5.0: Ist ein Sheet mit fester Speichern-Leiste offen, sitzt die Meldung über der Leiste, auch bei großer Schrift. */
+.scrim.on:not(.out):has(.savebar)~.toast{bottom:calc(env(safe-area-inset-bottom) + 1.1rem + 62px)}
+/* V5.0: Teilen-Symbol vor dem Text von Knöpfen und rechts in Zeilen der Einstellungen. */
+.isym{flex:none;display:block}
+.setrow .isym{color:var(--muted)}
+/* V5.0 (Zugänglichkeit): sichtbarer Fokus für externe Tastaturen, 2 px in Orange mit 2 px Abstand. :focus-visible greift bei Knöpfen
+   nur mit Tasten, nie beim Tippen mit dem Finger. Eingabefelder melden :focus-visible auch beim Antippen, deshalb gilt der Umriss
+   dort nur mit html.tast (gesetzt bei Tab, weg beim nächsten Tipp). Ohne Tasten bleibt es bei ihrem eigenen Fokus-Stil.
+   Farbe --accent-text: dunkel dasselbe Orange wie --accent (6,9 : 1 auf --bg), hell das dunklere (5,4 : 1, --accent hätte nur 2,9 : 1). */
+:is(button,a,select,[role=button],[tabindex]):focus-visible,html.tast :is(input,select,textarea):focus-visible{outline:2px solid var(--accent-text);outline-offset:2px}
+.sheet:focus-visible{outline:none}
+/* Wer mit Tab weitergeht, landet nie unter der Kopfleiste, der Reiter-Leiste, der Kopfzeile im Sheet oder der Speichern-Leiste. */
+html{scroll-padding:72px 0 calc(env(safe-area-inset-bottom) + var(--tabh) + 10px)}
+.sheet{scroll-padding-top:64px}.sheet.mitleiste{scroll-padding-bottom:calc(env(safe-area-inset-bottom) + 4.6rem)}
+.tabbar button:focus-visible,.setrow:focus-visible{outline-offset:-3px}
+/* Uhrzeit-Kachel: der Umriss liegt um die ganze Kachel, nicht um die Ziffern. Mit Fokus auf dem ✕ hat nur das ✕ den Umriss. */
+html.tast .tfield:focus-within{outline:2px solid var(--accent-text);outline-offset:2px}
+html.tast .tfield input:focus-visible,html.tast .tfield:has(.gclr:focus-visible){outline:none}
+/* Tageszeile: Der Knopf ist das Datum (die Zeile selbst darf keiner sein, sonst fehlt VoiceOver der Papierkorb), der Umriss liegt
+   um die ganze Zeile. */
+.day .date{position:relative}.day .date::after{content:"";position:absolute;inset:-11px 0}
+@supports selector(:has(a)){.day:has(.date:focus-visible){outline:2px solid var(--accent-text);outline-offset:2px;border-radius:4px}.day .date:focus-visible{outline:none}}
 /* Sonstiges */
 .note{font-size:0.647rem;color:var(--faint);line-height:1.5;margin:8px 0 0}
 .note b{color:var(--muted);font-weight:600}
@@ -390,21 +463,25 @@ label.tfield{display:block;cursor:text;-webkit-user-select:none;user-select:none
 .linkbtn:active{opacity:.7}
 .section-h.tap{cursor:pointer;padding:14px 0;margin:10px 0 -10px;touch-action:manipulation}
 .section-h.tap:active{opacity:.7}
-.divider{height:1px;background:var(--line);margin:18px 0}
 .hidden{display:none!important}
 .empty{text-align:center;color:var(--muted);padding:56px 20px}
 .empty .big{font-size:2.353rem;margin-bottom:12px}
 .empty p{font-size:0.824rem;font-weight:500;line-height:1.6;margin:0}
-.foot{text-align:center;padding:10px 20px calc(env(safe-area-inset-bottom) + 18px)}
+.foot{text-align:center;padding:10px 20px calc(env(safe-area-inset-bottom) + var(--tabh) + 18px)}/* V5.0: Platz für die Reiter-Leiste */
 .foot-note{font-size:0.647rem;color:var(--faint);line-height:1.5}
 .foot-v{font-size:0.647rem;font-weight:600;color:var(--faint);margin-top:8px}
 .foot-v b{color:var(--accent-text);font-weight:700}
 /* Große iOS-Schrift (V4.8): Reihen dürfen umbrechen (passt alles, bleibt es eine Zeile). body.gross ab mehr als 17 px Grundschrift,
    dann brechen auch die sonst einzeiligen Texte um, statt abgeschnitten zu werden (die gleiche Kastenhöhe gilt nur bei Standardgröße). */
-.segs,.toggles,.btnrow{flex-wrap:wrap}
+.toggles,.btnrow{flex-wrap:wrap}
 .btnrow>.btn{flex:1 1 0}/* nebeneinander wie bisher, untereinander erst, wenn der Text nicht mehr passt */
 body.gross .hero .hsub,body.gross .kpis.verd .kpi .n,body.gross .topbtns .btn,body.gross .srow .v.klein,body.gross .tgbox .t .in{white-space:normal}
 body.gross .chip{flex:0 1 auto;white-space:normal}body.gross .tgbox .t{flex-wrap:wrap}
+/* V5.0 (Abschlussrunde): Die Zahlen in den drei schmalen Kacheln wachsen mit großer Schrift nicht über ihre normale Größe (22 und
+   19 px), sonst läuft „+26:18“ aus der Kachel. Lange Wörter in Knöpfen dürfen dann trennen („impor-tieren“ bei 320 px). */
+body.gross .kpis:not(.two):not(.verd) .kpi .n{font-size:min(1.294rem,22px)}
+body.gross .kpis.verd .kpi .n{font-size:min(1.118rem,19px)}
+body.gross .btn{overflow-wrap:anywhere;-webkit-hyphens:auto;hyphens:auto}
 @media (prefers-reduced-motion:reduce){.view,.scrim,.scrim.on,.scrim.out,.sheet,.sheet.out,.cscrim.on,.cscrim.out,.cdlg,.cscrim.out .cdlg,.toast{animation-duration:0s!important;transition-duration:0s!important}}
 </style>
 </head>
@@ -414,14 +491,15 @@ body.gross .chip{flex:0 1 auto;white-space:normal}body.gross .tgbox .t{flex-wrap
   <div class="view" id="view"></div>
   <div class="foot">
     <div class="foot-note">Daten bleiben nur auf diesem Gerät · alle Angaben ohne Gewähr</div>
-    <div class="foot-v">Zeiterfassung <b>V4.10.0</b></div>
+    <div class="foot-v">Zeiterfassung <b>V5.0.0</b></div>
   </div>
 </div>
+<nav class="tabbar" id="tabbar" aria-label="Bereiche der App"></nav>
 <input type="file" id="pdfInput" accept="application/pdf" class="hidden">
 <input type="file" id="backupInput" accept="application/json,.json" class="hidden">
-<div class="scrim" id="scrim"><div class="sheet" id="sheet"></div></div>
-<div class="toast" id="toast"></div>
-<div class="cscrim" id="confirmBox"><div class="cdlg"><p class="ctitle"></p><p class="cmsg"></p><div class="crow"><button id="cNo" class="btn ghost">Abbrechen</button><button id="cYes" class="btn do">Löschen</button></div></div></div>
+<div class="scrim" id="scrim"><div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="shH" tabindex="-1"></div></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div class="cscrim" id="confirmBox" role="alertdialog" aria-modal="true" aria-labelledby="cTitel" aria-describedby="cMsg"><div class="cdlg"><p class="ctitle" id="cTitel"></p><p class="cmsg" id="cMsg"></p><div class="crow"><button id="cNo" class="btn ghost">Abbrechen</button><button id="cYes" class="btn do">Löschen</button></div></div></div>
 
 <script>
 "use strict";
@@ -493,6 +571,14 @@ function prevZeile(gesichertAm,db){
   const a=db.orders.length,u=standBereinigen(JSON.parse(JSON.stringify(db))).urlaub.length;
   return "gesichert am "+(datumAus(gesichertAm)||"unbekannt")+" · "+a+" "+(a===1?"Auftrag":"Aufträge")+(u?" · "+u+" "+(u===1?"Urlaub":"Urlaube"):"");
 }
+/* V5.0, Rückgängig nach dem Löschen (Review-Rest B8): standMerken hält Aufträge und Urlaube als JSON-Text fest, standZurueck setzt
+   beide Listen daraus neu (neue Objekte, alte Verweise gelten danach nicht mehr). Einstellungen bleiben, wie sie sind. */
+function standMerken(db){return JSON.stringify({orders:db.orders,urlaub:db.urlaub});}
+function standZurueck(db,text){
+  let x;try{x=JSON.parse(text);}catch(e){return false;}
+  if(!istObj(x)||!Array.isArray(x.orders)||!Array.isArray(x.urlaub))return false;
+  db.orders=x.orders;db.urlaub=x.urlaub;return true;
+}
 /* === DATEN-END === */
 let DB=standBereinigen(Store.load());
 const S=DB.settings;
@@ -524,8 +610,16 @@ if(typeof S.unterschrift!=="string"||!S.unterschrift.startsWith("data:image/png;
    Wird einmal nach jedem Update gezeigt: Vergleich S.seenVersion gegen APP_VERSION.
    Nicht bei frischen Installationen (keine Aufträge) – ein neuer Kollege soll kein
    Changelog sehen, bevor er die App überhaupt kennt. Neue Einträge oben anfügen. */
-const APP_VERSION="4.10.0";
+const APP_VERSION="5.0.0";
 const WHATSNEW=[
+  {v:"5.0.0", t:"Bedienung wie am iPhone gewohnt", items:[
+    ["Unten wechseln","Zwischen Aufträgen, Statistik und den anderen Bereichen wechselst du jetzt ganz unten am Bildschirm. Dort kommst du mit dem Daumen hin, auch wenn gerade ein Auftrag offen ist. Kommst du zurück, stehst du wieder an derselben Stelle."],
+    ["Aus Versehen gelöscht","Löschst du einen Tag, einen Urlaub oder einen Auftrag, steht unten ein paar Sekunden lang „Rückgängig“. Ein Tipp darauf holt alles zurück. Einen einzelnen Tag löscht die App dafür ohne Nachfrage."],
+    ["Dispo zweimal eingelesen","Liest du eine Dispo ein, deren Auftrag es schon gibt, fragt die App vorher nach. So zählt kein Tag doppelt."],
+    ["Schlechter Empfang","Hast du am Drehort kaum Netz, startet die App trotzdem nach wenigen Sekunden."],
+    ["Kleinigkeiten","„Speichern“ bleibt auch im Auftrag unten stehen. Der Knopf im Auftrag heißt jetzt „Als abgerechnet markieren“. Teilen hat das Zeichen, das du vom iPhone kennst, und am Urlaub löscht ein Papierkorb statt eines Kreuzes. Schaltest du eine Fahrt ab, steht in den Feldern „entfällt“."],
+    ["Vorlesen","Nutzt du die Vorlesefunktion des iPhones, nennt sie jetzt jedes Feld und jeden Knopf beim Namen."]
+  ]},
   {v:"4.10.0", t:"Sicherer eintragen", items:[
     ["Aus Versehen geschlossen","Hast du in einem Tag, einem Auftrag, einem Urlaub oder beim Import etwas geändert und schließt das Fenster, ohne zu speichern, fragt die App jetzt nach. So geht nichts mehr verloren, wenn du aus Versehen nach unten wischst oder daneben tippst."],
     ["Abbrechen steht jetzt oben","In jedem Fenster steht oben links „Abbrechen“, „Schließen“ oder „Zurück“. Du musst dafür nicht mehr bis ganz nach unten scrollen. Die Knöpfe unten gibt es weiter."],
@@ -675,16 +769,19 @@ DB.orders.forEach(o=>{o.notiz??=""; o.equipment??=[]; o.abgerechnet??=false; o.d
   d.drehbeginn??=(d.einsatz?addMin(d.einsatz,60):""); d.drehende??=(d.ende?addMin(d.ende,-60):"");
   d.anreiseEnde??=""; d.rueckBeginn??=""; d.grenzHin??=""; d.grenzRueck??="";
 });});
-function persist(){Store.save(DB);}
+function persist(){Store.save(DB);toastAktionWeg();}/* V5.0: nach jeder neuen Änderung gilt ein altes „Rückgängig“ nicht mehr */
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 
 /* ===== Icons (Inline-SVG, Handoff) ===== */
-const ICON_GEAR='<svg width="17" height="17" viewBox="0 0 17 17" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"><path d="M2 5.5h13M2 11.5h13"/><circle cx="6.2" cy="5.5" r="1.9"/><circle cx="10.8" cy="11.5" r="1.9"/></svg>';
+/* V5.0: echtes Zahnrad (acht breite Zähne, Loch in der Mitte) statt der zwei Regler, weil Anleitung und „Was ist neu“ vom Zahnrad sprechen. */
+const ICON_GEAR='<svg width="17" height="17" viewBox="0 0 17 17" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"><path d="M7.26 3.14L7.42 1.28L9.58 1.28L9.74 3.14L11.41 3.84L12.84 2.63L14.37 4.16L13.16 5.59L13.86 7.26L15.72 7.42L15.72 9.58L13.86 9.74L13.16 11.41L14.37 12.84L12.84 14.37L11.41 13.16L9.74 13.86L9.58 15.72L7.42 15.72L7.26 13.86L5.59 13.16L4.16 14.37L2.63 12.84L3.84 11.41L3.14 9.74L1.28 9.58L1.28 7.42L3.14 7.26L3.84 5.59L2.63 4.16L4.16 2.63L5.59 3.84Z"/><circle cx="8.5" cy="8.5" r="2.3"/></svg>';
 const ICON_MOON='<svg width="17" height="17" viewBox="0 0 17 17" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"><path d="M13.8 10.3A5.8 5.8 0 0 1 6.7 3.2a5.8 5.8 0 1 0 7.1 7.1Z"/></svg>';
 const ICON_SUN='<svg width="17" height="17" viewBox="0 0 17 17" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"><circle cx="8.5" cy="8.5" r="3.2"/><path d="M8.5 1.6v1.6M8.5 13.8v1.6M1.6 8.5h1.6M13.8 8.5h1.6M3.6 3.6l1.2 1.2M12.2 12.2l1.2 1.2M13.4 3.6l-1.2 1.2M4.8 12.2l-1.2 1.2"/></svg>';
 /* Logo als Inline-SVG: nur so greifen currentColor und die --holo-Tokens. Gradient-ID ebz-holo nur einmal pro Seite. */
 const LOGO_SVG='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="28" height="28" fill="none" aria-hidden="true"><defs><linearGradient id="ebz-holo" x1="27" y1="4" x2="6" y2="26" gradientUnits="userSpaceOnUse"><stop offset="0" style="stop-color:var(--holo-1,#FA7D19)"></stop><stop offset=".3" style="stop-color:var(--holo-2,#FFC08A)"></stop><stop offset=".55" style="stop-color:var(--holo-3,#F2A9CF)"></stop><stop offset=".78" style="stop-color:var(--holo-4,#B6A8F4)"></stop><stop offset="1" style="stop-color:var(--holo-5,#8ED8EA)"></stop></linearGradient></defs><path d="M16 3.5A12.5 12.5 0 1 1 7.16 24.84" stroke="url(#ebz-holo)" stroke-width="1.8" stroke-linecap="round"></path><path d="M16 9V16L12.1 19.9" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"></path></svg>';
 const ICON_TRASH='<svg width="13" height="14" viewBox="0 0 13 14" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 3.5h10M4.5 3.5V2h4v1.5M2.8 3.5l.6 9h6.2l.6-9"/></svg>';
+/* V5.0: Teilen-Zeichen von iOS (Kasten mit Pfeil nach oben), Strich wie ICON_TRASH. Steht an allem, was das Teilen-Menü öffnet. */
+const ICON_SHARE='<svg class="isym" width="14" height="16" viewBox="0 0 14 16" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 10V1.5M4.2 4.3L7 1.5l2.8 2.8M4.6 6.5H2.5v8h9v-8H9.4"/></svg>';
 
 /* ===== Helfer ===== */
 function hm2min(s){if(!s)return null;const m=String(s).match(/(\d{1,2}):(\d{2})/);return m?(+m[1])*60+(+m[2]):null;}
@@ -1171,6 +1268,10 @@ function zeitraumLesbar(von,bis){
   if(von===bis)return datumLesbar(von);
   return von.slice(0,7)===bis.slice(0,7)?+von.slice(8,10)+". bis "+datumLesbar(bis):datumLesbar(von)+" bis "+datumLesbar(bis);
 }
+/* V5.0: Die Rückfrage beim Löschen nennt den Urlaub, damit man sieht, was weg ist. */
+function loeschFrageUrlaub(u){
+  return "Urlaub "+(u.von===u.bis?"am ":"vom ")+zeitraumLesbar(u.von,u.bis)+" "+u.von.slice(0,4)+" löschen? Im Kalender bleibt er stehen, bis du ihn dort löschst.";
+}
 /* Prüfen vor dem Speichern: {text, sperrt}. Eine Überschneidung mit einem anderen Urlaub sperrt (Schlussprüfung 23.10.2026). */
 function urlaubPruefen(u,liste,ort){
   if(!UR_ISO.test(u.von||"")||!UR_ISO.test(u.bis||""))return {text:"Trag den ersten und den letzten Tag ein.",sperrt:true};
@@ -1630,7 +1731,7 @@ function applyTrip(o,trip){
 }
 
 /* ===== Routing ===== */
-let state={tab:"orders",orderId:null,urlaubJahr:null,statJahr:null};
+let state={tab:"orders",orderId:null,urlaubJahr:null,statJahr:null,scrollY:{}};/* scrollY (V5.0): gemerkte Scroll-Stelle je Reiter */
 const view=document.getElementById("view");
 /* Hell/Dunkel (V4.8): S.theme "auto" folgt der iOS-Einstellung, "light" und "dark" sind von Hand gewählt (Apple-Audit,
    dark-mode.md). Der Knopf oben bleibt (Max 01.11.2026) und schaltet immer sichtbar um. Landet er dabei auf dem, was iOS gerade
@@ -1646,8 +1747,9 @@ if(SYS_DUNKEL)(SYS_DUNKEL.addEventListener?SYS_DUNKEL.addEventListener("change",
 function renderBar(){
   const bar=document.getElementById("bar");
   if(state.orderId){
-    bar.innerHTML=`<button class="backlink" id="barBack">‹ Aufträge</button><span style="flex:1"></span><span class="eyebrow">Auftrag</span>`;
-    document.getElementById("barBack").onclick=()=>{state.orderId=null;render();};
+    /* V5.0: Der Knopf nennt die Ansicht, aus der man kam (Aufträge oder Statistik). */
+    bar.innerHTML=`<button class="backlink" id="barBack">‹ ${reiterName(reiterAktiv(state.tab,reiterListe(S.verdienstOn,S.status)))}</button><span style="flex:1"></span><span class="eyebrow">Auftrag</span>`;
+    document.getElementById("barBack").onclick=auftragZurueck;
   }else{
     bar.innerHTML=`<div class="brand">${LOGO_SVG}<span class="brand-name">Zeiterfassung</span></div><button class="iconbtn" id="themeBtn" aria-label="Hell/Dunkel"></button><button class="iconbtn" id="navSettings" aria-label="Einstellungen">${ICON_GEAR}</button>`;
     document.getElementById("themeBtn").onclick=themeUmschalten;
@@ -1655,10 +1757,82 @@ function renderBar(){
     paintThemeIcon();
   }
 }
-function tabsHtml(){return `<div class="segs" id="segs"><button data-tab="orders"${state.tab==="orders"?' class="on"':''}>Aufträge</button><button data-tab="stats"${state.tab==="stats"?' class="on"':''}>Statistik</button>${S.verdienstOn?`<button data-tab="verdienst"${state.tab==="verdienst"?' class="on"':''}>Verdienst</button>`:""}${S.status!=="fest"?`<button data-tab="urlaub"${state.tab==="urlaub"?' class="on"':''}>Urlaub</button>`:""}</div>`;}
-function bindTabs(){view.querySelectorAll("#segs button").forEach(b=>b.onclick=()=>{if(b.dataset.tab!==state.tab)state.urlaubKalJahr=null;state.tab=b.dataset.tab;state.orderId=null;window.scrollTo(0,0);render();});}
+/* NAVIGATION-BEGIN (V5.0): Reiter-Leiste unten, Zurück aus dem Auftrag an die alte Stelle, Verlauf für den Wisch vom linken Rand.
+   Reine Funktionen ohne DOM, getestet in tests/navigation.test.mjs. */
+const REITER=[["orders","Aufträge"],["stats","Statistik"],["verdienst","Verdienst"],["urlaub","Urlaub"]];
+/* Welche Reiter es gibt: Verdienst nur mit eingeschalteter Option, Urlaub nicht für fest Angestellte (wie bis V4.10 oben). */
+function reiterListe(verdienstOn,status){return REITER.filter(([k])=>k==="verdienst"?!!verdienstOn:k==="urlaub"?status!=="fest":true);}
+/* Welcher Reiter gilt: der gemerkte, wenn es ihn gibt, sonst Aufträge. Im offenen Auftrag bleibt es der Reiter, aus dem man kam. */
+function reiterAktiv(tab,liste){return liste.some(([k])=>k===tab)?tab:"orders";}
+function reiterName(tab){const r=REITER.find(([k])=>k===tab);return r?r[1]:"Aufträge";}
+/* Tipp auf einen Reiter: "oben" = man ist schon dort, nach oben scrollen · "zurueck" = aus dem offenen Auftrag zurück in seine
+   Ansicht · "wechsel" = anderer Reiter (ein offener Auftrag geht dabei zu). */
+function reiterSchritt(tab,aktiv,auftragOffen){return tab!==aktiv?"wechsel":auftragOffen?"zurueck":"oben";}
+/* Schlüssel der gezeichneten Ansicht: "o:"+id im Auftrag, sonst der Reiter. */
+function ansichtKey(orderId,aktiv){return orderId?"o:"+orderId:aktiv;}
+/* Wohin nach dem Zeichnen scrollen: null = dieselbe Ansicht oder Start, nichts tun · ein Auftrag beginnt oben · ein Reiter kommt an
+   seine gemerkte Stelle zurück (wie die Tab-Leiste in iOS). */
+function scrollZiel(alt,neu,merk){return alt===null||alt===neu?null:neu.slice(0,2)==="o:"?0:(merk[neu]||0);}
+/* Wisch zurück (popstate): vor = vorwärts auf einem Eintrag der App gelandet, dann passiert nichts. Sonst schließt der Wisch zuerst
+   eine Rückfrage, dann ein Sheet, und erst danach verlässt er den Auftrag. Ist nichts davon offen, ist er wirkungslos. */
+function zurueckSchritt(z){return z.vor?"nichts":z.rueckfrage?"rueckfrage":z.sheet?"sheet":z.auftrag?"liste":"nichts";}
+/* NAVIGATION-END */
+/* Symbole der Reiter: 22 px, Strich in currentColor, runde Enden wie ICON_TRASH. */
+const ICON_REITER={
+  orders:'<svg viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 6h10.5M8 11h10.5M8 16h10.5"/><path d="M3.8 6h.01M3.8 11h.01M3.8 16h.01" stroke-width="2.2"/></svg>',
+  stats:'<svg viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 18.5h15"/><path d="M6 15v-4M11 15V4.5M16 15V8" stroke-width="2.4"/></svg>',
+  verdienst:'<svg viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="M14.3 8.5a3.5 3.5 0 1 0 0 5M7.3 10h4.4M7.3 12h4.4"/></svg>',
+  urlaub:'<svg viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="15" height="13.5" rx="2.5"/><path d="M3.5 9.5h15M7.5 3v3.5M14.5 3v3.5"/></svg>'};
+/* Zeichnet die Leiste nur neu, wenn sich die Reiter ändern (Verdienst an oder aus, frei oder fest). Sonst wandert nur die Markierung,
+   so bleibt der Fokus auf dem getippten Knopf. */
+function renderTabbar(){
+  const nav=document.getElementById("tabbar"),liste=reiterListe(S.verdienstOn,S.status),aktiv=reiterAktiv(state.tab,liste),sig=liste.map(r=>r[0]).join();
+  if(nav.dataset.sig!==sig){nav.dataset.sig=sig;
+    nav.innerHTML=liste.map(([k,t])=>`<button type="button" data-tab="${k}">${ICON_REITER[k]}<span>${t}</span></button>`).join("");
+    nav.querySelectorAll("button").forEach(b=>b.onclick=()=>reiterTipp(b.dataset.tab));}
+  nav.querySelectorAll("button").forEach(b=>b.dataset.tab===aktiv?b.setAttribute("aria-current","page"):b.removeAttribute("aria-current"));
+}
+function nachOben(){const ruhig=window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches;window.scrollTo({top:0,behavior:ruhig?"auto":"smooth"});}
+function reiterTipp(tab){
+  if(Date.now()-shZuAm<500)return;/* zweiter Tipp auf „Speichern“ landet sonst auf der Leiste, die unter dem Sheet liegt */
+  const aktiv=reiterAktiv(state.tab,reiterListe(S.verdienstOn,S.status));
+  if(reiterSchritt(tab,aktiv,!!state.orderId)==="oben")return nachOben();
+  if(tab!==state.tab)state.urlaubKalJahr=null;
+  /* Ein Verlaufseintrag des Auftrags bleibt hier stehen. Ein späterer Wisch zurück ist dann wirkungslos, der nächste Auftrag nutzt ihn wieder. */
+  state.tab=tab;state.orderId=null;render();
+}
+/* Verlauf nur für die Auftragsansicht: iOS wischt in Web-Apps vom linken Rand durch den Verlauf. Beim Antippen eines Auftrags kommt ein
+   Eintrag {o:id} dazu (liegt von früher noch einer oben, wird er ersetzt, so stapelt sich nie mehr als einer). Aufträge, die nach dem
+   Import direkt aufgehen, haben keinen eigenen Eintrag. Die Scroll-Stelle setzt die App selbst, nicht der Browser. */
+if("scrollRestoration" in history)history.scrollRestoration="manual";
+function verlaufApp(){return !!(history.state&&history.state.o);}
+function auftragOeffnen(id){
+  state.orderId=id;
+  try{verlaufApp()?history.replaceState({o:id},""):history.pushState({o:id},"");}catch(e){}
+  render();
+}
+function auftragZurueck(){if(verlaufApp())history.back();else{state.orderId=null;render();}}
+window.addEventListener("popstate",e=>{
+  const cb=document.getElementById("confirmBox"),offen=el=>el.classList.contains("on")&&!el.classList.contains("out");
+  const was=zurueckSchritt({vor:!!(e.state&&e.state.o),rueckfrage:offen(cb),sheet:offen(scrim),auftrag:!!state.orderId});
+  if(was==="nichts")return;
+  if(was==="liste"){state.orderId=null;render();return;}
+  if(was==="rueckfrage")document.getElementById("cNo").click();else closeSheet();/* der Wächter darf nachfragen */
+  /* Der Auftrag bleibt offen, also bekommt er seinen Eintrag zurück. */
+  if(state.orderId)try{history.pushState({o:state.orderId},"");}catch(err){}
+});
 function schriftGross(){document.body.classList.toggle("gross",parseFloat(getComputedStyle(document.documentElement).fontSize)>17.5);}
-function render(){schriftGross();renderBar();if(state.orderId)return renderDetail();if(state.tab==="stats")return renderStats();if(state.tab==="verdienst"&&S.verdienstOn)return renderVerdienst();if(state.tab==="urlaub"&&S.status!=="fest")return renderUrlaub();return renderOrders();}
+/* V5.0: render() merkt beim Verlassen eines Reiters dessen Scroll-Stelle und stellt sie beim Zurückkommen wieder her, egal auf
+   welchem Weg (Leiste unten, Zurück, Wisch, Import, Löschen). Ein Auftrag beginnt oben. */
+let gezeigt=null;
+function render(){schriftGross();
+  if(state.orderId&&!DB.orders.some(x=>x.id===state.orderId))state.orderId=null;
+  const aktiv=reiterAktiv(state.tab,reiterListe(S.verdienstOn,S.status)),neu=ansichtKey(state.orderId,aktiv);
+  if(gezeigt&&gezeigt!==neu&&gezeigt.slice(0,2)!=="o:")state.scrollY[gezeigt]=window.scrollY;
+  const ziel=scrollZiel(gezeigt,neu,state.scrollY);gezeigt=neu;
+  renderBar();renderTabbar();
+  if(state.orderId)renderDetail();else if(aktiv==="stats")renderStats();else if(aktiv==="verdienst")renderVerdienst();else if(aktiv==="urlaub")renderUrlaub();else renderOrders();
+  if(ziel!==null)window.scrollTo(0,ziel);}
 
 /* Fußzeile der Auftragskarte (V4.4.1): links die Nummern (nur bei offenen Aufträgen), rechts immer „Öffnen ›“.
    Das ist nur der Hinweis, antippbar bleibt die ganze Karte über data-open. */
@@ -1689,14 +1863,13 @@ function renderOrders(){
   const totOT=active.reduce((a,o)=>a+orderOT(o),0);
   const totDays=active.reduce((a,o)=>a+o.days.length,0);
   const totTG=active.reduce((a,o)=>a+orderTGdays(o),0);
-  /* Reiter direkt unter der Überschrift wie in Statistik, Verdienst und Urlaub, damit die Leiste beim Wechsel nicht springt. */
-  let h=`<div class="pagehead"><div class="eyebrow">${esc(headEyebrow())}</div><div class="display">Aufträge</div></div>`+tabsHtml();
+  let h=`<div class="pagehead"><div class="eyebrow">${esc(headEyebrow())}</div><div class="display">Aufträge</div></div>`;
   /* Installations-Hinweis (Review B7, V4.8): nur iPhone/iPad im Safari-Tab, unabhängig von der Zahl der Aufträge, bis „Verstanden“.
      Nie zusammen mit dem Backup-Hinweis. Die Web-App vom Home-Bildschirm hat einen eigenen Speicher, deshalb der Satz zum Backup. */
   const needInst=istIOS()&&!(navigator.standalone===true||(window.matchMedia&&matchMedia("(display-mode: standalone)").matches))&&!S.instOk;
   const needBak=!needInst&&DB.orders.length>0&&(!S.lastBackup||Date.now()-S.lastBackup>30*864e5)&&(!S.bakSnooze||Date.now()-S.bakSnooze>7*864e5);
   if(needInst)h+=`<div class="remind"><b>Als App auf den Home-Bildschirm</b><p>Tippe in Safari auf Teilen (bei neuerem iOS hinter den drei Punkten) und dann auf „Zum Home-Bildschirm“. Die App startet dann im Vollbild und ohne Internet. Sie hat dort einen eigenen Speicher: Hast du hier schon etwas eingetragen, teile vorher ein Backup und lies es in der App ein.</p><button class="btn ghost" id="instOk">Verstanden</button></div>`;
-  if(needBak)h+=`<div class="remind"><b>${S.lastBackup?"Backup ist über einen Monat her":"Noch kein Backup"}</b><p>Deine Daten liegen nur auf diesem Gerät. Sichere sie regelmäßig als Datei.</p><div class="btnrow"><button class="btn info" id="remBak">Backup teilen</button><button class="btn ghost" id="remLater">Später</button></div></div>`;
+  if(needBak)h+=`<div class="remind"><b>${S.lastBackup?"Backup ist über einen Monat her":"Noch kein Backup"}</b><p>Deine Daten liegen nur auf diesem Gerät. Sichere sie regelmäßig als Datei.</p><div class="btnrow"><button class="btn info" id="remBak">${ICON_SHARE}Backup teilen</button><button class="btn ghost" id="remLater">Später</button></div></div>`;
   h+=`<div class="kpis">
     <div class="kpi acc"><div class="l">Überstunden</div><div class="n ${otClass(totOT)}">${fmtSigned(totOT)}</div></div>
     <div class="kpi"><div class="l">Tage</div><div class="n">${totDays}</div></div>
@@ -1718,7 +1891,6 @@ function renderOrders(){
     h+=`<div id="olist"></div>`;
   }
   view.innerHTML=h;
-  bindTabs();
   document.getElementById("addOrder").onclick=()=>editOrder(null);
   const lb=document.getElementById("leerBackup");if(lb)lb.onclick=()=>document.getElementById("backupInput").click();
   document.getElementById("importPdf").onclick=()=>document.getElementById("pdfInput").click();
@@ -1739,7 +1911,7 @@ function paintListe(){
   const active=sortiert.filter(o=>!o.abgerechnet),done=sortiert.filter(o=>o.abgerechnet);
   const cardHtml=o=>{
     const ot=orderOT(o),tgd=orderTGdays(o);
-    return `<div class="card" data-open="${o.id}">
+    return `<div class="card" data-open="${o.id}" role="button" tabindex="0">
     <div class="eyeline">${esc(rangeOrt(o))}</div>
     <div class="toprow"><p class="titel">${esc(o.titel||"Ohne Titel")}</p><div class="num ${otClass(ot)}">${fmtSigned(ot)}</div></div>
     <div class="cardgrid">
@@ -1750,7 +1922,7 @@ function paintListe(){
     ${cardFoot(o,true)}</div>`;};
   const doneHtml=o=>{
     const ot=orderOT(o);
-    return `<div class="card" data-open="${o.id}">
+    return `<div class="card" data-open="${o.id}" role="button" tabindex="0">
     <div class="eyeline">${esc(rangeOrt(o))}</div>
     <div class="toprow"><p class="titel">${esc(o.titel||"Ohne Titel")}</p><div class="num">${fmtSigned(ot)}</div></div>${cardFoot(o,false)}</div>`;};
   let h="";
@@ -1762,7 +1934,7 @@ function paintListe(){
   }
   el.innerHTML=h;
   const la=document.getElementById("lAlle");if(la)la.onclick=()=>{state.listJahr="";render();};
-  el.querySelectorAll("[data-open]").forEach(c=>c.onclick=()=>{state.orderId=c.dataset.open;window.scrollTo(0,0);render();});
+  el.querySelectorAll("[data-open]").forEach(c=>c.onclick=()=>auftragOeffnen(c.dataset.open));
 }
 
 /* ===== Detail ===== */
@@ -1786,13 +1958,13 @@ function renderDetail(){
     ${equipText(o)?`<div class="row"><span class="k">Equipment</span><span class="w">${esc(equipText(o))}</span></div>`:""}
     ${o.abgerechnet?`<div class="row"><span class="k">Status</span><span class="w" style="color:var(--pos)">✓ abgerechnet</span></div>`:""}
   </div>
-  <div class="btnrow" style="margin-top:14px"><button class="btn ghost" id="editOrder" style="margin-bottom:0">Bearbeiten</button><button class="btn ghost" id="abrToggle" style="margin-bottom:0">${o.abgerechnet?"Wieder aktiv":"Abgerechnet"}</button></div>
+  <div class="btnrow" style="margin-top:14px"><button class="btn ghost" id="editOrder" style="margin-bottom:0">Bearbeiten</button><button class="btn ghost" id="abrToggle" style="margin-bottom:0">${o.abgerechnet?"Wieder aktivieren":"Als abgerechnet markieren"}</button></div>
   <div class="section-h"><h3>Arbeitstage</h3><span class="tot">${days.length} ${days.length===1?"Tag":"Tage"} · ${fmtSigned(ot)}</span></div>`;
   if(days.length){
     const trip=orderTrip(o);
     h+=`<div class="field" style="margin:8px 0 16px">
       <div class="nrow"><span class="rlbl">Reiseart</span>${trip==="mix"?'<span class="chip">gemischt</span>':""}</div>
-      <div class="toggles" id="tripSeg"><button data-t="ein"${trip==="ein"?' class="on"':''}>Einzeltage</button><button data-t="mehr"${trip==="mehr"?' class="on"':''}>Mehrtägig</button></div>
+      <div class="toggles" id="tripSeg" role="group" aria-label="Reiseart"><button data-t="ein"${trip==="ein"?' class="on"':''}>Einzeltage</button><button data-t="mehr"${trip==="mehr"?' class="on"':''}>Mehrtägig</button></div>
       <p class="note">${trip==="mix"
         ? "Einzelne Tage haben Übernachtung, andere nicht. Umstellen setzt alle Tage einheitlich."
         : "Tagegeld beantragst du nur bei Einzeltagen selbst, mehrtägig mit Übernachtung kommt es über die Dienstreise-Abrechnung. Umstellen setzt Übernachtung und die Reisezeiten aller Tage neu; Einsatz- und Drehzeiten bleiben unverändert, die Überstunden ändern sich also nicht."}</p>
@@ -1817,15 +1989,15 @@ function renderDetail(){
     if(d.grenzHin||d.grenzRueck)chips+=`<span class="chip">Grenze ${d.grenzHin||"–"} / ${d.grenzRueck||"–"}</span>`;
     const ftn=feiertagTag(o,d);if(ftn)chips+=`<span class="chip">Feiertag · ${esc(ftn)}</span>`;
     h+=`<div class="day" data-day="${d.id}">
-      <div class="top"><div class="date">${fmtDayC(d.datum)}</div><div style="display:flex;align-items:center;gap:10px"><span class="ot ${otClass(c.ot)}">${fmtSigned(c.ot)}</span><button class="dayDel" data-del="${d.id}" aria-label="Tag löschen">${ICON_TRASH}</button></div></div>
+      <div class="top"><div class="date" role="button" tabindex="0" aria-label="${esc(fmtDayC(d.datum))} bearbeiten">${fmtDayC(d.datum)}</div><div style="display:flex;align-items:center;gap:10px"><span class="ot ${otClass(c.ot)}">${fmtSigned(c.ot)}</span><button class="dayDel" data-del="${d.id}" aria-label="Tag löschen">${ICON_TRASH}</button></div></div>
       <div class="line"><span>Einsatz ${d.einsatz||"–"}–${d.ende||"–"} · ${azTxt} · Pause ${c.pauseJa?fmtMin(c.pause):"nein"}</span></div>
       <div class="line"><span>${l2}</span>${chips}</div>
     </div>`;
   });
   const nFl=flinkTage(o);
   h+=`<button class="btn" id="addDay" style="margin-top:16px">Tag hinzufügen</button>
-  <div class="divider"></div>
-  <div class="btnrow"><button class="btn ghost" id="mailOrder">Als E-Mail</button><button class="btn ghost" id="pdfOrder">Als PDF</button></div>
+  <div class="section-h" style="margin-bottom:10px"><h3>Nachweis senden</h3></div>
+  <div class="btnrow"><button class="btn ghost" id="mailOrder">Als E-Mail</button><button class="btn ghost" id="pdfOrder">${ICON_SHARE}Als PDF</button></div>
   <p class="sub" style="margin-top:0;margin-bottom:0">${nFl>0?`An ${nFl} ${nFl===1?"Tag":"Tagen"} endet der Nachweis später als hier, weil FLINK die Pause pauschal abzieht. Warum, steht im jeweiligen Tag.`:"Export ohne Summen und Tagegeld."}</p>
   <button class="linkbtn" id="mailSet">Empfänger und Mail-Text ändern ›</button>`;
   view.innerHTML=h;
@@ -1850,7 +2022,8 @@ function renderDetail(){
       toast((trip==="mehr"?"Auf mehrtägig umgestellt":(tgd>0?`Auf Einzeltage umgestellt · ${tgd}× Tagegeld möglich`:"Auf Einzeltage umgestellt"))+zus);
     },"Umstellen","go");
   });
-  view.querySelectorAll(".dayDel").forEach(b=>b.onclick=e=>{e.stopPropagation();const id=b.dataset.del;askConfirm("Diesen Arbeitstag wirklich löschen?",()=>{o.days=o.days.filter(x=>x.id!==id);persist();render();toast("Tag gelöscht");});});
+  /* V5.0: ohne Rückfrage, dafür mit „Rückgängig“ in der Meldung (häufig und leicht umkehrbar). */
+  view.querySelectorAll(".dayDel").forEach(b=>b.onclick=e=>{e.stopPropagation();const id=b.dataset.del;mitRueckgaengig("Tag gelöscht",()=>{o.days=o.days.filter(x=>x.id!==id);});});
   view.querySelectorAll("[data-day]").forEach(el=>el.onclick=()=>editDay(o.id,el.dataset.day));
 }
 
@@ -1882,7 +2055,7 @@ function renderStats(){
   if(!jahre.includes(state.statJahr))state.statJahr=hj;
   const jahr=state.statJahr,i=jahre.indexOf(jahr),r=statJahr(DB.orders,jahr),frei=S.status!=="fest",ort=urlaubOrt(S.feiertagOrt);
   const uj=frei?urlaubJahr(DB.urlaub,jahr,S.urlaubAnspruch,null,ort):null;
-  let h=`<div class="pagehead"><div class="eyebrow">${esc(headEyebrow())}</div><div class="display">Statistik</div></div>`+tabsHtml();
+  let h=`<div class="pagehead"><div class="eyebrow">${esc(headEyebrow())}</div><div class="display">Statistik</div></div>`;
   h+=`<div class="hero"><div class="hkopf"><div class="l">Überstunden ${jahr}</div><div class="pfeile"><button class="iconbtn" id="sPrev" aria-label="Jahr zurück"${i>=jahre.length-1?" disabled":""}>‹</button><button class="iconbtn" id="sNext" aria-label="Jahr vor"${i<=0?" disabled":""}>›</button></div></div>
     <div class="n ${otClass(r.ot)}">${fmtSigned(r.ot)}</div><div class="hsub">${r.auftraege} ${r.auftraege===1?"Auftrag":"Aufträge"} · ${jahr===hj?"Stand "+MN[nw.getMonth()]+" "+hj:jahr<hj?"ganzes Jahr":"bisher geplant"}</div></div>
   <div class="kpis two">
@@ -1915,21 +2088,20 @@ function renderStats(){
   }
   if(years.length>1){h+=`<div class="section-h"><h3>Pro Jahr</h3></div>`;
     years.forEach(yk=>{const yy=perYear[yk],ub=frei?urlaubJahr(DB.urlaub,+yk,S.urlaubAnspruch,null,ort).beantragt:0;
-      h+=`<div class="srow" data-jahr="${yk}" style="cursor:pointer"><div class="nm">${yk}<small>${yy.days} ${yy.days===1?"Tag":"Tage"} · ${fmtMin(yy.netto)} netto${frei?` · Urlaub ${ub} von ${S.urlaubAnspruch}`:""}</small></div><div class="v ${otClass(yy.ot)}">${fmtSigned(yy.ot)}</div></div>`;});
+      h+=`<div class="srow" data-jahr="${yk}" role="button" tabindex="0" style="cursor:pointer"><div class="nm">${yk}<small>${yy.days} ${yy.days===1?"Tag":"Tage"} · ${fmtMin(yy.netto)} netto${frei?` · Urlaub ${ub} von ${S.urlaubAnspruch}`:""}</small></div><div class="v ${otClass(yy.ot)}">${fmtSigned(yy.ot)}</div></div>`;});
   }
   const imJahr=DB.orders.filter(o=>o.days.some(d=>d.datum&&d.datum.slice(0,4)===String(jahr))||(jahr===hj&&!o.days.some(d=>d.datum)));
   if(imJahr.length){h+=`<div class="section-h"><h3>Pro Auftrag</h3></div>`;
     imJahr.slice().sort((a,b)=>byDate(b,a)).forEach(o=>{const ot=orderOT(o),tgd=orderTGdays(o);
-      h+=`<div class="srow${o.abgerechnet?" dim":""}" data-open="${o.id}" style="cursor:pointer"><div class="nm">${esc(o.titel||"Ohne Titel")}<small>${o.days.length} ${o.days.length===1?"Tag":"Tage"} · ${fmtMin(orderNetto(o))} netto${tgd>0?` · ${tgd}× Tagegeld`:""}</small></div><div style="display:flex;align-items:center;gap:10px"><span class="v ${otClass(ot)}">${fmtSigned(ot)}</span><span class="chev">›</span></div></div>`;});
+      h+=`<div class="srow${o.abgerechnet?" dim":""}" data-open="${o.id}" role="button" tabindex="0" style="cursor:pointer"><div class="nm">${esc(o.titel||"Ohne Titel")}<small>${o.days.length} ${o.days.length===1?"Tag":"Tage"} · ${fmtMin(orderNetto(o))} netto${tgd>0?` · ${tgd}× Tagegeld`:""}</small></div><div style="display:flex;align-items:center;gap:10px"><span class="v ${otClass(ot)}">${fmtSigned(ot)}</span><span class="chev">›</span></div></div>`;});
   }else h+=`<div class="empty"><div class="big">📊</div><p>${DB.orders.length?"Für "+jahr+" gibt es noch keine Einsätze.":"Noch keine Daten."}</p></div>`;
   view.innerHTML=h;
-  bindTabs();
   const geh=k=>{state.statJahr=jahre[i+k];render();const b=document.getElementById(k>0?"sPrev":"sNext"),a=document.getElementById(k>0?"sNext":"sPrev");
     (b&&!b.disabled?b:a).focus({preventScroll:true});};
   document.getElementById("sPrev").onclick=()=>geh(1);document.getElementById("sNext").onclick=()=>geh(-1);
   ["vtSet"].forEach(id=>{const el=document.getElementById(id);if(el){el.onclick=()=>openSettings("vertrag");el.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();openSettings("vertrag");}};}});
   view.querySelectorAll("[data-jahr]").forEach(c=>c.onclick=()=>{state.statJahr=+c.dataset.jahr;window.scrollTo(0,0);render();});
-  view.querySelectorAll("[data-open]").forEach(c=>c.onclick=()=>{state.orderId=c.dataset.open;window.scrollTo(0,0);render();});
+  view.querySelectorAll("[data-open]").forEach(c=>c.onclick=()=>auftragOeffnen(c.dataset.open));
 }
 /* Jahresliste als PDF (V4.6, Max 24.10.2026): wo, wann, wie lang und wie viele Stunden, für die eigenen Unterlagen. Ohne Überstunden
    und Tagegeld, die bleiben intern. Teilen wie beim Nachweis. */
@@ -1969,7 +2141,7 @@ function fehlSatzText(f){
 }
 function renderVerdienst(){
   const ms=verdienstMonate(),q=nettoQuote(),fehl=fehlSatzText(verdienstFehlSatz());
-  let h=`<div class="pagehead"><div class="eyebrow">${esc(headEyebrow())}</div><div class="display">Verdienst</div></div>`+tabsHtml();
+  let h=`<div class="pagehead"><div class="eyebrow">${esc(headEyebrow())}</div><div class="display">Verdienst</div></div>`;
   if(!ms.length){
     const keinSatz=!S.satzAssist&&!S.satzKamera;
     const txt=fehl||(keinSatz?"Trag deine Tagessätze ein, dann rechnet die App hier, was dir nach Tarif zusteht."
@@ -1988,12 +2160,11 @@ function renderVerdienst(){
     ${fehl?`<div class="rnote" style="margin:0 0 6px">${fehl}</div><button class="linkbtn left" id="satzSet" style="margin:0 0 8px">Tagessätze eintragen ›</button>`:""}
     <div class="section-h"><h3>Pro Monat</h3></div>`;
     ms.forEach(x=>{
-      h+=`<div class="srow" data-vm="${esc(x.monat)}" style="cursor:pointer"><div class="nm">${esc(fmtMonth(x.monat))}<small>${x.einsaetze} ${x.einsaetze===1?"Einsatz":"Einsätze"} · Brutto ${fmtEur(x.brutto)}${x.mehrStd?" · "+fmtStd(x.mehrStd)+" Mehrarbeit":""}</small></div><div style="display:flex;align-items:center;gap:10px;flex:none"><span class="v" style="white-space:nowrap">${x.konto!=null?"ca. "+fmtEurRund(x.konto):fmtEur(x.brutto)}</span><span class="chev">›</span></div></div>`;
+      h+=`<div class="srow" data-vm="${esc(x.monat)}" role="button" tabindex="0" style="cursor:pointer"><div class="nm">${esc(fmtMonth(x.monat))}<small>${x.einsaetze} ${x.einsaetze===1?"Einsatz":"Einsätze"} · Brutto ${fmtEur(x.brutto)}${x.mehrStd?" · "+fmtStd(x.mehrStd)+" Mehrarbeit":""}</small></div><div style="display:flex;align-items:center;gap:10px;flex:none"><span class="v" style="white-space:nowrap">${x.konto!=null?"ca. "+fmtEurRund(x.konto):fmtEur(x.brutto)}</span><span class="chev">›</span></div></div>`;
     });
     h+=`<p class="note">Das ZDF zahlt nachträglich, meist ein bis zwei Monate später und oft in mehreren Teilbeträgen. Urlaubsentgelt ist nicht enthalten.${q?" Der Anteil aufs Konto ist geschätzt.":""} Gezählt werden Einsätze als freier Mitarbeiter bis heute.</p>`;
   }
   view.innerHTML=h;
-  bindTabs();
   const ss=document.getElementById("satzSet");if(ss)ss.onclick=()=>openSettings("verdienst");
   view.querySelectorAll("[data-vm]").forEach(r=>r.onclick=()=>openVerdienstMonat(r.dataset.vm));
 }
@@ -2005,8 +2176,8 @@ function renderUrlaub(){
   const jahr=state.urlaubJahr;
   const j=urlaubJahr(DB.urlaub,jahr,S.urlaubAnspruch,S.urlaubSatz,ort);
   const bl=antragBloecke(DB.urlaub,jahr,heute,ort),frei=Math.max(j.frei,0);
-  let h=`<div class="pagehead"><div class="eyebrow">${esc(headEyebrow())}</div><div class="display">Urlaub</div></div>`+tabsHtml();
-  h+=`<div class="hero"><div class="l">Du hast ${jahr} noch</div><div class="n" id="uFreiN">${frei} ${frei===1?"Tag":"Tage"}</div><div class="hsub" id="uSub">von ${S.urlaubAnspruch} ${S.urlaubAnspruch===1?"Urlaubstag":"Urlaubstagen"} frei · <button class="ausn" id="uAusn" aria-expanded="false">Ausnahmen</button></div>
+  let h=`<div class="pagehead"><div class="eyebrow">${esc(headEyebrow())}</div><div class="display">Urlaub</div></div>`;
+  h+=`<div class="hero"><div class="l">Du hast ${jahr} noch</div><div class="n" id="uFreiN">${frei} ${frei===1?"Tag":"Tage"}</div><div class="hsub tap" id="uSub">von ${S.urlaubAnspruch} ${S.urlaubAnspruch===1?"Urlaubstag":"Urlaubstagen"} frei · <button class="ausn" id="uAusn" aria-expanded="false">Ausnahmen</button></div>
     <div class="hsub neg" id="uMehr"></div>
     <div class="hausn" id="uAusnT" hidden>Nicht beantragter Urlaub verfällt am 31. Dezember. Ohne eigene Schuld am Antrag gehindert: bis 31. März nachholen. Übertragung ins neue Jahr nur aus dringenden Gründen mit Genehmigung, dann Urlaub bis 30. April nehmen.</div></div>`;
   /* Vergütung als ruhige Zeile unter dem Kasten, damit er so hoch bleibt wie in Statistik und Verdienst. */
@@ -2015,23 +2186,23 @@ function renderUrlaub(){
   /* Ein Block je Antrag (V4.5.1): Zeiträume als Links zum Ändern, ein Knopf für den nächsten Schritt des ganzen Antrags. */
   if(!bl.length)h+=`<div class="empty"><p>Noch kein Urlaub für ${jahr} eingetragen.</p></div>`;
   else h+=`<div class="cards">`+bl.map(b=>{const ids=esc(b.urlaube.map(u=>u.id).join(","));
-    return `<div class="card ucard"><button class="ux" data-weg="${ids}" data-titel="${esc(b.titel)}" aria-label="${esc(b.titel)} löschen">✕</button><div class="ut">${esc(b.titel)}</div><div class="us">${b.tage} ${b.tage===1?"Urlaubstag":"Urlaubstage"}</div>
+    return `<div class="card ucard"><button class="ux" data-weg="${ids}" data-titel="${esc(b.titel)}" aria-label="${esc(b.titel)}: Urlaub löschen">${ICON_TRASH}</button><div class="ut">${esc(b.titel)}</div><div class="us">${b.tage} ${b.tage===1?"Urlaubstag":"Urlaubstage"}</div>
       <div class="uz">${b.urlaube.map(u=>`<button class="linkbtn" data-urlaub="${esc(u.id)}">${esc(zeitraumLesbar(u.von,u.bis))} ›</button>`).join("")}</div>
       <div class="ust ${b.klasse}">${esc(b.text)}</div>
       ${b.knopf?`<button class="btn ghost ustep" data-schritt="${b.aktion}" data-ids="${ids}">${esc(b.knopf)}</button>`:""}
       ${b.neben?`<button class="linkbtn uneben" data-schritt="${b.neben.aktion}" data-ids="${ids}">${esc(b.neben.text)}</button>`:""}</div>`;}).join("")+`</div>`;
   if(bl.length)h+=`<button class="linkbtn" id="uIcs">In meinen Kalender übernehmen ›</button>
     <p class="note">Schon einmal übernommen? Erst die alten „ZDF Urlaub“-Termine löschen.</p>`;
-  view.innerHTML=h;bindTabs();
+  view.innerHTML=h;
   urlaubTippKalender(jahr,ort,j,heute);
   const us=document.getElementById("uSatz");if(us)us.onclick=()=>openSettings("urlaub");
   const ua=document.getElementById("uAusn");ua.onclick=()=>{const t=document.getElementById("uAusnT");t.hidden=!t.hidden;ua.setAttribute("aria-expanded",String(!t.hidden));};
   const ui=document.getElementById("uIcs");if(ui)ui.onclick=()=>urlaubKalender(jahr);
   view.querySelectorAll("[data-urlaub]").forEach(c=>c.onclick=()=>openUrlaub(DB.urlaub.find(u=>u.id===c.dataset.urlaub),jahr));
   view.querySelectorAll("[data-schritt]").forEach(b=>b.onclick=()=>urlaubAktion(b.dataset.schritt,b.dataset.ids.split(","),jahr));
-  /* ✕ im Block (Max 24.10.2026): den ganzen Antrag mit allen Tagen löschen. */
+  /* Papierkorb im Block (Max 24.10.2026, bis V4.10 ein ✕): den ganzen Antrag mit allen Tagen löschen. Ab V5.0 danach mit „Rückgängig“. */
   view.querySelectorAll("[data-weg]").forEach(b=>b.onclick=()=>{const ids=b.dataset.weg.split(",");
-    askConfirm(b.dataset.titel+" mit allen Urlaubstagen löschen? Im Kalender deines iPhones bleiben die Termine stehen.",()=>{DB.urlaub=DB.urlaub.filter(u=>!ids.includes(u.id));persist();render();toast("Gelöscht");});});
+    askConfirm(b.dataset.titel+" mit allen Urlaubstagen löschen? Im Kalender deines iPhones bleiben die Termine stehen.",()=>mitRueckgaengig("Urlaub gelöscht",()=>{DB.urlaub=DB.urlaub.filter(u=>!ids.includes(u.id));}));});
 }
 /* Kalender zum Antippen (Nachtrag 23.10.2026 nachts). Die Auswahl lebt in state.urlaubAuswahl, bis man das Jahr wechselt oder den
    Reiter verlässt. Ein Tipp zeichnet nur den Kalender und die große Zahl neu, damit die Seite nicht springt. Die Monatspfeile laufen
@@ -2069,9 +2240,10 @@ function urlaubTippKalender(jahr,ort,j,heute){
       const sy=window.scrollY;render();window.scrollTo(0,sy);const el=document.getElementById(pfeil);if(el&&!el.disabled)el.focus({preventScroll:true});};
     document.getElementById("uMPrev").onclick=()=>blaettern(-1);document.getElementById("uMNext").onclick=()=>blaettern(1);
     kal.querySelectorAll("button[data-tag]:not([disabled])").forEach(b=>b.onclick=()=>{const d=b.dataset.tag;
-      /* Eingetragenen Tag löschen (Max 24.10.2026): wie „Tag herausnehmen“, mitten im Zeitraum wird geteilt, ein Antrag bleibt. */
+      /* Eingetragenen Tag löschen (Max 24.10.2026): wie „Tag herausnehmen“, mitten im Zeitraum wird geteilt, ein Antrag bleibt.
+         Ab V5.0 ohne Rückfrage, dafür mit „Rückgängig“. */
       if(b.classList.contains("has")){const u=DB.urlaub.find(x=>urlaubTageListe(x.von,x.bis,ort).includes(d));if(!u)return;
-        return askConfirm(datumLesbar(d)+" aus dem Urlaub löschen?",()=>{DB.urlaub=DB.urlaub.filter(x=>x!==u).concat(tagHerausnehmen(u,d,ort,uid()));persist();const y=window.scrollY;render();window.scrollTo(0,y);toast("Urlaubstag gelöscht");});}
+        return mitRueckgaengig("Urlaubstag gelöscht",()=>{DB.urlaub=DB.urlaub.filter(x=>x!==u).concat(tagHerausnehmen(u,d,ort,uid()));});}
       sel.has(d)?sel.delete(d):sel.add(d);zeichnen("tag:"+d);});
     const ein=document.getElementById("uEin");
     if(ein)ein.onclick=()=>{z.forEach(x=>DB.urlaub.push({id:uid(),von:x.von,bis:x.bis,stand:"geplant",formular:"",ausgefuelltAm:"",beantragtAm:"",antragId:"",antragNr:0}));
@@ -2126,12 +2298,12 @@ function openUrlaub(u,jahr){
     else sichern(false);};
   /* Einen Tag herausnehmen (V4.5.1, etwa wenn das ZDF ihn ablehnt): in der Mitte wird der Urlaub geteilt, der Antrag bleibt. */
   document.querySelectorAll("[data-raus]").forEach(b=>b.onclick=()=>{const d=b.dataset.raus;
-    askConfirm(datumLesbar(d)+" aus diesem Urlaub herausnehmen?"+(zurueck?" Der Antrag bleibt, ein Tag weniger braucht keinen neuen.":""),()=>{
-      DB.urlaub=DB.urlaub.filter(o=>o.id!==u.id).concat(tagHerausnehmen(u,d,ort,uid()));persist();sheetZu();render();toast("Tag herausgenommen");},"Herausnehmen","go");});
+    /* V5.0: ohne Rückfrage, dafür mit „Rückgängig“. Dass der Antrag bleibt, steht im Hinweis unter den Tagen. */
+    const los=()=>mitRueckgaengig("Tag herausgenommen",()=>{DB.urlaub=DB.urlaub.filter(o=>o.id!==u.id).concat(tagHerausnehmen(u,d,ort,uid()));},sheetZu);
+    if(sheetGuard&&sheetGuard())askConfirm("Du hast hier etwas geändert und noch nicht gespeichert. Tag trotzdem herausnehmen?",los,"Herausnehmen","go");else los();});
   if(zurueck)g("uStand").onclick=()=>{antragZuruecksetzen(u);persist();sheetZu();render();toast("Stand zurückgesetzt");};
   if(schon)g("uSchon").onclick=()=>{Object.assign(u,{stand:"beantragt",formular:u.formular||"613",antragNr:u.antragNr||1,beantragtAm:isoLocal(new Date())});persist();sheetZu();render();toast("Als abgeschickt markiert");};
-  if(!neu)g("uDel").onclick=()=>askConfirm("Diesen Urlaub löschen? Im Kalender bleibt er stehen, bis du ihn dort löschst.",()=>{
-    DB.urlaub=DB.urlaub.filter(o=>o.id!==u.id);persist();sheetZu();render();toast("Urlaub gelöscht");});
+  if(!neu)g("uDel").onclick=()=>askConfirm(loeschFrageUrlaub(u),()=>mitRueckgaengig("Urlaub gelöscht",()=>{DB.urlaub=DB.urlaub.filter(o=>o.id!==u.id);},sheetZu));
 }
 /* Knopf im Block: nächster Schritt für alle Urlaube des Blocks (ids), also für den ganzen Antrag (V4.5.1). */
 function urlaubAktion(aktion,ids,jahr){
@@ -2188,7 +2360,7 @@ async function urlaubAntrag(jahr){
   const bereit=k=>{const d=dateien[k];
     openSheet(`<h3>Antrag ${d.nr} ist bereit</h3>
     <p class="note" style="margin:-8px 0 16px">${n>1?"Du hast mehr als 5 Urlaube geplant. Sie passen nicht in ein Formular, deshalb gibt es "+n+" Anträge. ":""}Tipp auf „Antrag teilen“ und wähl Mail an ${S.fbMail?esc(S.fbMail):"deine Teamleitung im Fachbereich"}. Der Text steht schon drin, den Betreff trägst du selbst ein.</p>
-    <button class="btn" id="uTeil">Antrag teilen</button><button class="btn ghost" id="uTeilNein" data-zu style="margin-bottom:0">Später</button>`);
+    <button class="btn" id="uTeil">${ICON_SHARE}Antrag teilen</button><button class="btn ghost" id="uTeilNein" data-zu style="margin-bottom:0">Später</button>`);
     /* Kein await vor dateiTeilen: der Aufruf läuft direkt in diesem Tipp. */
     document.getElementById("uTeil").onclick=()=>{
       /* Der Mailtext geht mit, sonst bleibt die Mail leer. Kein title: iOS Mail setzt ihn in den Text, nicht in den Betreff (Screenshot Max
@@ -2237,25 +2409,39 @@ let shT=null;
 /* Wächter (V4.4 Unterseiten der Einstellungen, ab V4.10 auch Tag, Auftrag, Urlaub und Import, Review-Rest B5): merkt die Feldwerte
    beim Öffnen. Schließen, Wischen und „Zurück“ fragen nach, wenn sich etwas geändert hat. openSheet setzt ihn bei jedem neuen Sheet
    zurück. Wer gespeichert oder gelöscht hat, schließt über sheetZu(), sonst käme die Frage nach dem Speichern. */
-let sheetGuard=null;
+let sheetGuard=null,shZuAm=0;
+/* Fokus (V5.0, Zugänglichkeit): Sheet und Rückfrage holen den Fokus zu sich (externe Tastatur, VoiceOver) und geben ihn beim Schließen
+   an den Knopf zurück, der sie geöffnet hat. Nie zurück in ein Eingabefeld, sonst ginge auf dem iPhone die Tastatur wieder auf. */
+let shVon=null;
+function fokusMerken(){const a=document.activeElement;return a&&a!==document.body?a:null;}
+function fokusZurueck(el){if(el&&document.contains(el)&&!/^(INPUT|SELECT|TEXTAREA)$/.test(el.tagName))el.focus({preventScroll:true});}
 function wacheSetzen(ids,extra){const start=ids.map(val).join("\u0001");sheetGuard=()=>ids.map(val).join("\u0001")!==start||!!(extra&&extra());}
 function verwerfenFragen(weiter){askConfirm("Du hast hier etwas geändert und noch nicht gespeichert. Änderungen verwerfen?",()=>{sheetGuard=null;weiter();},"Verwerfen");}
 function zurueckZurUebersicht(){if(sheetGuard&&sheetGuard())verwerfenFragen(()=>openSettings());else openSettings();}
 /* Kopfzeile (V4.10): Der Knopf oben links löst den Knopf mit data-zu im Sheet aus (Abbrechen, Schließen, Zurück, Später), damit
    Wächter und Rückwege an einer Stelle bleiben. Beschriftung = data-zu, sonst der Text des Knopfs. Ohne solchen Knopf schließt er. */
 function sheetZu(){sheetGuard=null;closeSheet();}
-function openSheet(html){clearTimeout(shT);sheetGuard=null;scrim.classList.remove("out");sheet.classList.remove("out","mitleiste","gescrollt");
+function openSheet(html){clearTimeout(shT);sheetGuard=null;toastAktionWeg();/* V5.0: „Rückgängig“ würde dem Sheet die Objekte unter den Händen tauschen */
+  if(!scrim.classList.contains("on")||scrim.classList.contains("out"))shVon=fokusMerken();/* nur beim ersten Öffnen, nicht beim Wechsel der Unterseite */
+  scrim.classList.remove("out");sheet.classList.remove("out","mitleiste","gescrollt");
   sheet.innerHTML='<div class="shead"><div class="grip"></div><div class="shrow"><button type="button" class="shzu" id="shZu"></button><span class="shtitel" aria-hidden="true"></span></div></div>'+html;
   const zu=sheet.querySelector("[data-zu]"),h=sheet.querySelector("h3"),t=zu?(zu.dataset.zu||zu.textContent.trim()):"Schließen";
   document.getElementById("shZu").textContent=(t==="Zurück"?"‹\u00a0":"")+t;
   document.getElementById("shZu").onclick=()=>{const b=sheet.querySelector("[data-zu]");if(b)b.click();else closeSheet();};
   sheet.querySelector(".shtitel").textContent=h?h.textContent:"";
-  scrim.classList.add("on");sheet.scrollTop=0;document.body.style.overflow="hidden";}
+  /* V5.0: Die Return-Taste heißt in jedem Eingabefeld „Fertig“ (hier zentral statt an jedem Feld). */
+  sheet.querySelectorAll("input:not([enterkeyhint])").forEach(i=>i.setAttribute("enterkeyhint","done"));
+  scrim.classList.add("on");sheet.scrollTop=0;document.body.style.overflow="hidden";
+  /* V5.0 (Zugänglichkeit): Das Sheet ist ein Dialog (role und aria-labelledby stehen am Element), sein Name ist die Überschrift. */
+  if(h)h.id="shH";sheet.focus({preventScroll:true});}
+/* V5.0: Return in einem Eingabefeld schließt die Tastatur. Nicht im mehrzeiligen Feld (dort ist Return eine neue Zeile) und nicht
+   in der Namensfrage, deren eigener Handler speichert. */
+sheet.addEventListener("keydown",e=>{const f=e.target;if(e.key==="Enter"&&!e.isComposing&&f.tagName==="INPUT"&&f.id!=="n_name")f.blur();});
 sheet.addEventListener("scroll",()=>sheet.classList.toggle("gescrollt",sheet.scrollTop>40),{passive:true});
 function closeSheet(){
   if(!scrim.classList.contains("on")||scrim.classList.contains("out"))return;
   if(sheetGuard&&sheetGuard()){verwerfenFragen(closeSheet);return;}
-  scrim.classList.add("out");
+  scrim.classList.add("out");shZuAm=Date.now();fokusZurueck(shVon);shVon=null;
   if(!sheet.style.transform)sheet.classList.add("out");/* Swipe hat das Sheet schon rausgeschoben */
   shT=setTimeout(()=>{scrim.classList.remove("on","out");sheet.classList.remove("out");sheet.style.transform="";sheet.style.transition="";document.body.style.overflow="";},200);
 }
@@ -2279,14 +2465,56 @@ sheet.addEventListener("touchend",e=>{
   swActive=false;
 });
 
+/* ===== Zugänglichkeit (V5.0) =====
+   zugang(w) verbindet in einem frisch gezeichneten Stück Seite jede Beschriftung in .field mit ihrem Feld (for + id). Steht statt eines
+   Felds eine Knopfgruppe daneben, wird sie zur Gruppe mit dieser Beschriftung als Namen. druckStand(w) führt aria-pressed für alle
+   Umschalter aus der Klasse .on mit. Ein Beobachter ruft beides, sobald Ansicht oder Sheet neu gezeichnet werden oder sich eine
+   Klasse ändert. So bleiben die Zeichen-Funktionen (paint…, applyAN, applyRK, applyAZ) unverändert und neue Sheets machen es von selbst
+   richtig. Gruppen ohne Beschriftung in .field (Reiseart, Drehzeit, Personen) und die Uhrzeit-Kacheln tragen ihren Namen im HTML. */
+const UMSCHALTER=".toggles button,.mseg button,.offbtn,.chips button:not([data-raus])";
+let zugNr=0;
+function druckStand(w){w.querySelectorAll(UMSCHALTER).forEach(b=>b.setAttribute("aria-pressed",String(b.classList.contains("on"))));}
+function zugang(w){
+  w.querySelectorAll(".field").forEach(f=>{const l=f.querySelector(":scope>label:not([for])");if(!l)return;
+    const feld=f.querySelector(":scope>input,:scope>select,:scope>textarea"),gr=f.querySelector(":scope>.toggles,:scope>.chips");
+    if(feld){if(!feld.id)feld.id="zf"+(++zugNr);l.htmlFor=feld.id;}
+    else if(gr){if(!l.id)l.id="zl"+(++zugNr);gr.setAttribute("role","group");gr.setAttribute("aria-labelledby",l.id);}});
+  druckStand(w);
+}
+if(window.MutationObserver){
+  const mo=new MutationObserver(ms=>ms.forEach(m=>{const t=m.target;
+    if(m.type==="childList"){if(m.addedNodes.length)zugang(t);}
+    else if(t.matches(UMSCHALTER))t.setAttribute("aria-pressed",String(t.classList.contains("on")));}));
+  [view,sheet].forEach(el=>mo.observe(el,{subtree:true,childList:true,attributes:true,attributeFilter:["class"]}));
+}
+/* Ein gemeinsamer Tasten-Hörer (externe Tastatur). Tab: merkt, dass mit Tasten bedient wird (html.tast, daran hängt der sichtbare
+   Fokus der Eingabefelder), und bleibt in einem offenen Sheet oder einer offenen Rückfrage. Enter und Leertaste: lösen antippbare
+   Karten und Zeilen aus, die kein <button> sind (role="button"), aber nicht hinter einem offenen Dialog. Ein Tipp mit dem Finger oder
+   ein Klick nimmt html.tast wieder weg. */
+function fokusZiele(box){return [...box.querySelectorAll('button,input,select,textarea,a[href],[tabindex="0"]')].filter(x=>!x.disabled&&x.getClientRects().length);}
+document.addEventListener("keydown",e=>{
+  const offen=el=>el.classList.contains("on")&&!el.classList.contains("out"),cb=document.getElementById("confirmBox"),box=offen(cb)?cb:offen(scrim)?sheet:null,t=e.target;
+  if(e.key==="Tab"){document.documentElement.classList.add("tast");if(!box)return;
+    const f=fokusZiele(box),a=document.activeElement,rand=e.shiftKey?f[0]:f[f.length-1];
+    if(!f.length||!box.contains(a)||a===box||a===rand){e.preventDefault();const z=e.shiftKey?f[f.length-1]:f[0];if(z)z.focus();}
+    return;}
+  if((e.key==="Enter"||e.key===" ")&&!e.repeat&&t.matches&&t.matches('[role="button"][tabindex]')&&t.tagName!=="BUTTON"&&(!box||box.contains(t))){e.preventDefault();t.click();}
+});
+document.addEventListener("pointerdown",()=>document.documentElement.classList.remove("tast"),{passive:true});
+
 /* ===== Auftrag ===== */
+/* V5.0: Die Rückfrage beim Löschen nennt den Auftrag und die Zahl der Tage. Reine Funktion, getestet in tests/liste.test.mjs. */
+function loeschFrageAuftrag(o){
+  const titel=String(o.titel||"").replace(/\s+/g," ").trim(),n=(o.days||[]).length;
+  return "Auftrag "+(titel?"„"+titel+"“":"ohne Titel")+(n?" mit "+(n===1?"1 Tag":n+" Tagen"):"")+" löschen?";
+}
 function editOrder(id){
   const o=id?DB.orders.find(x=>x.id===id):{titel:"",auftragsnr:"",prodNummer:"",kostentraeger:"",produktionsort:""};
   openSheet(`<h3>${id?"Auftrag bearbeiten":"Neuer Auftrag"}</h3>
     <div class="field"><label>Titel (wie auf der Dispo)</label><input type="text" class="txt" id="f_titel" value="${esc(o.titel||"")}" placeholder="z. B. Produktionstitel"></div>
-    <div class="two"><div class="field"><label>Auftrags-Nr.</label><input type="text" id="f_anr" value="${esc(o.auftragsnr||"")}" placeholder="A1234567"></div><div class="field"><label>Prod.-Nr.</label><input type="text" id="f_pnr" value="${esc(o.prodNummer||"")}" placeholder="12345678"></div></div>
-    <div class="two"><div class="field"><label>Kostenträger</label><input type="text" id="f_kt" value="${esc(o.kostentraeger||"")}" placeholder="80123456"></div><div class="field"><label>Produktionsort</label><input type="text" class="txt" id="f_ort" value="${esc(o.produktionsort||"")}" placeholder="z. B. München"></div></div>
-    <div class="field"><label>Mitarbeiter (für Nachweis)</label><input type="text" class="txt" id="f_mit" value="${esc(o.mitarbeiter||"")}" placeholder="Nachname, Vorname"></div>
+    <div class="two"><div class="field"><label>Auftrags-Nr.</label><input type="text" id="f_anr" value="${esc(o.auftragsnr||"")}" placeholder="A1234567" autocapitalize="characters" autocorrect="off" spellcheck="false"></div><div class="field"><label>Prod.-Nr.</label><input type="text" inputmode="numeric" id="f_pnr" value="${esc(o.prodNummer||"")}" placeholder="12345678"></div></div>
+    <div class="two"><div class="field"><label>Kostenträger</label><input type="text" inputmode="numeric" id="f_kt" value="${esc(o.kostentraeger||"")}" placeholder="80123456"></div><div class="field"><label>Produktionsort</label><input type="text" class="txt" id="f_ort" value="${esc(o.produktionsort||"")}" placeholder="z. B. München"></div></div>
+    <div class="field"><label>Mitarbeiter (für Nachweis)</label><input type="text" class="txt" id="f_mit" value="${esc(o.mitarbeiter||"")}" placeholder="Nachname, Vorname" autocapitalize="words" autocorrect="off"></div>
     <div class="field"><label>Beschäftigung</label><div class="toggles" id="f_status"><button data-s="frei">Freier Mitarbeiter</button><button data-s="fest">Fest angestellt</button></div>
       <p class="note">Bei freien Mitarbeitern verlängert der Nachweis das Einsatzende, weil FLINK die Ruhepause immer abzieht: über 6:30 Std 30 Min, über 9:45 Std 45 Min, auch wenn du keine oder eine kürzere Pause gemacht hast. Fest Angestellte bekommen die Zeiten unverändert.</p></div>
     <div class="field"><label>Feiertage nach</label><select id="f_ftort">${ftOptionen(o.feiertagOrt||"",["","Wie Einstellungen: "+ortLabel(S.feiertagOrt)])}</select>
@@ -2294,8 +2522,9 @@ function editOrder(id){
     ${S.verdienstOn?`<div class="field"><label>Funktion (für Verdienst)</label><div class="toggles" id="f_fk"><button data-f="assistent">Dreh-Assistent</button><button data-f="kamera">Kamera</button></div></div>`:""}
     <div class="field"><label>Sonder-Equipment (Mehrfachauswahl)</label><div class="chips" id="f_equip">${["Sony Alpha 7S III","Sony FX6","Sony FX3","2. Kamera","Drohne","DJI RS-Gimbal","Slider","Stativ/Head","ND-/Vari-ND-Filter","Timecode-Sync","Funkstrecke","Ton","Licht","Datenmanagement"].map(e=>`<button type="button" data-e="${esc(e)}"${(o.equipment||[]).includes(e)?' class="on"':''}>${esc(e)}</button>`).join("")}</div></div>
     <div class="field"><label>Sonstiges (optional)</label><textarea class="txt" id="f_notiz" rows="3" placeholder="z. B. weitere Hinweise">${esc(o.notiz||"")}</textarea></div>
-    <button class="btn" id="saveOrder">Speichern</button><button class="btn ghost" id="cancelOrder" data-zu style="margin-bottom:0">Abbrechen</button>
-    ${id?'<button class="btn danger" id="delOrder" style="margin:16px 0 0">Auftrag löschen</button>':''}`);
+    <div class="savebar"><button class="btn" id="saveOrder">Speichern</button></div>
+    <div class="btnrow stapel"><button class="btn ghost" id="cancelOrder" data-zu>Abbrechen</button>${id?'<button class="btn danger" id="delOrder">Auftrag löschen</button>':''}</div>`);
+  sheet.classList.add("mitleiste");/* V5.0: Speichern klebt unten wie im Tag */
   document.getElementById("cancelOrder").onclick=closeSheet;
   document.querySelectorAll("#f_equip button").forEach(b=>b.onclick=()=>b.classList.toggle("on"));
   let tmpStatus=orderStatus(id?o:null);
@@ -2319,7 +2548,7 @@ function editOrder(id){
     let ziel=o;if(id)Object.assign(o,data);else{ziel={id:uid(),...data,days:[]};DB.orders.push(ziel);state.orderId=ziel.id;}
     const fo=val("f_ftort");if(fo)ziel.feiertagOrt=fo;else delete ziel.feiertagOrt;
     persist();sheetZu();render();toast(id?"Gespeichert":"Auftrag angelegt");};
-  if(id)document.getElementById("delOrder").onclick=()=>{askConfirm("Diesen Auftrag mit allen Tagen wirklich löschen?",()=>{DB.orders=DB.orders.filter(x=>x.id!==id);persist();state.orderId=null;sheetZu();render();toast("Auftrag gelöscht");});};
+  if(id)document.getElementById("delOrder").onclick=()=>{askConfirm(loeschFrageAuftrag(o),()=>mitRueckgaengig("Auftrag gelöscht",()=>{DB.orders=DB.orders.filter(x=>x.id!==id);state.orderId=null;},sheetZu));};
 }
 
 /* ===== Tag ===== */
@@ -2331,27 +2560,27 @@ function editDay(orderId,dayId){
   const dsp=d.dispo||{}; const hasDispo=dsp.einsatz||dsp.ende;
   openSheet(`<h3>${dayId?"Tag bearbeiten":"Tag erfassen"}</h3>
     <div class="field"><label>Datum</label><input type="date" id="d_datum" value="${d.datum||""}"></div>
-    ${hasDispo?`<div class="dispoinfo"><span>Laut Dispo: ${dsp.einsatz||"?"}–${dsp.ende||"?"}</span><button id="useDispo">übernehmen</button></div>`:""}
+    ${hasDispo?`<div class="dispoinfo"><span>Laut Dispo: ${dsp.einsatz||"?"}–${dsp.ende||"?"}</span><button id="useDispo" aria-label="Zeiten laut Dispo übernehmen">übernehmen</button></div>`:""}
     <div class="field"><label>Tagestyp</label><div class="toggles typseg" id="typSeg"><button type="button" data-typ="an">Anreisetag</button><button type="button" data-typ="ort">Vor Ort</button><button type="button" data-typ="rueck">Rückreisetag</button><button type="button" data-typ="ein">Eintägig</button></div><p class="note" id="typNote"></p></div>
     <div class="timebox acc"><div class="tl"><span>Einsatz</span><span class="hint">zählt für Überstunden und Nachweis</span></div>
       <div class="two">
-        <label class="tfield" for="d_einsatz"><span class="tlbl">von</span><input type="time" id="d_einsatz" value="${d.einsatz||""}"></label>
-        <label class="tfield" for="d_ende"><span class="tlbl">bis</span><input type="time" id="d_ende" value="${d.ende||""}"></label>
+        <label class="tfield" for="d_einsatz"><span class="tlbl">von</span><input type="time" id="d_einsatz" aria-label="Einsatz von" value="${d.einsatz||""}"></label>
+        <label class="tfield" for="d_ende"><span class="tlbl">bis</span><input type="time" id="d_ende" aria-label="Einsatz bis" value="${d.ende||""}"></label>
       </div>
       <p class="note endehw hidden" id="endeHw"></p>
     </div>
-    <div class="timebox"><div class="tl"><span>Drehzeit</span><span class="mseg" id="azSeg"><button type="button" data-az="1">kein Dreh</button><button type="button" data-az="0">Dreh</button></span></div>
+    <div class="timebox"><div class="tl"><span>Drehzeit</span><span class="mseg" id="azSeg" role="group" aria-label="Drehzeit"><button type="button" data-az="1">kein Dreh</button><button type="button" data-az="0">Dreh</button></span></div>
       <div class="two" id="azFields">
-        <label class="tfield" for="d_drehbeginn"><span class="tlbl">von</span><input type="time" id="d_drehbeginn" value="${d.drehbeginn||""}"></label>
-        <label class="tfield" for="d_drehende"><span class="tlbl">bis</span><input type="time" id="d_drehende" value="${d.drehende||""}"></label>
+        <label class="tfield" for="d_drehbeginn"><span class="tlbl">von</span><input type="time" id="d_drehbeginn" aria-label="Drehzeit von" value="${d.drehbeginn||""}"><span class="tleer">kein Dreh</span></label>
+        <label class="tfield" for="d_drehende"><span class="tlbl">bis</span><input type="time" id="d_drehende" aria-label="Drehzeit bis" value="${d.drehende||""}"><span class="tleer">kein Dreh</span></label>
       </div>
       <p class="note" id="azNote">Steht im Nachweis, zählt nicht extra. Sie liegt in der Einsatzzeit.</p>
     </div>
     <div class="timebox"><div class="tl"><span>Reisezeit</span><span class="hint">liegt in der Einsatzzeit</span></div>
-      <div class="rzblock"><div class="nrow"><span class="rlbl">Anreise</span><button type="button" class="offbtn" id="anNone">entfällt</button></div>
-        <div class="two"><label class="tfield" for="d_anreise"><span class="tlbl">von</span><input type="time" id="d_anreise" value="${d.anreise||""}"></label><label class="tfield" for="d_anreiseEnde"><span class="tlbl">bis</span><input type="time" id="d_anreiseEnde" value="${d.anreiseEnde||""}"></label></div></div>
-      <div class="rzblock"><div class="nrow"><span class="rlbl">Rückreise</span><button type="button" class="offbtn" id="rkNone">entfällt</button></div>
-        <div class="two"><label class="tfield" for="d_rueckBeginn"><span class="tlbl">von</span><input type="time" id="d_rueckBeginn" value="${d.rueckBeginn||""}"></label><label class="tfield" for="d_rueck"><span class="tlbl">bis</span><input type="time" id="d_rueck" value="${d.rueck||""}"></label></div></div>
+      <div class="rzblock"><div class="nrow"><span class="rlbl">Anreise</span><button type="button" class="offbtn" id="anNone" aria-label="Anreise entfällt">entfällt</button></div>
+        <div class="two"><label class="tfield" for="d_anreise"><span class="tlbl">von</span><input type="time" id="d_anreise" aria-label="Anreise von" value="${d.anreise||""}"><span class="tleer">entfällt</span></label><label class="tfield" for="d_anreiseEnde"><span class="tlbl">bis</span><input type="time" id="d_anreiseEnde" aria-label="Anreise bis" value="${d.anreiseEnde||""}"><span class="tleer">entfällt</span></label></div></div>
+      <div class="rzblock"><div class="nrow"><span class="rlbl">Rückreise</span><button type="button" class="offbtn" id="rkNone" aria-label="Rückreise entfällt">entfällt</button></div>
+        <div class="two"><label class="tfield" for="d_rueckBeginn"><span class="tlbl">von</span><input type="time" id="d_rueckBeginn" aria-label="Rückreise von" value="${d.rueckBeginn||""}"><span class="tleer">entfällt</span></label><label class="tfield" for="d_rueck"><span class="tlbl">bis</span><input type="time" id="d_rueck" aria-label="Rückreise bis" value="${d.rueck||""}"><span class="tleer">entfällt</span></label></div></div>
     </div>
     <div class="field"><label>Pause genommen?</label><div class="toggles" id="pausebtns"><button data-p="1">Ja · ${fmtMin(S.standardPause)}</button><button data-p="0">Nein</button></div></div>
     <div id="flinkbox" class="nwwrap"></div>
@@ -2362,8 +2591,8 @@ function editDay(orderId,dayId){
       <div class="timebox" id="grenzbox">
         <div class="tl"><span>Grenzübertritt</span></div>
         <div class="two">
-          <label class="tfield gfield" for="d_grenzHin"><span class="tlbl">hin</span><input type="time" id="d_grenzHin" value="${d.grenzHin||""}"><span class="gleer">nicht erfasst</span><button type="button" class="gclr" id="clrGrenzHin" aria-label="Grenze hin leeren">✕</button></label>
-          <label class="tfield gfield" for="d_grenzRueck"><span class="tlbl">zurück</span><input type="time" id="d_grenzRueck" value="${d.grenzRueck||""}"><span class="gleer">nicht erfasst</span><button type="button" class="gclr" id="clrGrenzRueck" aria-label="Grenze zurück leeren">✕</button></label>
+          <label class="tfield gfield" for="d_grenzHin"><span class="tlbl">hin</span><input type="time" id="d_grenzHin" aria-label="Grenzübertritt hin" value="${d.grenzHin||""}"><span class="gleer">nicht erfasst</span><button type="button" class="gclr" id="clrGrenzHin" aria-label="Grenze hin leeren">✕</button></label>
+          <label class="tfield gfield" for="d_grenzRueck"><span class="tlbl">zurück</span><input type="time" id="d_grenzRueck" aria-label="Grenzübertritt zurück" value="${d.grenzRueck||""}"><span class="gleer">nicht erfasst</span><button type="button" class="gclr" id="clrGrenzRueck" aria-label="Grenze zurück leeren">✕</button></label>
         </div>
         <p class="note">Deutschland verlassen und wieder angekommen. Steht unten im Notizfeld von PDF und Mail, nicht in der Zeitentabelle.</p>
       </div>
@@ -2374,7 +2603,7 @@ function editDay(orderId,dayId){
     <div id="tgbox"></div>
     <p class="note">Überstunden rechnet die App nur aus der Einsatzzeit minus Pause. Dreh- und Reisezeit stehen im Nachweis und schlagen das Einsatzende vor: letzte Tätigkeit plus 30 Minuten, bis du es selbst tippst.</p>
     <div class="savebar"><button class="btn" id="saveDay">Speichern</button></div>
-    <div class="btnrow">${dayId?'<button class="btn danger" id="delDay" style="margin-bottom:0">Tag löschen</button>':''}<button class="btn ghost" id="cancelDay" data-zu style="margin-bottom:0">Abbrechen</button></div>`);
+    <div class="btnrow stapel"><button class="btn ghost" id="cancelDay" data-zu>Abbrechen</button>${dayId?'<button class="btn danger" id="delDay">Tag löschen</button>':''}</div>`);
   sheet.classList.add("mitleiste");
   const g=id=>document.getElementById(id);
   function paintPause(){document.querySelectorAll("#pausebtns button").forEach(b=>b.classList.toggle("on",(b.dataset.p==="1")===tmpPause));}
@@ -2528,7 +2757,10 @@ function editDay(orderId,dayId){
   const pause0=tmpPause,ue0=tmpUE,al0=tmpAL;
   wacheSetzen(["d_datum","d_einsatz","d_anreise","d_anreiseEnde","d_drehbeginn","d_drehende","d_rueckBeginn","d_rueck","d_ende","d_grenzHin","d_grenzRueck","d_feiertag"],()=>tmpPause!==pause0||tmpUE!==ue0||tmpAL!==al0);
   g("cancelDay").onclick=closeSheet;
-  if(dayId)g("delDay").onclick=()=>{askConfirm("Diesen Arbeitstag wirklich löschen?",()=>{o.days=o.days.filter(x=>x.id!==dayId);persist();sheetZu();render();toast("Tag gelöscht");});};
+  /* V5.0: ohne Rückfrage, dafür mit „Rückgängig“ in der Meldung. */
+  /* Mit ungespeicherten Eingaben erst fragen: „Rückgängig“ holt nur den gespeicherten Tag zurück, nicht das Getippte. */
+  if(dayId)g("delDay").onclick=()=>{const los=()=>mitRueckgaengig("Tag gelöscht",()=>{o.days=o.days.filter(x=>x.id!==dayId);},sheetZu);
+    if(sheetGuard&&sheetGuard())askConfirm("Du hast hier etwas geändert und noch nicht gespeichert. Tag trotzdem löschen?",los);else los();};
   g("saveDay").onclick=()=>{
     const data={datum:val("d_datum"),einsatz:val("d_einsatz"),anreise:val("d_anreise"),anreiseEnde:val("d_anreiseEnde"),drehbeginn:val("d_drehbeginn"),drehende:val("d_drehende"),rueckBeginn:val("d_rueckBeginn"),rueck:val("d_rueck"),ende:val("d_ende"),pause:tmpPause,uebernachtung:tmpUE,ausland:tmpAL,grenzHin:tmpAL?val("d_grenzHin"):"",grenzRueck:tmpAL?val("d_grenzRueck"):""};
     if(!data.datum){toast("Bitte Datum angeben");return;}
@@ -2583,15 +2815,15 @@ function openSettings(ziel){
     <div class="section-h"><h3>Datensicherung</h3></div>
     <div class="setcard">
       <div class="stat">Letztes Backup: <b id="lastBak">${bakTxt}</b> · ${DB.orders.length} ${DB.orders.length===1?"Auftrag":"Aufträge"}, ${totDays} ${totDays===1?"Tag":"Tage"}</div>
-      <div class="btnrow"><button class="btn ghost" id="bakOut" style="margin:0">Backup teilen</button><button class="btn ghost" id="bakIn" style="margin:0">Backup einlesen</button></div>
+      <div class="btnrow"><button class="btn ghost" id="bakOut" style="margin:0">${ICON_SHARE}Backup teilen</button><button class="btn ghost" id="bakIn" style="margin:0">Backup einlesen</button></div>
     </div>
     <div class="section-h"><h3>Export</h3></div>
-    ${exJahre.length?exJahre.map(j=>`<button class="setrow" data-exjahr="${j}"><span>Jahresliste ${j} als PDF</span><span class="chev">›</span></button>`).join(""):`<p class="note">Die Jahresliste gibt es ab 1. Januar für das Jahr davor.</p>`}
-    ${prev?`<button class="setrow" id="bakPrev"><span>Vorherigen Stand zurückholen<small>${esc(prevZeile(prev.gesichertAm,prev.db))}</small></span><span class="chev">›</span></button>`:""}
+    ${exJahre.length?exJahre.map(j=>`<button class="setrow" data-exjahr="${j}"><span>Jahresliste ${j} als PDF</span>${ICON_SHARE}</button>`).join(""):`<p class="note">Die Jahresliste gibt es ab 1. Januar für das Jahr davor.</p>`}
+    ${prev?`<button class="setrow" id="bakPrev"><span>Vorherigen Stand zurückholen<small>${esc(prevZeile(prev.gesichertAm,prev.db))}</small></span></button>`:""}
     <div class="section-h"><h3>Hilfe</h3></div>
     <button class="setrow" id="helpBtn"><span>Anleitung</span><span class="chev">›</span></button>
     <button class="setrow" id="wnBtn"><span>Was ist neu<small>Version ${APP_VERSION}</small></span><span class="chev">›</span></button>
-    <button class="setrow" id="shareApp"><span>App weiterempfehlen</span><span class="chev">›</span></button>
+    <button class="setrow" id="shareApp"><span>App weiterempfehlen</span>${ICON_SHARE}</button>
     <button class="btn danger" id="wipe" style="margin-top:16px">Alle Daten löschen</button>
     <button class="btn ghost" id="closeSet" data-zu style="margin-bottom:0">Schließen</button>
     <p class="note" style="text-align:center">Alles liegt lokal auf dem Gerät. Kein Konto, keine Server.</p>`);
@@ -2628,7 +2860,7 @@ function openSettings(ziel){
 function openVertragSettings(){
   let setStatus=S.status||"frei";
   openSheet(`<h3>Vertragsdaten</h3>
-    <div class="field"><label>Dein Name</label><input type="text" class="txt" id="s_name" value="${esc(S.absender||"")}" placeholder="Vorname Nachname" autocapitalize="words">
+    <div class="field"><label>Dein Name</label><input type="text" class="txt" id="s_name" value="${esc(S.absender||"")}" placeholder="Vorname Nachname" autocapitalize="words" autocorrect="off">
       <p class="note">Wie auf der Dispo.</p></div>
     <div class="field"><label>Beschäftigung</label><div class="toggles" id="s_status"><button data-s="frei">Freier Mitarbeiter</button><button data-s="fest">Fest angestellt</button></div></div>
     <div class="field"><label>Vertragstage im Jahr</label><input type="text" inputmode="numeric" id="s_tage" value="${S.vertragstage||""}" placeholder="nur für Freie">
@@ -2651,8 +2883,8 @@ function openVertragSettings(){
 function openMailSettings(){
   const platz=esc(mailKopfStandard("{name}","{produktion}","{tage}").join("\n")).replace(/\n/g,"&#10;");
   openSheet(`<h3>Mail an die Disposition</h3>
-    <div class="field"><label>Empfänger-E-Mail</label><input type="email" class="txt" id="s_mail" value="${esc(S.email||"")}" placeholder="empfangsadresse@…"></div>
-    <div class="field"><label>Empfänger-Name (Anrede in der Mail)</label><input type="text" class="txt" id="s_empf" value="${esc(S.empfaenger||"")}" placeholder="Name"></div>
+    <div class="field"><label>Empfänger-E-Mail</label><input type="email" class="txt" id="s_mail" value="${esc(S.email||"")}" placeholder="empfangsadresse@…" autocapitalize="off" autocorrect="off"></div>
+    <div class="field"><label>Empfänger-Name (Anrede in der Mail)</label><input type="text" class="txt" id="s_empf" value="${esc(S.empfaenger||"")}" placeholder="Name" autocapitalize="words" autocorrect="off"></div>
     <div class="field"><label>Mail-Text (optional)</label><textarea class="txt" id="s_anschr" rows="4" placeholder="${platz}">${esc(S.anschreiben||"")}</textarea>
       <p class="note">Leer: grauer Standardtext. Platzhalter: <b>{name}</b> · <b>{produktion}</b> · <b>{auftrag}</b> · <b>{tage}</b></p></div>
     <div class="field"><label>Grußformel (optional)</label><input type="text" class="txt" id="s_gruss" value="${esc(S.gruss||"")}" placeholder="Viele liebe Grüße"></div>
@@ -2692,8 +2924,11 @@ function openVerdienstSettings(){
     if(!on&&state.tab==="verdienst")state.tab="orders";
     persist();render();openSettings();toast("Verdienst gespeichert");};
 }
-/* Unterseite „Urlaub und Antrag“: speichert urlaubAnspruch, urlaubSatz und den Fachbereich für den Antrag. */
-function openUrlaubSettings(){
+/* Unterseite „Urlaub und Antrag“: speichert urlaubAnspruch, urlaubSatz und den Fachbereich für den Antrag.
+   V5.0: „Unterschreiben“ ersetzt dieses Formular durch das Feld für die Unterschrift. Die getippten Werte gehen als Entwurf mit
+   (Reihenfolge wie UF) und stehen nach „Zurück“ oder „Übernehmen“ wieder da. Vorher waren sie weg. */
+function openUrlaubSettings(entwurf){
+  const UF=["u_ansp","u_satz","u_fb","u_fbmail"];
   openSheet(`<h3>Urlaub und Antrag</h3>
     <div class="field"><label>Urlaubstage im Jahr</label><input type="text" inputmode="numeric" id="u_ansp" value="${S.urlaubAnspruch}"></div>
     <p class="note">Laut Merkblatt sind es 31 Arbeitstage.</p>
@@ -2702,13 +2937,16 @@ function openUrlaubSettings(){
     <div class="section-h"><h3>Für den Antrag</h3></div>
     <div class="field"><label>Fachbereich (freiwillig)</label><input type="text" id="u_fb" placeholder="z. B. HR Sport" value="${esc(S.fachbereich)}"></div>
     <p class="note">Leer lassen: im Antrag selbst ausfüllen. Den Namen nimmt die App aus „Vertragsdaten“.</p>
-    <div class="field" style="margin-top:12px"><label>Mail der Teamleitung</label><input type="email" class="txt" id="u_fbmail" placeholder="teamleitung@zdf.de" value="${esc(S.fbMail)}"></div>
+    <div class="field" style="margin-top:12px"><label>Mail der Teamleitung</label><input type="email" class="txt" id="u_fbmail" placeholder="teamleitung@zdf.de" value="${esc(S.fbMail)}" autocapitalize="off" autocorrect="off"></div>
     <p class="note">Bekommt deinen Antrag zum Unterschreiben und leitet ihn weiter.</p>
     <div class="field" style="margin-top:12px"><label>Deine Unterschrift</label>${S.unterschrift?`<img src="${S.unterschrift}" alt="Deine Unterschrift" class="sigbild">`:`<p class="note">Noch keine. Sie steht auf jedem Antrag als PDF.</p>`}
       <button class="btn ghost" id="u_sig" style="margin:6px 0 0">${S.unterschrift?"Neu unterschreiben":"Unterschreiben"}</button></div>
     <button class="btn" id="u_save" style="margin-top:16px">Speichern</button><button class="btn ghost" id="u_back" data-zu style="margin-bottom:0">Zurück</button>`);
-  wacheSetzen(["u_ansp","u_satz","u_fb","u_fbmail"]);
-  document.getElementById("u_sig").onclick=openUnterschrift;
+  /* Der Wächter merkt sich die GESPEICHERTEN Werte, der Entwurf kommt erst danach in die Felder. So fragt „Zurück“ bei einem
+     echten Entwurf nach und ohne Änderung nicht. */
+  wacheSetzen(UF);
+  if(Array.isArray(entwurf))UF.forEach((id,i)=>{document.getElementById(id).value=entwurf[i]||"";});
+  document.getElementById("u_sig").onclick=()=>openUnterschrift(UF.map(val),!!(sheetGuard&&sheetGuard()));
   document.getElementById("u_back").onclick=zurueckZurUebersicht;
   document.getElementById("u_save").onclick=()=>{
     const ar=val("u_ansp").trim(),a=/^\d+$/.test(ar)?parseInt(ar,10):0;
@@ -2721,11 +2959,13 @@ function openUrlaubSettings(){
     persist();render();openSettings();toast("Einstellungen gespeichert");};
 }
 /* Unterschrift mit dem Finger (V4.7): nur auf dem Gerät gespeichert (S.unterschrift, PNG), steht auf jedem Antrag als PDF. */
-function openUnterschrift(){
+function openUnterschrift(entwurf,offen){
   openSheet(`<h3>Unterschrift</h3><p class="note" style="margin:-8px 0 8px">Mit dem Finger im weißen Feld unterschreiben.</p>
     <canvas id="sigPad" class="sigpad" aria-label="Feld für deine Unterschrift"></canvas>
     <div class="btnrow"><button class="btn ghost" id="sigNeu" style="margin:0">Löschen</button><button class="btn" id="sigOk" style="margin:0">Übernehmen</button></div>
     <button class="btn ghost" id="sigZurueck" data-zu style="margin:10px 0 0">Zurück</button>`);
+  /* V5.0: Liegt ein ungespeicherter Entwurf aus „Urlaub und Antrag“ dahinter, fragen Wischen und Tipp daneben nach. */
+  if(offen)sheetGuard=()=>true;
   const c=document.getElementById("sigPad"),x=c.getContext("2d");
   /* Größe erst setzen, wenn das Feld sichtbar ist (beim Öffnen läuft das Sheet noch ein). */
   const groesse=()=>{const dpr=window.devicePixelRatio||1,r=c.getBoundingClientRect();if(!r.width)return;
@@ -2739,9 +2979,9 @@ function openUnterschrift(){
   c.onpointermove=e=>{if(!zieht)return;x.lineTo(...pos(e));x.stroke();};
   c.onpointerup=c.onpointercancel=()=>{zieht=false;};
   document.getElementById("sigNeu").onclick=()=>{x.clearRect(0,0,c.width,c.height);leer=true;};
-  document.getElementById("sigZurueck").onclick=openUrlaubSettings;
+  document.getElementById("sigZurueck").onclick=()=>openUrlaubSettings(entwurf);
   document.getElementById("sigOk").onclick=()=>{if(leer){toast("Bitte erst unterschreiben");return;}
-    S.unterschrift=c.toDataURL("image/png");persist();openUrlaubSettings();toast("Unterschrift gespeichert");};
+    S.unterschrift=c.toDataURL("image/png");persist();openUrlaubSettings(entwurf);toast("Unterschrift gespeichert");};
 }
 function openRules(){
   openSheet(`<h3>Rechenregeln</h3>
@@ -2749,13 +2989,13 @@ function openRules(){
     <div class="setcard" style="margin-bottom:14px">
       <div class="stat" style="text-transform:uppercase;letter-spacing:.5px;font-size:0.647rem;font-weight:600;color:var(--muted)">Soll pro Tag</div>
       <div class="two">
-        <div class="tfield"><span class="tlbl">Stunden</span><input type="number" id="s_h" min="0" max="14" value="${Math.floor(S.sollMin/60)}"></div>
-        <div class="tfield"><span class="tlbl">Minuten</span><input type="number" id="s_m" min="0" max="59" value="${S.sollMin%60}"></div>
+        <label class="tfield" for="s_h"><span class="tlbl">Stunden</span><input type="number" inputmode="numeric" id="s_h" min="0" max="14" value="${Math.floor(S.sollMin/60)}" aria-label="Soll pro Tag, Stunden"></label>
+        <label class="tfield" for="s_m"><span class="tlbl">Minuten</span><input type="number" inputmode="numeric" id="s_m" min="0" max="59" value="${S.sollMin%60}" aria-label="Soll pro Tag, Minuten"></label>
       </div>
       <p class="note">Laut Tarif seit 01.01.2026: 7 Std 42 Min ohne Pause, die Pause kommt dazu. Basis für die Überstunden. Steht in deinem Vertrag etwas anderes, trag es hier ein.</p>
     </div>
-    <div class="field"><label>Pausenlänge</label><input type="number" id="s_p" min="0" max="240" step="5" value="${S.standardPause}"><p class="note">Minuten, wenn „Pause: Ja".</p></div>
-    <div class="field"><label>Tagegeld-Schwelle</label><input type="number" id="s_ab" min="0" max="1440" step="15" value="${S.abwesenheitMin}"><p class="note">Abwesenheit in Minuten · Standard 480 = 8 Std.</p></div>
+    <div class="field"><label>Pausenlänge</label><input type="number" inputmode="numeric" id="s_p" min="0" max="240" step="5" value="${S.standardPause}"><p class="note">Minuten, wenn „Pause: Ja".</p></div>
+    <div class="field"><label>Tagegeld-Schwelle</label><input type="number" inputmode="numeric" id="s_ab" min="0" max="1440" step="15" value="${S.abwesenheitMin}"><p class="note">Abwesenheit in Minuten · Standard 480 = 8 Std.</p></div>
     <button class="btn" id="saveRules" style="margin-top:6px">Speichern</button><button class="btn ghost" id="rulesBack" data-zu style="margin-bottom:0">Zurück</button>`);
   wacheSetzen(["s_h","s_m","s_p","s_ab"]);
   document.getElementById("rulesBack").onclick=zurueckZurUebersicht;
@@ -2815,7 +3055,7 @@ function openWhatsNew(alle){
 function openNameFrage(weiter){
   openSheet(`<h3>Wer nutzt die App?</h3>
     <p class="note" style="margin:-8px 0 16px">Trag deinen Namen so ein, wie er auf der Dispo steht. Damit wählt dich der Import selbst aus, und er steht auf deinen Nachweisen. Ändern kannst du ihn jederzeit unter Einstellungen › Vertragsdaten.</p>
-    <div class="field"><label>Dein Name</label><input type="text" class="txt" id="n_name" placeholder="Vorname Nachname" autocomplete="name" autocapitalize="words" enterkeyhint="done"></div>
+    <div class="field"><label>Dein Name</label><input type="text" class="txt" id="n_name" placeholder="Vorname Nachname" autocomplete="name" autocapitalize="words" autocorrect="off" enterkeyhint="done"></div>
     <button class="btn" id="n_save">Speichern</button><button class="btn ghost" id="n_later" data-zu style="margin-bottom:0">Später</button>`);
   document.getElementById("n_save").onclick=()=>{const v=clean(val("n_name"));if(!v){toast("Trag bitte deinen Namen ein");return;}
     S.absender=v;persist();render();weiter();};
@@ -2833,10 +3073,12 @@ function openHelp(){
       <p>Alles andere rechnet die App: Überstunden, Pausen und den Hinweis auf mögliches Tagegeld.</p>
       <p>Die <b>Überstunden</b> misst die App an deinem Tages-Soll. Voreingestellt sind <b>7:42 Stunden ohne Pause</b>. So steht es seit dem 01.01.2026 im Tarifvertrag für die auf Produktionsdauer Beschäftigten: 38,5 Stunden in der Woche, also 7,7 Stunden am Tag. Die Pause kommt obendrauf. Steht in deinem Vertrag etwas anderes, stellst du es unter Einstellungen › Rechenregeln ein.</p>
       <p>Die <b>Einstellungen</b> öffnest du über das Zahnrad oben rechts in der Übersicht. Dort stehen dein Name und dein Vertrag, die Mail an die Disposition, Verdienst und Tagessätze und die Rechenregeln, für Freie auch Urlaub und Antrag.</p>
-      <p>Für Freie gibt es den Reiter <b>Urlaub</b>. Dort planst du deine Urlaubstage und lässt dir den Antrag ausfüllen. Mehr dazu unter Punkt 12.</p></div>
+      <p>Ganz unten wechselst du zwischen <b>Aufträge</b> und <b>Statistik</b>, je nach Einstellung auch Verdienst und Urlaub. Die Leiste bleibt immer stehen, auch wenn ein Auftrag offen ist.</p>
+      <p>Hast du etwas aus Versehen gelöscht, steht unten ein paar Sekunden lang <b>Rückgängig</b>. Ein Tipp darauf holt es zurück.</p>
+      <p>Für Freie gibt es unten <b>Urlaub</b>. Dort planst du deine Urlaubstage und lässt dir den Antrag ausfüllen. Mehr dazu unter Punkt 12.</p></div>
 
     <div class="hsec"><div class="eb">1 · Auftrag anlegen</div>
-      <p>Am schnellsten geht es mit der Dispo. Tippe oben unter den Reitern auf <b>PDF importieren</b> und wähle die Datei aus. Die App liest Titel, Auftragsnummer, Produktionsnummer, Ort und die Namen aller eingeteilten Personen heraus und legt dir die Drehtage gleich mit an.</p>
+      <p>Am schnellsten geht es mit der Dispo. Tippe oben in der Auftragsliste auf <b>PDF importieren</b> und wähle die Datei aus. Die App liest Titel, Auftragsnummer, Produktionsnummer, Ort und die Namen aller eingeteilten Personen heraus und legt dir die Drehtage gleich mit an.</p>
       <p>Die App sucht dich über deinen Namen aus Einstellungen › Vertragsdaten und wählt dich vor. Findet sie dich nicht, ist niemand ausgewählt, und du tippst an, wer du bist. Danach prüfst du die <b>Reiseart</b>. Einzeltage heißt, du fährst jeden Tag hin und zurück. Mehrtägig heißt, du übernachtest vor Ort. Nennt die Dispo einen An- oder Rückreisetag, ist Mehrtägig schon vorgewählt. Die Vorschau zeigt dir jeden Tag mit Jahr und bei Mehrtägig mit Tagestyp. Den Tagestyp einzelner Tage änderst du danach im Tag.</p>
       <p>Ohne Dispo geht es genauso über <b>Auftrag anlegen</b>. Dann trägst du die Tage von Hand ein.</p>
       <p>Im Auftrag stellst du unter <b>Beschäftigung</b> ein, ob du dort frei oder fest arbeitest. Vorgewählt ist, was in Einstellungen › Vertragsdaten steht. Bei Freien verlängert der Nachweis das Einsatzende um den Teil der Pause, den FLINK zu viel abzieht (Abschnitt 3).</p>
@@ -2872,7 +3114,7 @@ function openHelp(){
       <p><b>Als PDF</b> erzeugt die fertige Datei und öffnet das Teilen-Menü. Von dort schickst du sie per Mail, legst sie in Dateien ab oder gibst sie per AirDrop weiter.</p>
       <p><b>Als E-Mail</b> öffnet deine Mail-App mit dem Nachweis als Text. Empfängeradresse, Anrede, Mail-Text und Grußformel stellst du einmal unter <b>Einstellungen › Mail an die Disposition</b> ein, danach steht alles automatisch drin. Den Weg dorthin findest du auch im Auftrag unter den Export-Knöpfen.</p>
       <p>Feiertage am Arbeitsort sind im Nachweis beim Datum markiert, im PDF mit einem Sternchen, in der Mail mit dem Zusatz „Feiertag“. Unten stehen sie mit ihrem Namen. Mehr dazu unter Punkt 11.</p>
-      <p>Ist ein Auftrag erledigt, markierst du ihn mit <b>Abgerechnet</b>. Er wandert dann ausgegraut ans Ende der Liste und ist nicht mehr im Weg.</p></div>
+      <p>Ist ein Auftrag erledigt, tippst du im Auftrag auf <b>Als abgerechnet markieren</b>. Er wandert dann ausgegraut ans Ende der Liste und ist nicht mehr im Weg.</p></div>
 
     <div class="hsec"><div class="eb">6 · Sicherung, das Wichtigste</div>
       <p>Deine Daten liegen ausschließlich in dieser App, auf diesem Gerät. Safari und die App auf dem Home-Bildschirm haben dabei getrennte Speicher. Es gibt keinen Server und kein Konto. Das heißt auch: Wenn das iPhone die Websitedaten löscht, sind sie weg.</p>
@@ -3135,8 +3377,10 @@ function jahreFuer(tage,bezug){
 }
 function parsePersons(t){
   const sec=t.search(/Personal-Disposition|Personalleistung/);const body=sec>=0?t.slice(sec):t;
-  /* Name „Nachname, Vorname“, auch abgekürzt „Muster, Eri...“ oder ganz ohne Vornamen „Muster, ...“ (V4.4.2). */
-  const nameRe=/[A-ZÄÖÜ][A-Za-zäöüßÄÖÜ-]+,\s+(?:[A-ZÄÖÜ][A-Za-zäöüßÄÖÜ]*(?:\.{1,3}|…)?|\.{3}|…)/g;
+  /* Name „Nachname, Vorname“, auch abgekürzt „Muster, Eri...“ oder ganz ohne Vornamen „Muster, ...“ (V4.4.2).
+     Ab V5.0 alle Buchstaben (\p{L} mit u-Flag) statt nur des deutschen Alphabets: „Yılmaz, Emre“, „Kovačević, Ana“ oder „Şahin, Emre“
+     fielen sonst ganz aus der Personenliste. \p{M} für Zeichen, die es nur zerlegt gibt. Das Komma bleibt Pflicht (Firmenzeilen). */
+  const nameRe=/\p{Lu}[\p{L}\p{M}-]+,\s+(?:\p{Lu}[\p{L}\p{M}]*(?:\.{1,3}|…)?|\.{3}|…)/gu;
   const stops=/(Kamera\/Geräte|Dienstbeginn|Bemerkungen|KFZ|Seite \d|Personal-Disposition|Aktualisierungszeitpunkt)/;
   /* Zellen statt Uhrzeiten (V4.4.2): Jede Zelle ist „TT.MM. HH:MM“ oder „---“. Im EB-Auftrag gelten die ersten vier (Einsatzbeginn,
      Anreisebeginn, Rückreiseende, Einsatzende), in der Leistungsbestätigung die ersten zwei (Einsatzbeginn, Einsatzende). Was danach
@@ -3270,6 +3514,13 @@ function drehAusweichen(t,typ){
   t.drehbeginn=db;t.drehende=de;
 }
 
+/* Gibt es die Auftragsnummer schon? (V5.0) Dieselbe Dispo zweimal eingelesen (aktualisierte Dispo, Leistungsbestätigung) zählt
+   in Statistik und Verdienst doppelt, deshalb fragt der Import vorher nach. Vergleich ohne Leerzeichen, Groß- und Kleinschreibung
+   egal. Ohne Nummer kein Treffer. Ergebnis: der vorhandene Auftrag oder null. */
+function auftragDoppelt(orders,nr){
+  const k=x=>String(x||"").replace(/\s+/g,"").toLowerCase(),n=k(nr);
+  return n?(orders||[]).find(o=>o&&k(o.auftragsnr)===n)||null:null;
+}
 let impSel;
 function confirmImport(p,fname){
   const persons=p.persons||[];
@@ -3285,19 +3536,19 @@ function confirmImport(p,fname){
   openSheet(`<h3>Import bestätigen</h3>
     <p class="note" style="margin:-8px 0 16px">Aus <b style="color:var(--accent-ink)">${esc(fname||"PDF")}</b> erkannt. Bitte prüfen und korrigieren.</p>
     <div class="field"><label>Titel</label><input type="text" class="txt" id="i_titel" value="${esc(p.titel||"")}" placeholder="Titel eintragen"></div>
-    <div class="two"><div class="field"><label>Auftrags-Nr.</label><input type="text" id="i_anr" value="${esc(p.auftragsnr||"")}"></div><div class="field"><label>Prod.-Nr.</label><input type="text" id="i_pnr" value="${esc(p.prodNummer||"")}"></div></div>
-    <div class="two"><div class="field"><label>Kostenträger</label><input type="text" id="i_kt" value="${esc(p.kostentraeger||"")}"></div><div class="field"><label>Produktionsort</label><input type="text" class="txt" id="i_ort" value="${esc(p.produktionsort||"")}"></div></div>
+    <div class="two"><div class="field"><label>Auftrags-Nr.</label><input type="text" id="i_anr" value="${esc(p.auftragsnr||"")}" autocapitalize="characters" autocorrect="off" spellcheck="false"></div><div class="field"><label>Prod.-Nr.</label><input type="text" inputmode="numeric" id="i_pnr" value="${esc(p.prodNummer||"")}"></div></div>
+    <div class="two"><div class="field"><label>Kostenträger</label><input type="text" inputmode="numeric" id="i_kt" value="${esc(p.kostentraeger||"")}"></div><div class="field"><label>Produktionsort</label><input type="text" class="txt" id="i_ort" value="${esc(p.produktionsort||"")}"></div></div>
     ${persons.length?`<div class="section-h" style="margin:18px 0 8px"><h3>Personen im PDF</h3></div>
-    <div class="chips" id="i_persons">${persons.map((x,i)=>`<button type="button" data-i="${i}">${esc(x.name)} · ${x.days.length} ${x.days.length===1?"Tag":"Tage"}</button>`).join("")}</div>
+    <div class="chips" id="i_persons" role="group" aria-label="Personen im PDF">${persons.map((x,i)=>`<button type="button" data-i="${i}">${esc(x.name)} · ${x.days.length} ${x.days.length===1?"Tag":"Tage"}</button>`).join("")}</div>
     <p class="note">${pHinweis}</p>
     <div class="field" style="margin-top:12px"><label>Beschäftigung</label><div class="toggles" id="i_status"><button data-s="frei">Freier Mitarbeiter</button><button data-s="fest">Fest angestellt</button></div>
       <p class="note">Freie: Der Nachweis verlängert das Einsatzende um den Pausenabzug von FLINK. Fest Angestellte: Zeiten unverändert.</p></div>
     ${S.verdienstOn?`<div class="field"><label>Funktion (für Verdienst)</label><div class="toggles" id="i_fk"><button data-f="assistent">Dreh-Assistent</button><button data-f="kamera">Kamera</button></div><p class="note" id="i_fknote"></p></div>`:""}
-    <div class="field"><label>Name (für Nachweis)</label><input type="text" class="txt" id="i_name" value=""></div>`:`<p class="note">Keine Personen erkannt. Du kannst den Auftrag trotzdem anlegen und die Tage von Hand erfassen.</p>`}
+    <div class="field"><label>Name (für Nachweis)</label><input type="text" class="txt" id="i_name" value="" autocapitalize="words" autocorrect="off"></div>`:`<p class="note">Keine Personen erkannt. Du kannst den Auftrag trotzdem anlegen und die Tage von Hand erfassen.</p>`}
     <div class="field" style="margin-top:14px"><label>Feiertage nach</label><select id="i_ftort">${ftOptionen(ftErkannt,["","Wie Einstellungen: "+ortLabel(S.feiertagOrt)])}</select>
       <p class="note" id="i_ftnote"></p></div>
     <div class="section-h" style="margin:18px 0 8px"><h3>Reiseart</h3></div>
-    <div class="toggles" id="i_trip"><button data-t="ein">Einzeltage</button><button data-t="mehr">Mehrtägig</button></div>
+    <div class="toggles" id="i_trip" role="group" aria-label="Reiseart"><button data-t="ein">Einzeltage</button><button data-t="mehr">Mehrtägig</button></div>
     <p class="note hidden" id="i_tripnote">Vorgewählt, weil die Dispo An- oder Rückreise nennt.</p>
     <div class="rnote"><b>Einzeltage</b> · jeden Tag hin &amp; zurück, ohne Übernachtung. Tagegeld je Tag möglich.<br><b>Mehrtägig</b> · mit Übernachtung. An- und Rückreisetag kommen aus der Dispo, sonst gelten der erste und der letzte Tag. Das Tagegeld kommt dann über die Dienstreise-Abrechnung. Dreh- und Reisezeiten passt du danach je Tag an.</div>
     <div class="section-h" style="margin:18px 0 4px"><h3>Tagesvorschau</h3></div>
@@ -3355,16 +3606,47 @@ function confirmImport(p,fname){
        Erkennung aus der Dispo. Ohne beides bleibt das Feld weg und der Auftrag folgt der Vorgabe S.funktion. */
     const fk=S.verdienstOn&&sel?impFk:(sel&&sel.funktion);
     const no={id:uid(),titel:val("i_titel"),auftragsnr:val("i_anr"),prodNummer:val("i_pnr"),kostentraeger:val("i_kt"),produktionsort:val("i_ort"),mitarbeiter:val("i_name"),status:impStatus,...(fk?{funktion:fk}:{}),...(val("i_ftort")?{feiertagOrt:val("i_ftort")}:{}),days};
-    DB.orders.push(no);persist();state.orderId=no.id;state.tab="orders";sheetZu();render();toast(days.length?(days.length===1?"1 Tag":days.length+" Tage")+" importiert, bitte prüfen.":"Auftrag angelegt");
+    const anlegen=()=>{DB.orders.push(no);persist();state.orderId=no.id;state.tab="orders";sheetZu();render();toast(days.length?(days.length===1?"1 Tag":days.length+" Tage")+" importiert, bitte prüfen.":"Auftrag angelegt");};
+    /* Nummer schon da (V5.0): erst fragen. Bei „Abbrechen“ bleibt der Import offen, nichts ist angelegt. */
+    const dop=auftragDoppelt(DB.orders,no.auftragsnr);
+    if(dop){const n=(dop.days||[]).length;askConfirm(`Den Auftrag ${clean(dop.auftragsnr)} gibt es schon: ${clean(dop.titel)||"ohne Titel"}, ${n===1?"1 Tag":n+" Tage"}. Noch einmal importieren? Dann zählen die Tage doppelt.`,anlegen,"Importieren","go");}
+    else anlegen();
   };
 }
 
 /* ===== Utils ===== */
 function val(id){return (document.getElementById(id)||{}).value||"";}
 function esc(s){return String(s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
-let toastT;function toast(m){const el=document.getElementById("toast");el.textContent=m;el.classList.add("on");clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove("on"),Math.max(2600,String(m).length*60));}
+/* V5.0: toast(m, aktion). Mit aktion={text,fn} steht rechts ein Knopf (etwa „Rückgängig“), die Meldung bleibt 8 Sekunden stehen und ist
+   so lange antippbar. Ein Tipp schließt sie und ruft fn. Eine neue Meldung ersetzt die alte samt Knopf. Ohne aktion wie bisher. */
+let toastT;
+function toastAus(){const el=document.getElementById("toast");clearTimeout(toastT);el.classList.remove("on");const b=el.querySelector("button");if(b)b.disabled=true;rueckStand=null;}
+/* Nimmt nur eine Meldung mit Knopf weg. persist() und openSheet() rufen das, damit „Rückgängig“ nie einen neueren Stand überschreibt. */
+function toastAktionWeg(){const el=document.getElementById("toast");if(el.classList.contains("mit")&&el.classList.contains("on"))toastAus();}
+function toast(m,aktion){const el=document.getElementById("toast");el.textContent=m;el.classList.toggle("mit",!!aktion);if(!aktion)rueckStand=null;
+  /* Der Knopf zählt erst nach 400 ms: Ein zweiter Tipp auf die Stelle, an der gerade noch etwas anderes lag, löst ihn nicht aus. */
+  if(aktion){el.textContent="";const s=document.createElement("span"),b=document.createElement("button"),ab=Date.now();s.textContent=m;b.type="button";b.textContent=aktion.text;
+    b.onclick=()=>{if(Date.now()-ab<400)return;toastAus();aktion.fn();};el.append(s,b);}
+  el.classList.add("on");clearTimeout(toastT);toastT=setTimeout(toastAus,aktion?8000:Math.max(2600,String(m).length*60));}
+/* V5.0: Löschen mit „Rückgängig“ (Review-Rest B8). Merkt sich vorher Aufträge und Urlaube, führt tun() aus, speichert, zeichnet neu
+   und zeigt die Meldung mit Knopf. danach() schließt bei Bedarf das Sheet (sheetZu). Die Scroll-Stelle bleibt, solange die Ansicht
+   dieselbe ist. „Rückgängig“ setzt beide Listen aus dem gemerkten Text neu, state.orderId gilt weiter, weil es nur die id hält.
+   Mehrere Löschungen hintereinander (Prüfung 11.11.2026): Solange die Meldung steht, gilt der Stand vor der ERSTEN Löschung
+   (rueckStand), „Rückgängig“ holt also alle zurück. toastAus leert ihn, jedes andere Speichern und jedes Sheet ruft toastAus.
+   Nach dem Löschen rutscht die nächste Zeile unter den Finger, deshalb schluckt die Ansicht 400 ms lang Tipps (rueckZeit). */
+let rueckStand=null,rueckZeit=0;
+function mitRueckgaengig(text,tun,danach){
+  const jetzt=standMerken(DB),vorher=rueckStand||jetzt,zeichnen=()=>{const y=window.scrollY,g=gezeigt;render();if(gezeigt===g)window.scrollTo(0,y);};
+  tun();if(standMerken(DB)===jetzt)return;
+  persist();if(danach)danach();zeichnen();
+  rueckStand=vorher;rueckZeit=Date.now();
+  toast(text,{text:"Rückgängig",fn:()=>{if(!standZurueck(DB,vorher))return;persist();zeichnen();toast("Wiederhergestellt");}});
+}
+view.addEventListener("click",e=>{if(Date.now()-rueckZeit<400){e.stopPropagation();e.preventDefault();}},true);
 /* kind="go" = nicht-destruktiv (Amber), sonst destruktiv (Rot) */
-function askConfirm(msg,onYes,yesLabel,kind){const el=document.getElementById("confirmBox");el.querySelector(".ctitle").textContent=(yesLabel||"Löschen")+"?";el.querySelector(".cmsg").textContent=msg;el.classList.remove("out");el.classList.add("on");const yes=document.getElementById("cYes"),no=document.getElementById("cNo");yes.textContent=yesLabel||"Löschen";yes.classList.toggle("go",kind==="go");const close=()=>{el.classList.add("out");setTimeout(()=>{el.classList.remove("on","out");},150);yes.onclick=null;no.onclick=null;};yes.onclick=()=>{close();onYes();};no.onclick=close;}
+function askConfirm(msg,onYes,yesLabel,kind){const el=document.getElementById("confirmBox");el.querySelector(".ctitle").textContent=(yesLabel||"Löschen")+"?";el.querySelector(".cmsg").textContent=msg;el.classList.remove("out");el.classList.add("on");const yes=document.getElementById("cYes"),no=document.getElementById("cNo"),von=fokusMerken();yes.textContent=yesLabel||"Löschen";yes.classList.toggle("go",kind==="go");const close=()=>{el.classList.add("out");setTimeout(()=>{el.classList.remove("on","out");},150);yes.onclick=null;no.onclick=null;fokusZurueck(von);};yes.onclick=()=>{close();onYes();};no.onclick=close;no.focus({preventScroll:true});/* V5.0: Fokus auf „Abbrechen“, danach zurück */}
+/* V5.0: iOS zeigt das Druck-Feedback (:active) an Zeilen und Karten nur, wenn es einen touchstart-Hörer gibt. Er tut nichts. */
+document.addEventListener("touchstart",()=>{},{passive:true});
 if("serviceWorker" in navigator&&(location.protocol==="https:"||location.hostname==="localhost"))navigator.serviceWorker.register("sw.js").catch(()=>{});
 applyTheme();
 render();
