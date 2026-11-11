@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="Zeiterfassung">
 <meta name="theme-color" content="#15171A">
 <title>Zeiterfassung</title>
-<!-- Zeiterfassung V4.9.0 · Design "Amber Editorial" -->
+<!-- Zeiterfassung V4.10.0 · Design "Amber Editorial" -->
 <!-- impeccable-disable single-font -- Nutzer wählte beim V1.2-Redesign bewusst "Inter durchgängig" (eine Familie, tabular-nums für Zeiten) -->
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -216,7 +216,7 @@ body.light .btn.danger{border-color:rgba(176,65,47,.4)}
 .scrim{position:fixed;inset:0;background:rgba(10,9,8,.55);z-index:50;display:none;backdrop-filter:blur(3px)}
 .scrim.on{display:block;animation:fadein .25s ease}
 .scrim.out{animation:fadeout .2s ease forwards}
-.sheet{position:absolute;left:0;right:0;bottom:0;margin:0 auto;background:var(--bg);width:auto;max-width:560px;border-radius:22px 22px 0 0;border-top:1px solid var(--line-strong);max-height:92vh;overflow-y:auto;overflow-x:hidden;padding:10px 20px calc(env(safe-area-inset-bottom) + 44px);animation:up .3s cubic-bezier(.2,.8,.2,1)}
+.sheet{position:absolute;left:0;right:0;bottom:0;margin:0 auto;background:var(--bg);width:auto;max-width:560px;border-radius:22px 22px 0 0;border-top:1px solid var(--line-strong);max-height:92vh;overflow-y:auto;overflow-x:hidden;padding:0 20px calc(env(safe-area-inset-bottom) + 44px);animation:up .3s cubic-bezier(.2,.8,.2,1)}
 .sheet.out{animation:down .2s ease forwards}
 .sheet.mitleiste{padding-bottom:0}/* B1 (V4.8): Tages-Sheet mit fester Speichern-Leiste, die Safe Area liegt in der Leiste */
 .savebar{position:sticky;bottom:0;z-index:2;margin:14px -20px 0;padding:10px 20px calc(env(safe-area-inset-bottom) + 10px);background:var(--bg);border-top:1px solid var(--line)}
@@ -226,7 +226,20 @@ body.light .btn.danger{border-color:rgba(176,65,47,.4)}
 @keyframes down{to{transform:translateY(100%)}}
 @keyframes fadein{from{opacity:0}to{opacity:1}}
 @keyframes fadeout{to{opacity:0}}
-.grip{width:38px;height:5px;border-radius:3px;background:var(--line-strong);margin:8px auto 18px}
+.grip{width:38px;height:5px;border-radius:3px;background:var(--line-strong);margin:8px auto 2px}
+/* Feste Kopfzeile im Sheet (V4.10, Bedien-Review 11.11.2026, Punkt 2): Griff, links Abbrechen, Schließen oder Zurück, immer sichtbar.
+   Der kleine Titel erscheint erst, wenn die große Überschrift weggescrollt ist (.gescrollt), wie in iOS. */
+/* touch-action:none: Ein Wisch auf der Kopfzeile verschiebt das Sheet und scrollt nicht nebenher. Raster 1fr auto 1fr: Der Titel
+   steht mittig und kann den Knopf nie überdecken, bei wenig Platz wird er gekürzt. */
+.shead{position:sticky;top:0;z-index:3;margin:0 -20px 6px;padding:10px 20px 0;background:var(--bg);border-radius:22px 22px 0 0;touch-action:none}
+.shrow{display:grid;grid-template-columns:1fr minmax(0,auto) 1fr;column-gap:10px;align-items:center;min-height:40px}
+.shzu{background:none;border:none;color:var(--accent-text);font-family:inherit;font-size:0.941rem;font-weight:600;padding:0;min-height:40px;position:relative;justify-self:start;white-space:nowrap;touch-action:manipulation;cursor:pointer}
+.shzu::after{content:"";position:absolute;inset:-2px -12px}
+.shzu:active{opacity:.6}
+.shtitel{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:700;font-size:0.882rem;color:var(--text-strong);opacity:0;transition:opacity .15s ease;pointer-events:none}
+.sheet.gescrollt .shtitel{opacity:1}
+.sheet.gescrollt .shead{box-shadow:0 1px 0 var(--line)}
+body.gross .shtitel{display:none}
 .sheet h3{font-weight:800;font-size:1.529rem;letter-spacing:-.7px;margin:0 0 18px;color:var(--text-strong)}
 /* Section-Label im Sheet darf nicht vom Sheet-Titel-Stil überschrieben werden */
 .sheet .section-h h3{font-weight:700;font-size:0.706rem;letter-spacing:.5px;text-transform:uppercase;color:var(--faint);margin:0}
@@ -401,7 +414,7 @@ body.gross .chip{flex:0 1 auto;white-space:normal}body.gross .tgbox .t{flex-wrap
   <div class="view" id="view"></div>
   <div class="foot">
     <div class="foot-note">Daten bleiben nur auf diesem Gerät · alle Angaben ohne Gewähr</div>
-    <div class="foot-v">Zeiterfassung <b>V4.9.0</b></div>
+    <div class="foot-v">Zeiterfassung <b>V4.10.0</b></div>
   </div>
 </div>
 <input type="file" id="pdfInput" accept="application/pdf" class="hidden">
@@ -511,8 +524,13 @@ if(typeof S.unterschrift!=="string"||!S.unterschrift.startsWith("data:image/png;
    Wird einmal nach jedem Update gezeigt: Vergleich S.seenVersion gegen APP_VERSION.
    Nicht bei frischen Installationen (keine Aufträge) – ein neuer Kollege soll kein
    Changelog sehen, bevor er die App überhaupt kennt. Neue Einträge oben anfügen. */
-const APP_VERSION="4.9.0";
+const APP_VERSION="4.10.0";
 const WHATSNEW=[
+  {v:"4.10.0", t:"Sicherer eintragen", items:[
+    ["Aus Versehen geschlossen","Hast du in einem Tag, einem Auftrag, einem Urlaub oder beim Import etwas geändert und schließt das Fenster, ohne zu speichern, fragt die App jetzt nach. So geht nichts mehr verloren, wenn du aus Versehen nach unten wischst oder daneben tippst."],
+    ["Abbrechen steht jetzt oben","In jedem Fenster steht oben links „Abbrechen“, „Schließen“ oder „Zurück“. Du musst dafür nicht mehr bis ganz nach unten scrollen. Die Knöpfe unten gibt es weiter."],
+    ["Tagegeld beim Eintragen","Der Hinweis zum Tagegeld hat beim Eintragen eines Tages manchmal Tagegeld angezeigt, obwohl es knapp nicht gereicht hat. Jetzt zeigt er dasselbe wie nach dem Speichern."]
+  ]},
   {v:"4.9.0", t:"Tagegeld richtig und Aufträge sortieren", items:[
     ["Tagegeld","Für das Tagegeld zählt die Zeit ab der Abfahrt am Studio, bis ihr wieder da seid. Die App nimmt dafür jetzt den Beginn deiner Anreise und das Ende deiner Rückreise. Bisher hat sie ab Einsatzbeginn gerechnet und dadurch manchmal Tagegeld angezeigt, obwohl es knapp nicht gereicht hat."],
     ["Aufträge sortieren","Über deinen Aufträgen kannst du jetzt wählen, wie sie sortiert sind: die neuesten oder die ältesten zuerst, oder die mit den meisten Stunden oder Überstunden. Die App merkt sich deine Wahl."],
@@ -2078,7 +2096,7 @@ function openUrlaub(u,jahr){
     <p class="note">Für Freie zählen Wochenenden und Feiertage nicht als Urlaubstag. Die App zählt nur Montag bis Freitag ohne Feiertage.</p>
     ${tage.length>1?`<div class="field utage"><label>Einen Tag herausnehmen</label><div class="chips">${tage.map(d=>`<button type="button" data-raus="${d}" aria-label="${esc(datumLesbar(d))} herausnehmen">${WD[wochentag(d)]} ${+d.slice(8)}.${+d.slice(5,7)}.</button>`).join("")}</div>
       ${zurueck?`<p class="note">Der Antrag bleibt. Einen anderen Tag tippst du danach im Kalender an, dafür füllt die App einen neuen Antrag aus.</p>`:""}</div>`:""}
-    <button class="btn" id="uSave" style="margin-top:16px">Speichern</button><button class="btn ghost" id="uCancel" style="margin-bottom:0">Abbrechen</button>
+    <button class="btn" id="uSave" style="margin-top:16px">Speichern</button><button class="btn ghost" id="uCancel" data-zu style="margin-bottom:0">Abbrechen</button>
     ${schon?`<button class="linkbtn" id="uSchon" style="margin:8px auto 0">Schon abgeschickt? Ja, abgeschickt</button>`:""}
     ${zurueck?`<button class="linkbtn" id="uStand" style="margin:8px auto 0">Stand zurücksetzen auf „Noch nicht beantragt“</button>`:""}
     ${neu?"":`<button class="btn danger" id="uDel" style="margin:16px 0 0">Urlaub löschen</button>`}`);
@@ -2096,11 +2114,12 @@ function openUrlaub(u,jahr){
   g("uv").oninput=g("uv").onchange=()=>{if(!bisEd||!val("ub"))g("ub").value=val("uv");info();};
   g("ub").oninput=g("ub").onchange=()=>{bisEd=true;info();};
   info();
+  wacheSetzen(["uv","ub"]);
   g("uCancel").onclick=closeSheet;
   g("uSave").onclick=()=>{const x={...start,von:val("uv"),bis:val("ub")};if(urlaubPruefen(x,DB.urlaub,ort).sperrt||g("uSave").disabled)return;
     const sichern=reset=>{if(neu)DB.urlaub.push(x);else{Object.assign(u,{von:x.von,bis:x.bis});if(reset)antragZuruecksetzen(u);}
       const y=+x.von.slice(0,4);if(y!==state.urlaubJahr){state.urlaubJahr=y;state.urlaubKalJahr=y;state.urlaubAuswahl=new Set();state.urlaubMonat=+x.von.slice(5,7);}
-      persist();closeSheet();render();toast("Urlaub gespeichert");};
+      persist();sheetZu();render();toast("Urlaub gespeichert");};
     /* Nur weniger Tage (das ZDF lehnt einen ab): Der Antrag bleibt gültig. Neue Tage brauchen einen neuen Antrag, also vorher fragen
        und den Stand zurücksetzen. Gleiche Tage speichern ohne Frage. */
     if(zurueck&&(x.von!==u.von||x.bis!==u.bis)&&!nurWeniger(u,x,ort))askConfirm("Die neuen Tage stehen noch in keinem Antrag. Dafür brauchst du einen neuen Antrag. Speichern und auf „Noch nicht beantragt“ zurücksetzen?",()=>sichern(true),"Speichern","go");
@@ -2108,11 +2127,11 @@ function openUrlaub(u,jahr){
   /* Einen Tag herausnehmen (V4.5.1, etwa wenn das ZDF ihn ablehnt): in der Mitte wird der Urlaub geteilt, der Antrag bleibt. */
   document.querySelectorAll("[data-raus]").forEach(b=>b.onclick=()=>{const d=b.dataset.raus;
     askConfirm(datumLesbar(d)+" aus diesem Urlaub herausnehmen?"+(zurueck?" Der Antrag bleibt, ein Tag weniger braucht keinen neuen.":""),()=>{
-      DB.urlaub=DB.urlaub.filter(o=>o.id!==u.id).concat(tagHerausnehmen(u,d,ort,uid()));persist();closeSheet();render();toast("Tag herausgenommen");},"Herausnehmen","go");});
-  if(zurueck)g("uStand").onclick=()=>{antragZuruecksetzen(u);persist();closeSheet();render();toast("Stand zurückgesetzt");};
-  if(schon)g("uSchon").onclick=()=>{Object.assign(u,{stand:"beantragt",formular:u.formular||"613",antragNr:u.antragNr||1,beantragtAm:isoLocal(new Date())});persist();closeSheet();render();toast("Als abgeschickt markiert");};
+      DB.urlaub=DB.urlaub.filter(o=>o.id!==u.id).concat(tagHerausnehmen(u,d,ort,uid()));persist();sheetZu();render();toast("Tag herausgenommen");},"Herausnehmen","go");});
+  if(zurueck)g("uStand").onclick=()=>{antragZuruecksetzen(u);persist();sheetZu();render();toast("Stand zurückgesetzt");};
+  if(schon)g("uSchon").onclick=()=>{Object.assign(u,{stand:"beantragt",formular:u.formular||"613",antragNr:u.antragNr||1,beantragtAm:isoLocal(new Date())});persist();sheetZu();render();toast("Als abgeschickt markiert");};
   if(!neu)g("uDel").onclick=()=>askConfirm("Diesen Urlaub löschen? Im Kalender bleibt er stehen, bis du ihn dort löschst.",()=>{
-    DB.urlaub=DB.urlaub.filter(o=>o.id!==u.id);persist();closeSheet();render();toast("Urlaub gelöscht");});
+    DB.urlaub=DB.urlaub.filter(o=>o.id!==u.id);persist();sheetZu();render();toast("Urlaub gelöscht");});
 }
 /* Knopf im Block: nächster Schritt für alle Urlaube des Blocks (ids), also für den ganzen Antrag (V4.5.1). */
 function urlaubAktion(aktion,ids,jahr){
@@ -2169,7 +2188,7 @@ async function urlaubAntrag(jahr){
   const bereit=k=>{const d=dateien[k];
     openSheet(`<h3>Antrag ${d.nr} ist bereit</h3>
     <p class="note" style="margin:-8px 0 16px">${n>1?"Du hast mehr als 5 Urlaube geplant. Sie passen nicht in ein Formular, deshalb gibt es "+n+" Anträge. ":""}Tipp auf „Antrag teilen“ und wähl Mail an ${S.fbMail?esc(S.fbMail):"deine Teamleitung im Fachbereich"}. Der Text steht schon drin, den Betreff trägst du selbst ein.</p>
-    <button class="btn" id="uTeil">Antrag teilen</button><button class="btn ghost" id="uTeilNein" style="margin-bottom:0">Später</button>`);
+    <button class="btn" id="uTeil">Antrag teilen</button><button class="btn ghost" id="uTeilNein" data-zu style="margin-bottom:0">Später</button>`);
     /* Kein await vor dateiTeilen: der Aufruf läuft direkt in diesem Tipp. */
     document.getElementById("uTeil").onclick=()=>{
       /* Der Mailtext geht mit, sonst bleibt die Mail leer. Kein title: iOS Mail setzt ihn in den Text, nicht in den Betreff (Screenshot Max
@@ -2188,7 +2207,7 @@ function antragFertig(anzahl){
   const t="Deine Teamleitung unterschreibt den Antrag und leitet ihn weiter. Danach auf „Abgeschickt?“ tippen.";
   openSheet(`<h3>${anzahl>1?"Deine Anträge sind fertig":"Dein Antrag ist fertig"}</h3>
     <p class="uhinweis">${esc(t)}</p>
-    <button class="btn" id="uOk" style="margin-bottom:0">Verstanden</button>`);
+    <button class="btn" id="uOk" data-zu="Schließen" style="margin-bottom:0">Verstanden</button>`);
   document.getElementById("uOk").onclick=closeSheet;
 }
 /* Kalenderdatei (Spec Abschnitt 6) mit allen Urlauben des gezeigten Jahres. Auf iPhone und iPad öffnet die App die Datei direkt
@@ -2208,20 +2227,31 @@ function openVerdienstMonat(mk){
   openSheet(`<h3>${esc(fmtMonth(mk))}</h3>
     <p class="note" style="margin:-8px 0 12px">Brutto ${fmtEur(x.brutto)}${x.konto!=null?" · ca. "+fmtEur(x.konto)+" aufs Konto":""}</p>
     ${rows}
-    <button class="btn ghost" id="vmClose" style="margin:16px 0 0">Schließen</button>`);
+    <button class="btn ghost" id="vmClose" data-zu style="margin:16px 0 0">Schließen</button>`);
   document.getElementById("vmClose").onclick=closeSheet;
 }
 
 /* ===== Sheet ===== */
 const scrim=document.getElementById("scrim"),sheet=document.getElementById("sheet");
 let shT=null;
-/* Wächter (V4.4, nur Unterseiten der Einstellungen): merkt die Feldwerte beim Öffnen. Schließen, Wischen und „Zurück“
-   fragen nach, wenn sich etwas geändert hat. openSheet setzt ihn bei jedem neuen Sheet zurück. */
+/* Wächter (V4.4 Unterseiten der Einstellungen, ab V4.10 auch Tag, Auftrag, Urlaub und Import, Review-Rest B5): merkt die Feldwerte
+   beim Öffnen. Schließen, Wischen und „Zurück“ fragen nach, wenn sich etwas geändert hat. openSheet setzt ihn bei jedem neuen Sheet
+   zurück. Wer gespeichert oder gelöscht hat, schließt über sheetZu(), sonst käme die Frage nach dem Speichern. */
 let sheetGuard=null;
 function wacheSetzen(ids,extra){const start=ids.map(val).join("\u0001");sheetGuard=()=>ids.map(val).join("\u0001")!==start||!!(extra&&extra());}
 function verwerfenFragen(weiter){askConfirm("Du hast hier etwas geändert und noch nicht gespeichert. Änderungen verwerfen?",()=>{sheetGuard=null;weiter();},"Verwerfen");}
 function zurueckZurUebersicht(){if(sheetGuard&&sheetGuard())verwerfenFragen(()=>openSettings());else openSettings();}
-function openSheet(html){clearTimeout(shT);sheetGuard=null;scrim.classList.remove("out");sheet.classList.remove("out","mitleiste");sheet.innerHTML='<div class="grip"></div>'+html;scrim.classList.add("on");sheet.scrollTop=0;document.body.style.overflow="hidden";}
+/* Kopfzeile (V4.10): Der Knopf oben links löst den Knopf mit data-zu im Sheet aus (Abbrechen, Schließen, Zurück, Später), damit
+   Wächter und Rückwege an einer Stelle bleiben. Beschriftung = data-zu, sonst der Text des Knopfs. Ohne solchen Knopf schließt er. */
+function sheetZu(){sheetGuard=null;closeSheet();}
+function openSheet(html){clearTimeout(shT);sheetGuard=null;scrim.classList.remove("out");sheet.classList.remove("out","mitleiste","gescrollt");
+  sheet.innerHTML='<div class="shead"><div class="grip"></div><div class="shrow"><button type="button" class="shzu" id="shZu"></button><span class="shtitel" aria-hidden="true"></span></div></div>'+html;
+  const zu=sheet.querySelector("[data-zu]"),h=sheet.querySelector("h3"),t=zu?(zu.dataset.zu||zu.textContent.trim()):"Schließen";
+  document.getElementById("shZu").textContent=(t==="Zurück"?"‹\u00a0":"")+t;
+  document.getElementById("shZu").onclick=()=>{const b=sheet.querySelector("[data-zu]");if(b)b.click();else closeSheet();};
+  sheet.querySelector(".shtitel").textContent=h?h.textContent:"";
+  scrim.classList.add("on");sheet.scrollTop=0;document.body.style.overflow="hidden";}
+sheet.addEventListener("scroll",()=>sheet.classList.toggle("gescrollt",sheet.scrollTop>40),{passive:true});
 function closeSheet(){
   if(!scrim.classList.contains("on")||scrim.classList.contains("out"))return;
   if(sheetGuard&&sheetGuard()){verwerfenFragen(closeSheet);return;}
@@ -2231,13 +2261,13 @@ function closeSheet(){
 }
 scrim.addEventListener("click",e=>{if(e.target===scrim)closeSheet();});
 /* Wisch nach unten schließt das Sheet (nur wenn der Inhalt oben steht) */
-let swY=null,swActive=false;
-sheet.addEventListener("touchstart",e=>{swY=e.touches[0].clientY;swActive=sheet.scrollTop<=0;},{passive:true});
+let swY=null,swActive=false,swKopf=false;
+sheet.addEventListener("touchstart",e=>{swY=e.touches[0].clientY;swKopf=!!(e.target.closest&&e.target.closest(".shead"));swActive=swKopf||sheet.scrollTop<=0;},{passive:true});
 sheet.addEventListener("touchmove",e=>{
   if(swY==null||!swActive)return;
   const dy=e.touches[0].clientY-swY;
   /* Erst ab 10 px nach unten (V4.4): Ein Tipp mit leichtem Zittern bleibt ein Tipp und lässt das Sheet nicht zucken. */
-  if(dy>10&&sheet.scrollTop<=0){sheet.style.transition="none";sheet.style.transform="translateY("+(dy-10)+"px)";e.preventDefault();}
+  if(dy>10&&(swKopf||sheet.scrollTop<=0)){sheet.style.transition="none";sheet.style.transform="translateY("+(dy-10)+"px)";if(e.cancelable)e.preventDefault();}
   else if(sheet.style.transform)sheet.style.transform="";
 },{passive:false});
 sheet.addEventListener("touchend",e=>{
@@ -2264,7 +2294,7 @@ function editOrder(id){
     ${S.verdienstOn?`<div class="field"><label>Funktion (für Verdienst)</label><div class="toggles" id="f_fk"><button data-f="assistent">Dreh-Assistent</button><button data-f="kamera">Kamera</button></div></div>`:""}
     <div class="field"><label>Sonder-Equipment (Mehrfachauswahl)</label><div class="chips" id="f_equip">${["Sony Alpha 7S III","Sony FX6","Sony FX3","2. Kamera","Drohne","DJI RS-Gimbal","Slider","Stativ/Head","ND-/Vari-ND-Filter","Timecode-Sync","Funkstrecke","Ton","Licht","Datenmanagement"].map(e=>`<button type="button" data-e="${esc(e)}"${(o.equipment||[]).includes(e)?' class="on"':''}>${esc(e)}</button>`).join("")}</div></div>
     <div class="field"><label>Sonstiges (optional)</label><textarea class="txt" id="f_notiz" rows="3" placeholder="z. B. weitere Hinweise">${esc(o.notiz||"")}</textarea></div>
-    <button class="btn" id="saveOrder">Speichern</button><button class="btn ghost" id="cancelOrder" style="margin-bottom:0">Abbrechen</button>
+    <button class="btn" id="saveOrder">Speichern</button><button class="btn ghost" id="cancelOrder" data-zu style="margin-bottom:0">Abbrechen</button>
     ${id?'<button class="btn danger" id="delOrder" style="margin:16px 0 0">Auftrag löschen</button>':''}`);
   document.getElementById("cancelOrder").onclick=closeSheet;
   document.querySelectorAll("#f_equip button").forEach(b=>b.onclick=()=>b.classList.toggle("on"));
@@ -2280,14 +2310,16 @@ function editOrder(id){
   const paintFk=()=>document.querySelectorAll("#f_fk button").forEach(b=>b.classList.toggle("on",b.dataset.f===tmpFk));
   document.querySelectorAll("#f_fk button").forEach(b=>b.onclick=()=>{tmpFk=b.dataset.f;paintFk();});
   paintFk();
+  const equipJetzt=()=>[...document.querySelectorAll("#f_equip button.on")].map(b=>b.dataset.e).join("\u0001"),equip0=equipJetzt(),status0=tmpStatus,fk0=tmpFk;
+  wacheSetzen(["f_titel","f_anr","f_pnr","f_kt","f_ort","f_mit","f_notiz","f_ftort"],()=>tmpStatus!==status0||tmpFk!==fk0||equipJetzt()!==equip0);
   document.getElementById("saveOrder").onclick=()=>{
     const equipment=[...document.querySelectorAll("#f_equip button.on")].map(b=>b.dataset.e);
     const data={titel:val("f_titel"),auftragsnr:val("f_anr"),prodNummer:val("f_pnr"),kostentraeger:val("f_kt"),produktionsort:val("f_ort"),mitarbeiter:val("f_mit"),notiz:val("f_notiz"),equipment,status:tmpStatus,...(S.verdienstOn?{funktion:tmpFk}:{})};
     if(!data.titel){toast("Bitte einen Titel eingeben");return;}
     let ziel=o;if(id)Object.assign(o,data);else{ziel={id:uid(),...data,days:[]};DB.orders.push(ziel);state.orderId=ziel.id;}
     const fo=val("f_ftort");if(fo)ziel.feiertagOrt=fo;else delete ziel.feiertagOrt;
-    persist();closeSheet();render();toast(id?"Gespeichert":"Auftrag angelegt");};
-  if(id)document.getElementById("delOrder").onclick=()=>{askConfirm("Diesen Auftrag mit allen Tagen wirklich löschen?",()=>{DB.orders=DB.orders.filter(x=>x.id!==id);persist();state.orderId=null;closeSheet();render();toast("Auftrag gelöscht");});};
+    persist();sheetZu();render();toast(id?"Gespeichert":"Auftrag angelegt");};
+  if(id)document.getElementById("delOrder").onclick=()=>{askConfirm("Diesen Auftrag mit allen Tagen wirklich löschen?",()=>{DB.orders=DB.orders.filter(x=>x.id!==id);persist();state.orderId=null;sheetZu();render();toast("Auftrag gelöscht");});};
 }
 
 /* ===== Tag ===== */
@@ -2342,7 +2374,7 @@ function editDay(orderId,dayId){
     <div id="tgbox"></div>
     <p class="note">Überstunden rechnet die App nur aus der Einsatzzeit minus Pause. Dreh- und Reisezeit stehen im Nachweis und schlagen das Einsatzende vor: letzte Tätigkeit plus 30 Minuten, bis du es selbst tippst.</p>
     <div class="savebar"><button class="btn" id="saveDay">Speichern</button></div>
-    <div class="btnrow">${dayId?'<button class="btn danger" id="delDay" style="margin-bottom:0">Tag löschen</button>':''}<button class="btn ghost" id="cancelDay" style="margin-bottom:0">Abbrechen</button></div>`);
+    <div class="btnrow">${dayId?'<button class="btn danger" id="delDay" style="margin-bottom:0">Tag löschen</button>':''}<button class="btn ghost" id="cancelDay" data-zu style="margin-bottom:0">Abbrechen</button></div>`);
   sheet.classList.add("mitleiste");
   const g=id=>document.getElementById(id);
   function paintPause(){document.querySelectorAll("#pausebtns button").forEach(b=>b.classList.toggle("on",(b.dataset.p==="1")===tmpPause));}
@@ -2492,8 +2524,11 @@ function editDay(orderId,dayId){
     rkNoneBtn.classList.toggle("on",rkN);g("d_rueckBeginn").disabled=rkN;g("d_rueck").disabled=rkN;
   }
   paintPause();paintAL();paintGrenz();initNone();recalc();
+  /* Erst nach dem ersten Zeichnen merken, sonst gelten die Startwerte der App schon als Änderung. */
+  const pause0=tmpPause,ue0=tmpUE,al0=tmpAL;
+  wacheSetzen(["d_datum","d_einsatz","d_anreise","d_anreiseEnde","d_drehbeginn","d_drehende","d_rueckBeginn","d_rueck","d_ende","d_grenzHin","d_grenzRueck","d_feiertag"],()=>tmpPause!==pause0||tmpUE!==ue0||tmpAL!==al0);
   g("cancelDay").onclick=closeSheet;
-  if(dayId)g("delDay").onclick=()=>{askConfirm("Diesen Arbeitstag wirklich löschen?",()=>{o.days=o.days.filter(x=>x.id!==dayId);persist();closeSheet();render();toast("Tag gelöscht");});};
+  if(dayId)g("delDay").onclick=()=>{askConfirm("Diesen Arbeitstag wirklich löschen?",()=>{o.days=o.days.filter(x=>x.id!==dayId);persist();sheetZu();render();toast("Tag gelöscht");});};
   g("saveDay").onclick=()=>{
     const data={datum:val("d_datum"),einsatz:val("d_einsatz"),anreise:val("d_anreise"),anreiseEnde:val("d_anreiseEnde"),drehbeginn:val("d_drehbeginn"),drehende:val("d_drehende"),rueckBeginn:val("d_rueckBeginn"),rueck:val("d_rueck"),ende:val("d_ende"),pause:tmpPause,uebernachtung:tmpUE,ausland:tmpAL,grenzHin:tmpAL?val("d_grenzHin"):"",grenzRueck:tmpAL?val("d_grenzRueck"):""};
     if(!data.datum){toast("Bitte Datum angeben");return;}
@@ -2501,7 +2536,7 @@ function editDay(orderId,dayId){
     const ftWert=clean(val("d_feiertag")),ftAuto=feiertagAuto(data.datum,feiertagOrt(o));
     let ziel=d;if(dayId)Object.assign(d,data);else{ziel={id:uid(),...data,dispo:d.dispo};o.days.push(ziel);}
     if(ftWert===ftAuto)delete ziel.feiertag;else ziel.feiertag=ftWert;
-    persist();const c=dayCalc(data);closeSheet();render();
+    persist();const c=dayCalc(data);sheetZu();render();
     toast(c.tg.state==="ok"?"Gespeichert · Tagegeld möglich":(dayId?"Gespeichert":"Tag hinzugefügt"));
   };
 }
@@ -2558,7 +2593,7 @@ function openSettings(ziel){
     <button class="setrow" id="wnBtn"><span>Was ist neu<small>Version ${APP_VERSION}</small></span><span class="chev">›</span></button>
     <button class="setrow" id="shareApp"><span>App weiterempfehlen</span><span class="chev">›</span></button>
     <button class="btn danger" id="wipe" style="margin-top:16px">Alle Daten löschen</button>
-    <button class="btn ghost" id="closeSet" style="margin-bottom:0">Schließen</button>
+    <button class="btn ghost" id="closeSet" data-zu style="margin-bottom:0">Schließen</button>
     <p class="note" style="text-align:center">Alles liegt lokal auf dem Gerät. Kein Konto, keine Server.</p>`);
   document.getElementById("closeSet").onclick=closeSheet;
   document.getElementById("setVertrag").onclick=()=>openVertragSettings();
@@ -2600,7 +2635,7 @@ function openVertragSettings(){
       <p class="note">Steht in deinem Vertrag. Die Statistik zählt mit.</p></div>
     <div class="field"><label>Arbeitsort für Feiertage</label><select id="s_ftort">${ftOptionen(ortGueltig(S.feiertagOrt))}</select>
       <p class="note">Fest angestellt: dein Dienstort.</p></div>
-    <button class="btn" id="s_save">Speichern</button><button class="btn ghost" id="s_back" style="margin-bottom:0">Zurück</button>`);
+    <button class="btn" id="s_save">Speichern</button><button class="btn ghost" id="s_back" data-zu style="margin-bottom:0">Zurück</button>`);
   const paintSetStatus=()=>document.querySelectorAll("#s_status button").forEach(b=>b.classList.toggle("on",b.dataset.s===setStatus));
   document.querySelectorAll("#s_status button").forEach(b=>b.onclick=()=>{setStatus=b.dataset.s;paintSetStatus();});
   paintSetStatus();
@@ -2621,7 +2656,7 @@ function openMailSettings(){
     <div class="field"><label>Mail-Text (optional)</label><textarea class="txt" id="s_anschr" rows="4" placeholder="${platz}">${esc(S.anschreiben||"")}</textarea>
       <p class="note">Leer: grauer Standardtext. Platzhalter: <b>{name}</b> · <b>{produktion}</b> · <b>{auftrag}</b> · <b>{tage}</b></p></div>
     <div class="field"><label>Grußformel (optional)</label><input type="text" class="txt" id="s_gruss" value="${esc(S.gruss||"")}" placeholder="Viele liebe Grüße"></div>
-    <button class="btn" id="s_save">Speichern</button><button class="btn ghost" id="s_back" style="margin-bottom:0">Zurück</button>`);
+    <button class="btn" id="s_save">Speichern</button><button class="btn ghost" id="s_back" data-zu style="margin-bottom:0">Zurück</button>`);
   wacheSetzen(["s_mail","s_empf","s_anschr","s_gruss"]);
   document.getElementById("s_back").onclick=zurueckZurUebersicht;
   document.getElementById("s_save").onclick=()=>{S.email=val("s_mail");S.empfaenger=val("s_empf");S.anschreiben=val("s_anschr");S.gruss=val("s_gruss");
@@ -2643,7 +2678,7 @@ function openVerdienstSettings(){
       <p class="note">Vorgabe für Aufträge ohne eigene Funktion. Beim Dispo-Import liest die App die Funktion selbst.</p></div>
     <div class="field"><label>Netto-Anteil in % (optional)</label><input type="text" inputmode="decimal" id="v_quote" value="${esc(zahl(S.nettoQuote))}" placeholder="50 bis 65">
       <p class="note">Nimm eine Abrechnung und teile die Auszahlung durch die Summe des Vertrags. Bei vielen Freien liegt das zwischen 50 und 65 %. Leer heißt: nur Brutto.</p></div>
-    <button class="btn" id="v_save">Speichern</button><button class="btn ghost" id="v_back" style="margin-bottom:0">Zurück</button>`);
+    <button class="btn" id="v_save">Speichern</button><button class="btn ghost" id="v_back" data-zu style="margin-bottom:0">Zurück</button>`);
   const paint=()=>{
     document.querySelectorAll("#v_on button").forEach(b=>b.classList.toggle("on",(b.dataset.v==="1")===on));
     document.querySelectorAll("#v_fk button").forEach(b=>b.classList.toggle("on",b.dataset.f===fk));};
@@ -2671,7 +2706,7 @@ function openUrlaubSettings(){
     <p class="note">Bekommt deinen Antrag zum Unterschreiben und leitet ihn weiter.</p>
     <div class="field" style="margin-top:12px"><label>Deine Unterschrift</label>${S.unterschrift?`<img src="${S.unterschrift}" alt="Deine Unterschrift" class="sigbild">`:`<p class="note">Noch keine. Sie steht auf jedem Antrag als PDF.</p>`}
       <button class="btn ghost" id="u_sig" style="margin:6px 0 0">${S.unterschrift?"Neu unterschreiben":"Unterschreiben"}</button></div>
-    <button class="btn" id="u_save" style="margin-top:16px">Speichern</button><button class="btn ghost" id="u_back" style="margin-bottom:0">Zurück</button>`);
+    <button class="btn" id="u_save" style="margin-top:16px">Speichern</button><button class="btn ghost" id="u_back" data-zu style="margin-bottom:0">Zurück</button>`);
   wacheSetzen(["u_ansp","u_satz","u_fb","u_fbmail"]);
   document.getElementById("u_sig").onclick=openUnterschrift;
   document.getElementById("u_back").onclick=zurueckZurUebersicht;
@@ -2690,7 +2725,7 @@ function openUnterschrift(){
   openSheet(`<h3>Unterschrift</h3><p class="note" style="margin:-8px 0 8px">Mit dem Finger im weißen Feld unterschreiben.</p>
     <canvas id="sigPad" class="sigpad" aria-label="Feld für deine Unterschrift"></canvas>
     <div class="btnrow"><button class="btn ghost" id="sigNeu" style="margin:0">Löschen</button><button class="btn" id="sigOk" style="margin:0">Übernehmen</button></div>
-    <button class="btn ghost" id="sigZurueck" style="margin:10px 0 0">Zurück</button>`);
+    <button class="btn ghost" id="sigZurueck" data-zu style="margin:10px 0 0">Zurück</button>`);
   const c=document.getElementById("sigPad"),x=c.getContext("2d");
   /* Größe erst setzen, wenn das Feld sichtbar ist (beim Öffnen läuft das Sheet noch ein). */
   const groesse=()=>{const dpr=window.devicePixelRatio||1,r=c.getBoundingClientRect();if(!r.width)return;
@@ -2721,7 +2756,7 @@ function openRules(){
     </div>
     <div class="field"><label>Pausenlänge</label><input type="number" id="s_p" min="0" max="240" step="5" value="${S.standardPause}"><p class="note">Minuten, wenn „Pause: Ja".</p></div>
     <div class="field"><label>Tagegeld-Schwelle</label><input type="number" id="s_ab" min="0" max="1440" step="15" value="${S.abwesenheitMin}"><p class="note">Abwesenheit in Minuten · Standard 480 = 8 Std.</p></div>
-    <button class="btn" id="saveRules" style="margin-top:6px">Speichern</button><button class="btn ghost" id="rulesBack" style="margin-bottom:0">Zurück</button>`);
+    <button class="btn" id="saveRules" style="margin-top:6px">Speichern</button><button class="btn ghost" id="rulesBack" data-zu style="margin-bottom:0">Zurück</button>`);
   wacheSetzen(["s_h","s_m","s_p","s_ab"]);
   document.getElementById("rulesBack").onclick=zurueckZurUebersicht;
   document.getElementById("saveRules").onclick=()=>{S.sollMin=(parseInt(val("s_h"))||0)*60+(parseInt(val("s_m"))||0);S.sollEigen=S.sollMin;S.standardPause=parseInt(val("s_p"))||0;S.abwesenheitMin=parseInt(val("s_ab"))||480;persist();render();openSettings();toast("Regeln gespeichert");};
@@ -2771,7 +2806,7 @@ function openWhatsNew(alle){
     <p class="note" style="margin:-8px 0 16px">Version ${APP_VERSION}${seen?" · zuletzt gesehen: "+esc(seen):""}</p>
     ${liste.map(w=>`<div class="section-h" style="margin:18px 0 8px"><h3>V${w.v} · ${esc(w.t)}</h3></div>
       ${w.items.map(([k,txt])=>`<div class="hsec"><div class="eb">${esc(k)}</div><p>${esc(txt)}</p></div>`).join("")}`).join("")}
-    <button class="btn" id="wnOk" style="margin-top:16px">Verstanden</button>`);
+    <button class="btn" id="wnOk" data-zu="Schließen" style="margin-top:16px">Verstanden</button>`);
   document.getElementById("wnOk").onclick=()=>{S.seenVersion=APP_VERSION;persist();closeSheet();};
 }
 
@@ -2781,7 +2816,7 @@ function openNameFrage(weiter){
   openSheet(`<h3>Wer nutzt die App?</h3>
     <p class="note" style="margin:-8px 0 16px">Trag deinen Namen so ein, wie er auf der Dispo steht. Damit wählt dich der Import selbst aus, und er steht auf deinen Nachweisen. Ändern kannst du ihn jederzeit unter Einstellungen › Vertragsdaten.</p>
     <div class="field"><label>Dein Name</label><input type="text" class="txt" id="n_name" placeholder="Vorname Nachname" autocomplete="name" autocapitalize="words" enterkeyhint="done"></div>
-    <button class="btn" id="n_save">Speichern</button><button class="btn ghost" id="n_later" style="margin-bottom:0">Später</button>`);
+    <button class="btn" id="n_save">Speichern</button><button class="btn ghost" id="n_later" data-zu style="margin-bottom:0">Später</button>`);
   document.getElementById("n_save").onclick=()=>{const v=clean(val("n_name"));if(!v){toast("Trag bitte deinen Namen ein");return;}
     S.absender=v;persist();render();weiter();};
   document.getElementById("n_later").onclick=weiter;
@@ -2888,7 +2923,7 @@ function openHelp(){
       <p>Die <b>Jahresliste als PDF</b> findest du in den Einstellungen unter Export, für jedes abgeschlossene Jahr ab dem 1. Januar danach. Darin alle Einsatztage mit Datum, Auftrag, Ort, Einsatzzeit und Stunden, ohne Überstunden und Tagegeld.</p>
       <p class="tip">Fest Angestellte sehen dort auch die <b>Brückentage</b> am Dienstort. „1 für 4“ heißt: ein Urlaubstag, vier Tage am Stück frei. Gerechnet wird mit Montag bis Freitag, dein Dienstplan kann abweichen.</p></div>
 
-    <button class="btn" id="helpBack" style="margin-top:6px">Verstanden</button>`);
+    <button class="btn" id="helpBack" data-zu="Zurück" style="margin-top:6px">Verstanden</button>`);
   document.getElementById("helpBack").onclick=()=>openSettings();
 }
 
@@ -3267,7 +3302,7 @@ function confirmImport(p,fname){
     <div class="rnote"><b>Einzeltage</b> · jeden Tag hin &amp; zurück, ohne Übernachtung. Tagegeld je Tag möglich.<br><b>Mehrtägig</b> · mit Übernachtung. An- und Rückreisetag kommen aus der Dispo, sonst gelten der erste und der letzte Tag. Das Tagegeld kommt dann über die Dienstreise-Abrechnung. Dreh- und Reisezeiten passt du danach je Tag an.</div>
     <div class="section-h" style="margin:18px 0 4px"><h3>Tagesvorschau</h3></div>
     <div class="implist" id="i_days"></div>
-    <button class="btn" id="doImport" style="margin-top:16px">Importieren</button><button class="btn ghost" id="cancelImport" style="margin-bottom:0">Abbrechen</button>`);
+    <button class="btn" id="doImport" style="margin-top:16px">Importieren</button><button class="btn ghost" id="cancelImport" data-zu style="margin-bottom:0">Abbrechen</button>`);
   function paint(){
     document.querySelectorAll("#i_persons button").forEach(b=>b.classList.toggle("on",+b.dataset.i===impSel));
     const sel=persons[impSel];const days=sel?sel.days:[];
@@ -3309,6 +3344,9 @@ function confirmImport(p,fname){
   /* Reiseart zeichnet nur die Vorschau neu, der Name im Feld bleibt, wie getippt (V4.4.2). */
   document.querySelectorAll("#i_trip button").forEach(b=>b.onclick=()=>{impTrip=b.dataset.t;tripTouched=true;paintTage();});
   paint();
+  /* Rückfrage nur, wenn man im Import selbst etwas geändert hat. Der Import und seine Vorwahlen bleiben, wie sie sind. */
+  const status0=impStatus,trip0=impTrip,fk0=impFk;
+  wacheSetzen(["i_titel","i_anr","i_pnr","i_kt","i_ort","i_name","i_ftort"],()=>impSel!==treffer||impTrip!==trip0||impFk!==fk0||impStatus!==status0);
   document.getElementById("cancelImport").onclick=closeSheet;
   document.getElementById("doImport").onclick=()=>{
     const sel=persons[impSel];if(persons.length&&!sel)return;
@@ -3317,7 +3355,7 @@ function confirmImport(p,fname){
        Erkennung aus der Dispo. Ohne beides bleibt das Feld weg und der Auftrag folgt der Vorgabe S.funktion. */
     const fk=S.verdienstOn&&sel?impFk:(sel&&sel.funktion);
     const no={id:uid(),titel:val("i_titel"),auftragsnr:val("i_anr"),prodNummer:val("i_pnr"),kostentraeger:val("i_kt"),produktionsort:val("i_ort"),mitarbeiter:val("i_name"),status:impStatus,...(fk?{funktion:fk}:{}),...(val("i_ftort")?{feiertagOrt:val("i_ftort")}:{}),days};
-    DB.orders.push(no);persist();state.orderId=no.id;state.tab="orders";closeSheet();render();toast(days.length?(days.length===1?"1 Tag":days.length+" Tage")+" importiert, bitte prüfen.":"Auftrag angelegt");
+    DB.orders.push(no);persist();state.orderId=no.id;state.tab="orders";sheetZu();render();toast(days.length?(days.length===1?"1 Tag":days.length+" Tage")+" importiert, bitte prüfen.":"Auftrag angelegt");
   };
 }
 
